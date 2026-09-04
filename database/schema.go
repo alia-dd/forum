@@ -4,9 +4,10 @@ import "database/sql"
 
 func InitTable(db *sql.DB) (sql.Result, error) {
 	sql := `
-CREATE TABLE IF NOT EXISTS user (
+CREATE TABLE IF NOT EXISTS users (
     id            INTEGER PRIMARY KEY AUTOINCREMENT,
     username      TEXT NOT NULL UNIQUE,
+    name          TEXT,
     email         TEXT NOT NULL UNIQUE,
     password_hash TEXT NOT NULL,
     created_at    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -18,7 +19,7 @@ CREATE TABLE IF NOT EXISTS session (
     user_id    INTEGER NOT NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     expires_at DATETIME NOT NULL,
-    FOREIGN KEY (user_id) REFERENCES user(id) ON DELETE CASCADE
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
  
 CREATE TABLE IF NOT EXISTS post (
@@ -28,7 +29,7 @@ CREATE TABLE IF NOT EXISTS post (
     content    TEXT NOT NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME,
-    FOREIGN KEY (user_id) REFERENCES user(id) ON DELETE CASCADE
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
  
 CREATE TABLE IF NOT EXISTS comment (
@@ -39,7 +40,7 @@ CREATE TABLE IF NOT EXISTS comment (
     content           TEXT NOT NULL,
     created_at        DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at        DATETIME,
-    FOREIGN KEY (user_id)           REFERENCES user(id)    ON DELETE CASCADE,
+    FOREIGN KEY (user_id)           REFERENCES users(id)    ON DELETE CASCADE,
     FOREIGN KEY (parent_post_id)    REFERENCES post(id)    ON DELETE CASCADE,
     FOREIGN KEY (parent_comment_id) REFERENCES comment(id) ON DELETE CASCADE
 );
@@ -63,7 +64,7 @@ CREATE TABLE IF NOT EXISTS post_like (
     post_id INTEGER NOT NULL,
     value   INTEGER NOT NULL,
     PRIMARY KEY (user_id, post_id),
-    FOREIGN KEY (user_id) REFERENCES user(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (post_id) REFERENCES post(id) ON DELETE CASCADE
 );
  
@@ -72,7 +73,7 @@ CREATE TABLE IF NOT EXISTS comment_like (
     comment_id INTEGER NOT NULL,
     value      INTEGER NOT NULL,
     PRIMARY KEY (user_id, comment_id),
-    FOREIGN KEY (user_id)    REFERENCES user(id)    ON DELETE CASCADE,
+    FOREIGN KEY (user_id)    REFERENCES users(id)    ON DELETE CASCADE,
     FOREIGN KEY (comment_id) REFERENCES comment(id) ON DELETE CASCADE
 );`
 

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
 	"log"
 	"net/http"
@@ -8,6 +9,10 @@ import (
 	"time"
 
 	"gitea.kood.tech/jyrkikarhunen/forum/database"
+	"gitea.kood.tech/jyrkikarhunen/forum/handlers"
+	"gitea.kood.tech/jyrkikarhunen/forum/repository"
+	"gitea.kood.tech/jyrkikarhunen/forum/service"
+	"gitea.kood.tech/jyrkikarhunen/forum/utils"
 )
 
 func main() {
@@ -29,8 +34,18 @@ func main() {
 		database.SeedData(db)
 	}
 
+	utils.InitializeTemplate()
+
 	mux := http.NewServeMux()
 
+	userRepo := repository.NewUserRepository(db)
+	userService := service.NewUserService(userRepo)
+	userHandler := handlers.NewUserHandler(userService)
+
+	mux.HandleFunc("POST /api/user/register", MiddleWare(db, userHandler.CreateUser))
+	mux.HandleFunc("POST /api/user/{id}", MiddleWare(db, userHandler.CreateUser))
+	mux.HandleFunc("GET /api/user/check-username", MiddleWare(db, userHandler.CheckIfAvailabe))
+	mux.HandleFunc("GET /api/user/check-email", MiddleWare(db, userHandler.CheckIfAvailabe))
 	server := &http.Server{
 		Addr:         ":8080",
 		Handler:      mux,
@@ -41,4 +56,18 @@ func main() {
 	fmt.Println("Server starting on :8080")
 
 	log.Fatal(server.ListenAndServe())
+}
+
+func MiddleWare(db *sql.DB, handler http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		defer func() {
+			err := recover()
+			if err != nil {
+				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			}
+
+		}()
+		handler(w, r)
+
+	}
 }
