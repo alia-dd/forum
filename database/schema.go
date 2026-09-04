@@ -53,6 +53,7 @@ CREATE TABLE IF NOT EXISTS category (
 CREATE TABLE IF NOT EXISTS post_category (
     post_id     INTEGER NOT NULL,
     category_id INTEGER NOT NULL,
+    is_main     INTEGER NOT NULL DEFAULT 0,
     PRIMARY KEY (post_id, category_id),
     FOREIGN KEY (post_id)     REFERENCES post(id)     ON DELETE CASCADE,
     FOREIGN KEY (category_id) REFERENCES category(id) ON DELETE CASCADE
