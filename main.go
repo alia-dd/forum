@@ -53,18 +53,30 @@ func main() {
 	postHandler := handlers.NewPostHandler(postRepo, categoryRepo)
 	categoryHandler := handlers.NewCategoryHandler(categoryRepo)
 
+	// GET / - fetches all posts. Optional, combinable query filters: ?category={id}  ?author={id|me|username}  ?liked=true
 	mux.HandleFunc("GET /", postHandler.GetPosts)
+	// GET /post/{id} - just an int
 	mux.HandleFunc("GET /post/{id}", postHandler.GetPostByID)
+
 	//below need auth
+	// GET /post/new - loads template (once implemented) for submitting post
 	mux.HandleFunc("GET /post/new", postHandler.NewPostForm)
+	// POST /post/new - create post. Form: title, content, main_category={id}, category={id}… (sides)
 	mux.HandleFunc("POST /post/new", postHandler.CreatePost)
+	// GET /post/{id}/edit - loads template (once implemented) for editing a post you own
 	mux.HandleFunc("GET /post/{id}/edit", postHandler.EditPostForm)
+	// POST /post/{id}/edit - update your post. Form: title, content, main_category={id}, category={id}… (sides)
 	mux.HandleFunc("POST /post/{id}/edit", postHandler.UpdatePost)
 
+	// GET /category/new - loads template (once implemented) for creating new category
 	mux.HandleFunc("GET /category/new", categoryHandler.NewCategoryForm)
+	// POST /category/new - create category. Form: name
 	mux.HandleFunc("POST /category/new", categoryHandler.CreateCategory)
+	// GET /category/{id}/edit - loads template (once implemented) for editing existing category
 	mux.HandleFunc("GET /category/{id}/edit", categoryHandler.EditCategoryForm)
+	// POST /category/{id}/edit - rename category. Form: name
 	mux.HandleFunc("POST /category/{id}/edit", categoryHandler.UpdateCategory)
+	// POST /category/{id}/delete - delete category (if it has no references elsewhere)
 	mux.HandleFunc("POST /category/{id}/delete", categoryHandler.DeleteCategory)
 	//above need auth
 
