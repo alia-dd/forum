@@ -43,6 +43,10 @@ func handleError(w http.ResponseWriter, err error) {
 		code = "DUPLICATE_ENTRY"
 		message = "That item already exists"
 		status = http.StatusConflict
+	case errors.Is(err, customerrors.ErrInUse):
+		code = "IN_USE"
+		message = "This item is still referenced and cannot be deleted"
+		status = http.StatusConflict
 	default:
 		code = "INTERNAL_ERROR"
 		message = "An unexpected error occurred while processing the request"

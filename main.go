@@ -63,6 +63,9 @@ func main() {
 
 	mux.HandleFunc("GET /category/new", categoryHandler.NewCategoryForm)
 	mux.HandleFunc("POST /category/new", categoryHandler.CreateCategory)
+	mux.HandleFunc("GET /category/{id}/edit", categoryHandler.EditCategoryForm)
+	mux.HandleFunc("POST /category/{id}/edit", categoryHandler.UpdateCategory)
+	mux.HandleFunc("POST /category/{id}/delete", categoryHandler.DeleteCategory)
 	//above need auth
 
 	server := &http.Server{

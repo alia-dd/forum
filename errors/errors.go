@@ -18,6 +18,7 @@ var (
 	ErrForeignKeyConstraint = errors.New("Foreign key error")
 	ErrBadRequest           = errors.New("bad request")
 	ErrForbidden            = errors.New("forbidden")
+	ErrInUse                = errors.New("resource still in use")
 )
 
 func MapSQLError(err error) error {
