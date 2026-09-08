@@ -54,10 +54,10 @@ func main() {
 			utils.RenderTemplate(w, http.StatusNotFound, "error", &models.ErrorStruct{Error: "400", ErrorMs: "Page Not Found"})
 			return
 		}
-		middleware.Recoverer(handlers.HomePage)(w, r)
+		middleware.Recoverer(middleware.AllowGuest(sessionRepo, userRepo, handlers.HomePage))(w, r)
 	})
 
-	mux.HandleFunc("GET /user/profile", middleware.Recoverer(middleware.Restrict(sessionRepo, handlers.Profile)))
+	mux.HandleFunc("GET /user/profile", middleware.Recoverer(middleware.Restrict(sessionRepo, userRepo, handlers.Profile)))
 
 	mux.HandleFunc("GET /user/register", middleware.Recoverer(userHandler.GetRegisterUser))
 	mux.HandleFunc("POST /user/register", middleware.Recoverer(userHandler.PostRegisterUser))

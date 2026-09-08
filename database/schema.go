@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS users (
     email         TEXT NOT NULL UNIQUE,
     password_hash TEXT NOT NULL,
     created_at    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at    DATETIME
+    updated_at    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
  
 CREATE TABLE IF NOT EXISTS session (

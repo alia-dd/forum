@@ -50,7 +50,8 @@ func (r *SessionRepository) GetSessionwithSessionId(cx context.Context, sessionI
 	}
 	fetchErr := r.db.QueryRowContext(cx, GetUserSession, sessionId).Scan(&session.UserID, &session.ExpiresAt)
 	if fetchErr != nil {
-		if fetchErr == sql.ErrNoRows {
+		if fetchErr == sql.ErrNoRows || session.ExpiresAt.Before(time.Now()) {
+			r.DeleteSession(cx, sessionId)
 			return nil, customerrors.ErrNotFound
 		}
 		return nil, customerrors.ErrInternalError

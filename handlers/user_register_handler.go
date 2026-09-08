@@ -33,9 +33,11 @@ func (h *UseHandler) PostRegisterUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	userData := models.UserRegister{
-		Username: strings.TrimSpace(r.FormValue("username")),
-		Email:    strings.TrimSpace(r.FormValue("email")),
-		Password: strings.TrimSpace(r.FormValue("password")),
+		Username:        strings.TrimSpace(r.FormValue("username")),
+		Name:            strings.TrimSpace(r.FormValue("fullname")),
+		Email:           strings.TrimSpace(r.FormValue("email")),
+		Password:        strings.TrimSpace(r.FormValue("password")),
+		ConformPassword: strings.TrimSpace(r.FormValue("confirm_password")),
 	}
 
 	if PostErr := h.service.CreateUserService(cx, userData); PostErr != nil {

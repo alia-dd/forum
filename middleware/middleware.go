@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 
 	customerrors "gitea.kood.tech/jyrkikarhunen/forum/errors"
@@ -19,7 +20,7 @@ func Recoverer(handler http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
-func AllowGuest(sessionRepo *repository.SessionRepository, handler http.HandlerFunc) http.HandlerFunc {
+func AllowGuest(sessionRepo *repository.SessionRepository, userRepo *repository.UserRepository, handler http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		cx := r.Context()
 
@@ -33,13 +34,21 @@ func AllowGuest(sessionRepo *repository.SessionRepository, handler http.HandlerF
 			handler(w, r)
 			return
 		}
-		ctx := context.WithValue(r.Context(), "session_key", session)
+		user, err := userRepo.FetchUserData(cx, session.UserID)
+		if err != nil {
+			handler(w, r)
+			return
+		}
+		fmt.Println("middle", user)
+
+		ctx := context.WithValue(r.Context(), "user_session", &user)
 		handler(w, r.WithContext(ctx))
 
 	}
 }
 
-func Restrict(sessionRepo *repository.SessionRepository, handler http.HandlerFunc) http.HandlerFunc {
+// wrapp this in request where the user must be authorized eg creating post/comment
+func Restrict(sessionRepo *repository.SessionRepository, userRepo *repository.UserRepository, handler http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		cx := r.Context()
 		cookie, cookieErr := r.Cookie("session_token")
@@ -52,7 +61,13 @@ func Restrict(sessionRepo *repository.SessionRepository, handler http.HandlerFun
 			http.Redirect(w, r, "/user/login", http.StatusSeeOther)
 			return
 		}
-		ctx := context.WithValue(r.Context(), "session_key", session)
+		user, err := userRepo.FetchUserData(cx, session.UserID)
+		if err != nil {
+			http.Redirect(w, r, "/user/login", http.StatusSeeOther)
+			return
+		}
+
+		ctx := context.WithValue(r.Context(), "user_session", &user)
 		handler(w, r.WithContext(ctx))
 
 	}

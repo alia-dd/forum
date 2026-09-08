@@ -2,11 +2,11 @@ package utils
 
 import (
 	"bytes"
+	"html/template"
 	"log"
 	"net/http"
 	"net/mail"
 	"regexp"
-	"text/template"
 
 	"gitea.kood.tech/jyrkikarhunen/forum/models"
 )

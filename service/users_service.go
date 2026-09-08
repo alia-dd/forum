@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 
 	customerrors "gitea.kood.tech/jyrkikarhunen/forum/errors"
 	"gitea.kood.tech/jyrkikarhunen/forum/models"
@@ -37,6 +38,7 @@ func (s *UserService) AuthenticateUserService(cx context.Context, u models.UserL
 	if fetchErr != nil {
 		return nil, fetchErr
 	}
+	fmt.Println(user)
 	compareErr := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(u.Password))
 	if compareErr != nil {
 		return nil, customerrors.ErrInvalidData
