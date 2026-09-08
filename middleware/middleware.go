@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"context"
 	"net/http"
 
 	customerrors "gitea.kood.tech/jyrkikarhunen/forum/errors"
@@ -15,24 +16,25 @@ func Recoverer(handler http.HandlerFunc) http.HandlerFunc {
 			}
 		}()
 		handler(w, r)
-
 	}
 }
 
 func AllowGuest(sessionRepo *repository.SessionRepository, handler http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		cx := r.Context()
+
 		cookie, cookieErr := r.Cookie("session_token")
 		if cookieErr != nil {
 			handler(w, r)
 			return
 		}
-		_, sessionErr := sessionRepo.GetSessionwithSessionId(cx, cookie.Value)
+		session, sessionErr := sessionRepo.GetSessionwithSessionId(cx, cookie.Value)
 		if sessionErr != nil {
 			handler(w, r)
 			return
 		}
-		// hanlde if auth provided how good idea
+		ctx := context.WithValue(r.Context(), "session_key", session)
+		handler(w, r.WithContext(ctx))
 
 	}
 }
@@ -45,12 +47,13 @@ func Restrict(sessionRepo *repository.SessionRepository, handler http.HandlerFun
 			http.Redirect(w, r, "/user/login", http.StatusSeeOther)
 			return
 		}
-		_, sessionErr := sessionRepo.GetSessionwithSessionId(cx, cookie.Value)
+		session, sessionErr := sessionRepo.GetSessionwithSessionId(cx, cookie.Value)
 		if sessionErr != nil {
 			http.Redirect(w, r, "/user/login", http.StatusSeeOther)
 			return
 		}
-		// hanlde if auth provided how good idea
+		ctx := context.WithValue(r.Context(), "session_key", session)
+		handler(w, r.WithContext(ctx))
 
 	}
 }

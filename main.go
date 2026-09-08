@@ -57,6 +57,8 @@ func main() {
 		middleware.Recoverer(handlers.HomePage)(w, r)
 	})
 
+	mux.HandleFunc("GET /user/profile", middleware.Recoverer(middleware.Restrict(sessionRepo, handlers.Profile)))
+
 	mux.HandleFunc("GET /user/register", middleware.Recoverer(userHandler.GetRegisterUser))
 	mux.HandleFunc("POST /user/register", middleware.Recoverer(userHandler.PostRegisterUser))
 
