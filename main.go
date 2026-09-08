@@ -9,7 +9,9 @@ import (
 	"time"
 
 	"gitea.kood.tech/jyrkikarhunen/forum/database"
+	customerrors "gitea.kood.tech/jyrkikarhunen/forum/errors"
 	"gitea.kood.tech/jyrkikarhunen/forum/handlers"
+	"gitea.kood.tech/jyrkikarhunen/forum/models"
 	"gitea.kood.tech/jyrkikarhunen/forum/repository"
 	"gitea.kood.tech/jyrkikarhunen/forum/service"
 	"gitea.kood.tech/jyrkikarhunen/forum/utils"
@@ -38,14 +40,37 @@ func main() {
 
 	mux := http.NewServeMux()
 
+	sessionRepo := repository.NewSessionRepository(db)
 	userRepo := repository.NewUserRepository(db)
-	userService := service.NewUserService(userRepo)
+
+	userService := service.NewUserService(userRepo, sessionRepo)
 	userHandler := handlers.NewUserHandler(userService)
 
-	mux.HandleFunc("POST /api/user/register", MiddleWare(db, userHandler.CreateUser))
-	mux.HandleFunc("POST /api/user/{id}", MiddleWare(db, userHandler.CreateUser))
+	mux.Handle("GET /static/",
+		http.StripPrefix("/static/",
+			http.FileServer(http.Dir("static"))))
+
+	mux.HandleFunc("GET /", func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/" {
+			utils.RenderTemplate(w, http.StatusNotFound, "error", &models.ErrorStruct{Error: "400", ErrorMs: "Page Not Found"})
+			return
+		}
+		MiddleWare(db, handlers.HomePage)(w, r)
+	})
+
+	// mux.HandleFunc("GET /", MiddleWare(db, handlers.HomePage))
+
+	mux.HandleFunc("GET /user/register", MiddleWare(db, userHandler.GetRegisterUser))
+	mux.HandleFunc("POST /user/register", MiddleWare(db, userHandler.PostRegisterUser))
+
+	mux.HandleFunc("GET /user/login", MiddleWare(db, userHandler.GetSignInUser))
+	mux.HandleFunc("POST /user/login", MiddleWare(db, userHandler.SignInUser))
+
+	mux.HandleFunc("POST /user/logout", MiddleWare(db, userHandler.SignOutUser))
+
 	mux.HandleFunc("GET /api/user/check-username", MiddleWare(db, userHandler.CheckIfAvailabe))
 	mux.HandleFunc("GET /api/user/check-email", MiddleWare(db, userHandler.CheckIfAvailabe))
+
 	server := &http.Server{
 		Addr:         ":8080",
 		Handler:      mux,
@@ -63,7 +88,7 @@ func MiddleWare(db *sql.DB, handler http.HandlerFunc) http.HandlerFunc {
 		defer func() {
 			err := recover()
 			if err != nil {
-				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+				http.Error(w, customerrors.ErrInternalError.Error(), http.StatusInternalServerError)
 			}
 
 		}()
