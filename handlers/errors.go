@@ -7,7 +7,7 @@ import (
 	customerrors "gitea.kood.tech/jyrkikarhunen/forum/errors"
 )
 
-// Likely nonsense, maybe an example of how to do it, maybe an example of how not to do it
+// needs to be changed to write/utilize error.html template or somesuch
 func writeError(w http.ResponseWriter, status int, code, message string) {
 	w.Header().Set("Content-Type", "text/html")
 	w.WriteHeader(status)
@@ -15,7 +15,7 @@ func writeError(w http.ResponseWriter, status int, code, message string) {
 	w.Write([]byte(message))
 }
 
-func handleError(w http.ResponseWriter, err error, entity string, relationships int) {
+func handleError(w http.ResponseWriter, err error) {
 	var (
 		code    string
 		message string
@@ -23,10 +23,15 @@ func handleError(w http.ResponseWriter, err error, entity string, relationships 
 	)
 
 	switch {
-	case errors.Is(err, customerrors.ErrIDNotANumber):
-		code = "ID_NOT_A_NUMBER"
-		message = "ID is not a number"
+	case errors.Is(err, customerrors.ErrNotFound):
+		code = "NOT_FOUND"
+		message = "That item does not exist"
+		status = http.StatusNotFound
+	case errors.Is(err, customerrors.ErrForeignKeyConstraint):
+		code = "INVALID_REFERENCE"
+		message = "Referenced item does not exist"
 		status = http.StatusBadRequest
+<<<<<<< HEAD
 	case errors.Is(err, customerrors.ErrNotFound):
 		code = "NOT_FOUND"
 		message = customerrors.ErrNotFound.Error()
@@ -52,6 +57,20 @@ func handleError(w http.ResponseWriter, err error, entity string, relationships 
 		message = customerrors.ErrInternalError.Error()
 		status = http.StatusInternalServerError
 
+=======
+	case errors.Is(err, customerrors.ErrBadRequest):
+		code = "BAD_REQUEST"
+		message = "Invalid request"
+		status = http.StatusBadRequest
+	case errors.Is(err, customerrors.ErrForbidden):
+		code = "NOT_ALLOWED"
+		message = "You cannot do that"
+		status = http.StatusForbidden
+	case errors.Is(err, customerrors.ErrDuplicateEntry):
+		code = "DUPLICATE_ENTRY"
+		message = "That item already exists"
+		status = http.StatusConflict
+>>>>>>> main
 	default:
 		code = "INTERNAL_ERROR"
 		message = "An unexpected error occurred while processing the request"

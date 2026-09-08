@@ -20,6 +20,8 @@ func Recoverer(handler http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
+// for GET endpoint to view post and comment this will work
+// it allows the session but its not nessecery
 func AllowGuest(sessionRepo *repository.SessionRepository, userRepo *repository.UserRepository, handler http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		cx := r.Context()

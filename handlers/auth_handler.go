@@ -18,7 +18,7 @@ func (h *UseHandler) SignInUser(w http.ResponseWriter, r *http.Request) {
 	cx := r.Context()
 
 	if parseErr := r.ParseForm(); parseErr != nil {
-		handleError(w, customerrors.ErrInternalError, "", 0)
+		handleError(w, customerrors.ErrInternalError)
 	}
 	userData := models.UserLogin{
 		Username: strings.TrimSpace(r.FormValue("username")),
@@ -27,7 +27,7 @@ func (h *UseHandler) SignInUser(w http.ResponseWriter, r *http.Request) {
 
 	session, siginErr := h.service.AuthenticateUserService(cx, userData)
 	if siginErr != nil {
-		handleError(w, siginErr, "", 0)
+		handleError(w, siginErr)
 		return
 	}
 
@@ -51,7 +51,7 @@ func (h *UseHandler) SignOutUser(w http.ResponseWriter, r *http.Request) {
 	if cookieErr == nil {
 		if DeleteSessionErr := h.service.LogoutService(cx, cookie.Value); DeleteSessionErr != nil {
 			if !errors.Is(DeleteSessionErr, customerrors.ErrNotFound) {
-				handleError(w, DeleteSessionErr, "", 0)
+				handleError(w, DeleteSessionErr)
 				return
 			}
 		}

@@ -1,0 +1,112 @@
+package handlers
+
+import (
+	"context"
+	"net/http"
+	"strconv"
+	"strings"
+	"unicode/utf8"
+
+	"gitea.kood.tech/jyrkikarhunen/forum/models"
+)
+
+// postform
+type PostForm struct {
+	//userdata
+	Title       string
+	Content     string
+	CategoryIDs []int
+	Errors      map[string]string // [field]message
+}
+
+// maxlen of title and content
+func (f *PostForm) Validate() bool {
+	f.Errors = map[string]string{}
+
+	title := strings.TrimSpace(f.Title)
+	content := strings.TrimSpace(f.Content)
+
+	if title == "" {
+		f.Errors["Title"] = "Title is required"
+	} else if utf8.RuneCountInString(title) > 200 {
+		f.Errors["Title"] = "Title is too long"
+	}
+	if content == "" {
+		f.Errors["Content"] = "Content is required"
+	} else if utf8.RuneCountInString(content) > 10000 {
+		f.Errors["Content"] = "Content is too long"
+	}
+	if len(f.CategoryIDs) == 0 {
+		f.Errors["CategoryIDs"] = "At least one category required"
+	}
+	return len(f.Errors) == 0
+}
+
+// post helpers
+func (h *PostHandler) parsePostFilter(ctx context.Context, r *http.Request, usermodel string) (models.PostFilter, error) {
+	var pf models.PostFilter
+	q := r.URL.Query()
+
+	cat := q.Get("category")
+	if cat != "" {
+		id, err := strconv.Atoi(cat)
+		if err != nil {
+			return pf, err
+		}
+		pf.CategoryID = &id
+	}
+
+	author := q.Get("author")
+	if author != "" {
+		id, err := h.getAuthorID(ctx, author, usermodel)
+		if err != nil {
+			return pf, err
+		}
+		pf.AuthorID = &id
+	}
+
+	liked := q.Get("liked")
+	//if liked *and* if userid not nil (logged in)
+	//likes are private, created posts are public
+	if liked == "true" {
+		tempUserIDVal := 0
+		pf.LikedByID = &tempUserIDVal
+	}
+
+	return pf, nil
+
+}
+
+func (h *PostHandler) getAuthorID(ctx context.Context, author string, usermodel string) (int, error) {
+	if author == "me" {
+		//todo: return userid or error if not logged in
+	}
+	authorID, err := strconv.Atoi(author)
+	if err == nil {
+		return authorID, nil
+	}
+	//todo: get userid by username and return that or error if not found
+
+	//placeholder return
+	return 0, nil
+}
+
+// categoryform
+type CategoryForm struct {
+	//userdata
+	Name   string
+	Errors map[string]string
+}
+
+func (f *CategoryForm) Validate() bool {
+	f.Errors = map[string]string{}
+
+	name := strings.TrimSpace(f.Name)
+
+	if name == "" {
+		f.Errors["Name"] = "Category name is required"
+	} else if utf8.RuneCountInString(name) > 40 {
+		f.Errors["Name"] = "Category name is too long"
+	}
+	return len(f.Errors) == 0
+}

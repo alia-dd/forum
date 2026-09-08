@@ -17,11 +17,22 @@ import (
 )
 
 func main() {
-	var seed bool
+	var deleteDB bool
+	var seedDB bool
 
-	if len(os.Args) == 2 {
-		if os.Args[1] == "-i" || os.Args[1] == "-init" {
-			seed = true
+	for i := 1; i < len(os.Args); i++ {
+		if os.Args[i] == "-d" || os.Args[i] == "-delete" {
+			deleteDB = true
+		}
+		if os.Args[i] == "-i" || os.Args[i] == "-init" {
+			seedDB = true
+		}
+	}
+
+	if deleteDB {
+		err := os.Remove("data/forum.db")
+		if err != nil {
+			fmt.Println(err)
 		}
 	}
 
@@ -31,8 +42,11 @@ func main() {
 	}
 	defer db.Close()
 
-	if seed {
-		database.SeedData(db)
+	if seedDB {
+		err := database.SeedData(db)
+		if err != nil {
+			fmt.Println(err)
+		}
 	}
 
 	utils.InitializeTemplate()
@@ -41,7 +55,6 @@ func main() {
 
 	sessionRepo := repository.NewSessionRepository(db)
 	userRepo := repository.NewUserRepository(db)
-
 	userService := service.NewUserService(userRepo, sessionRepo)
 	userHandler := handlers.NewUserHandler(userService)
 
@@ -69,6 +82,24 @@ func main() {
 
 	mux.HandleFunc("GET /api/user/check-username", middleware.Recoverer(userHandler.CheckIfAvailabe))
 	mux.HandleFunc("GET /api/user/check-email", middleware.Recoverer(userHandler.CheckIfAvailabe))
+
+	postRepo := repository.NewPostRepository(db)
+	categoryRepo := repository.NewCategoryRepository(db)
+
+	postHandler := handlers.NewPostHandler(postRepo, categoryRepo)
+	categoryHandler := handlers.NewCategoryHandler(categoryRepo)
+
+	mux.HandleFunc("GET /", postHandler.GetPosts)
+	mux.HandleFunc("GET /post/{id}", postHandler.GetPostByID)
+	//below need auth
+	mux.HandleFunc("GET /post/new", postHandler.NewPostForm)
+	mux.HandleFunc("POST /post/new", postHandler.CreatePost)
+	mux.HandleFunc("GET /post/{id}/edit", postHandler.EditPostForm)
+	mux.HandleFunc("POST /post/{id}/edit", postHandler.UpdatePost)
+
+	mux.HandleFunc("GET /category/new", categoryHandler.NewCategoryForm)
+	mux.HandleFunc("POST /category/new", categoryHandler.CreateCategory)
+	//above need auth
 
 	server := &http.Server{
 		Addr:         ":8080",

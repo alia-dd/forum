@@ -28,7 +28,7 @@ func (h *UseHandler) PostRegisterUser(w http.ResponseWriter, r *http.Request) {
 	cx := r.Context()
 
 	if parseErr := r.ParseForm(); parseErr != nil {
-		handleError(w, customerrors.ErrInternalError, "", 0)
+		handleError(w, customerrors.ErrInternalError)
 		return
 	}
 
@@ -41,7 +41,7 @@ func (h *UseHandler) PostRegisterUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if PostErr := h.service.CreateUserService(cx, userData); PostErr != nil {
-		handleError(w, PostErr, "", 0)
+		handleError(w, PostErr)
 		return
 	}
 
@@ -74,7 +74,7 @@ func (h *UseHandler) CheckIfAvailabe(w http.ResponseWriter, r *http.Request) {
 		exists, checkErr = h.service.CheckIfAvailable(cx, email)
 		message = customerrors.ErrDuplicateEmail.Error()
 	default:
-		handleError(w, customerrors.ErrInternalError, "", 0)
+		handleError(w, customerrors.ErrInternalError)
 		return
 	}
 	if checkErr != nil {

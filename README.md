@@ -1,1 +1,1 @@
-![description](assets/ERD.png)
+![description](assets/ERD.svg)
