@@ -34,17 +34,34 @@ func (h *UseHandler) SignInUser(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, &http.Cookie{
 		Name:     "session_token",
 		Value:    session.SesssionId,
+		Expires:  session.ExpiresAt,
+		Path:     "/",
 		HttpOnly: true,
+		// Secure:   true, this secures the cookie data but since we are using http it will block the cookie it self so not usefull currenly
+		// Secure:   true,
 		SameSite: http.SameSiteLaxMode,
 	})
-	http.Redirect(w, r, "/", http.StatusPermanentRedirect)
+	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 
 func (h *UseHandler) SignOutUser(w http.ResponseWriter, r *http.Request) {
-	if DeleteSessionErr := h.service.DeleteUserSession(); DeleteSessionErr != nil {
-		if !errors.Is(DeleteSessionErr, customerrors.ErrNotFound) {
-			handleError(w, DeleteSessionErr, "", 0)
+	cx := r.Context()
+	cookie, cookieErr := r.Cookie("session_token")
+	if cookieErr == nil {
+		if DeleteSessionErr := h.service.LogoutService(cx, cookie.Value); DeleteSessionErr != nil {
+			if !errors.Is(DeleteSessionErr, customerrors.ErrNotFound) {
+				handleError(w, DeleteSessionErr, "", 0)
+				return
+			}
 		}
 	}
-	http.Redirect(w, r, "/", http.StatusPermanentRedirect)
+	http.SetCookie(w, &http.Cookie{
+		Name:     "session_token",
+		Value:    "",
+		Path:     "/",
+		HttpOnly: true,
+		// Secure:   true,
+		SameSite: http.SameSiteLaxMode,
+	})
+	http.Redirect(w, r, "/", http.StatusSeeOther)
 }

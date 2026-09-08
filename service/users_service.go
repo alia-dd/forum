@@ -49,7 +49,7 @@ func (s *UserService) AuthenticateUserService(cx context.Context, u models.UserL
 	return session, nil
 }
 
-func (s *UserService) DeleteUserSession(cx context.Context, sessionId string) error {
+func (s *UserService) LogoutService(cx context.Context, sessionId string) error {
 	return s.sessionRepo.DeleteSession(cx, sessionId)
 }
 
