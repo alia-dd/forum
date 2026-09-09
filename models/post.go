@@ -13,13 +13,6 @@ type Post struct {
 	UpdatedAt *time.Time
 }
 
-type PostUpdate struct {
-	ID          int
-	Title       string
-	Content     string
-	CategoryIDs []int
-}
-
 type PostView struct {
 	Post         Post
 	AuthorName   string
@@ -30,10 +23,19 @@ type PostView struct {
 }
 
 type PostInput struct {
-	UserID      int
-	Title       string
-	Content     string
-	CategoryIDs []int
+	UserID         int
+	Title          string
+	Content        string
+	MainCategoryID int
+	CategoryIDs    []int
+}
+
+type PostUpdate struct {
+	ID             int
+	Title          string
+	Content        string
+	MainCategoryID int
+	CategoryIDs    []int
 }
 
 type PostFilter struct {

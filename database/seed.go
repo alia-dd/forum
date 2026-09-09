@@ -100,20 +100,21 @@ func SeedData(db *sql.DB) error {
 		bob, "Unpopular opinion: sometimes the film really is better",
 		"Fight me. I'll start: the adaptation tightened a saggy middle act and the book knows it.")
 
-	// --- post <-> category links (p1 gets two, to exercise the many-to-many) ---
-	insert(`INSERT INTO post_category (post_id, category_id) VALUES (?, ?)`, p1, scifi)
+	// --- post <-> category links (is_main = 1 marks each post's main category; sides default to 0) ---
+	insert(`INSERT INTO post_category (post_id, category_id, is_main) VALUES (?, ?, 1)`, p1, scifi)
 	insert(`INSERT INTO post_category (post_id, category_id) VALUES (?, ?)`, p1, charStudy)
-	insert(`INSERT INTO post_category (post_id, category_id) VALUES (?, ?)`, p2, fantasy)
-	insert(`INSERT INTO post_category (post_id, category_id) VALUES (?, ?)`, p3, classics)
-	insert(`INSERT INTO post_category (post_id, category_id) VALUES (?, ?)`, p4, classics)
-	insert(`INSERT INTO post_category (post_id, category_id) VALUES (?, ?)`, p5, scifi)
+	insert(`INSERT INTO post_category (post_id, category_id, is_main) VALUES (?, ?, 1)`, p2, fantasy)
+	insert(`INSERT INTO post_category (post_id, category_id, is_main) VALUES (?, ?, 1)`, p3, classics)
+	insert(`INSERT INTO post_category (post_id, category_id, is_main) VALUES (?, ?, 1)`, p4, classics)
+	insert(`INSERT INTO post_category (post_id, category_id, is_main) VALUES (?, ?, 1)`, p5, scifi)
 	insert(`INSERT INTO post_category (post_id, category_id) VALUES (?, ?)`, p5, charStudy)
 	insert(`INSERT INTO post_category (post_id, category_id) VALUES (?, ?)`, p5, nonfiction)
-	insert(`INSERT INTO post_category (post_id, category_id) VALUES (?, ?)`, p6, fantasy)
-	insert(`INSERT INTO post_category (post_id, category_id) VALUES (?, ?)`, p7, mystery)
+	insert(`INSERT INTO post_category (post_id, category_id, is_main) VALUES (?, ?, 1)`, p6, fantasy)
+	insert(`INSERT INTO post_category (post_id, category_id, is_main) VALUES (?, ?, 1)`, p7, mystery)
 	insert(`INSERT INTO post_category (post_id, category_id) VALUES (?, ?)`, p7, nonfiction)
-	insert(`INSERT INTO post_category (post_id, category_id) VALUES (?, ?)`, p8, poetry)
-	insert(`INSERT INTO post_category (post_id, category_id) VALUES (?, ?)`, p9, authorItv)
+	insert(`INSERT INTO post_category (post_id, category_id, is_main) VALUES (?, ?, 1)`, p8, poetry)
+	insert(`INSERT INTO post_category (post_id, category_id, is_main) VALUES (?, ?, 1)`, p9, authorItv)
+	insert(`INSERT INTO post_category (post_id, category_id, is_main) VALUES (?, ?, 1)`, p10, classics)
 
 	// --- comments ---
 	// Top-level comments have parent_comment_id = NULL (pass nil).

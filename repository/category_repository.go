@@ -15,15 +15,31 @@ type categoryRepositoryImpl struct {
 }
 
 type CategoryRepository interface {
+	GetCategoryByID(ctx context.Context, id int) (*models.Category, error)
 	GetAllCategories(ctx context.Context) ([]models.Category, error)
 	GetCatByPostIDs(ctx context.Context, postIDs []int) (map[int][]models.Category, error)
 	CreateCategory(ctx context.Context, name string) (int, error)
+	UpdateCategory(ctx context.Context, id int, name string) error
+	DeleteCategory(ctx context.Context, id int) error
 }
 
 func NewCategoryRepository(db *sql.DB) CategoryRepository {
 	return &categoryRepositoryImpl{
 		db: db,
 	}
+}
+
+func (r *categoryRepositoryImpl) GetCategoryByID(ctx context.Context, id int) (*models.Category, error) {
+	var cat models.Category
+	err := r.db.QueryRowContext(ctx, `
+		SELECT id, name
+		FROM category
+		WHERE id = ?
+		`, id).Scan(&cat.ID, &cat.Name)
+	if err != nil {
+		return nil, customerrors.MapSQLError(err)
+	}
+	return &cat, nil
 }
 
 func (r *categoryRepositoryImpl) CreateCategory(ctx context.Context, name string) (int, error) {
@@ -98,4 +114,63 @@ func (r *categoryRepositoryImpl) GetAllCategories(ctx context.Context) ([]models
 		ret = append(ret, cat)
 	}
 	return ret, rows.Err()
+}
+
+func (r *categoryRepositoryImpl) UpdateCategory(ctx context.Context, id int, name string) error {
+	res, err := r.db.ExecContext(ctx, `
+		UPDATE category
+		SET name = ? WHERE id = ?
+		`, name, id)
+	if err != nil {
+		return customerrors.MapSQLError(err)
+	}
+
+	rowCount, err := res.RowsAffected()
+	if err != nil {
+		return customerrors.MapSQLError(err)
+	}
+	if rowCount == 0 {
+		return customerrors.ErrNotFound
+	}
+
+	return nil
+}
+
+func (r *categoryRepositoryImpl) DeleteCategory(ctx context.Context, id int) error {
+	tx, err := r.db.BeginTx(ctx, nil)
+	if err != nil {
+		return customerrors.MapSQLError(err)
+	}
+	defer tx.Rollback()
+
+	var used bool
+	err = tx.QueryRowContext(ctx, `
+		SELECT EXISTS
+		(SELECT 1 FROM post_category
+		WHERE category_id = ?)
+		`, id).Scan(&used)
+	if err != nil {
+		return customerrors.MapSQLError(err)
+	}
+
+	if used { // no force deletion on purpose
+		return customerrors.ErrInUse
+	}
+
+	res, err := tx.ExecContext(ctx, `
+		DELETE FROM category
+		WHERE id = ?
+		`, id)
+	if err != nil {
+		return customerrors.MapSQLError(err)
+	}
+
+	rowCount, err := res.RowsAffected()
+	if err != nil {
+		return customerrors.MapSQLError(err)
+	}
+	if rowCount == 0 {
+		return customerrors.ErrNotFound
+	}
+	return tx.Commit()
 }

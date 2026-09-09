@@ -45,6 +45,14 @@ func (r *postRepositoryImpl) CreatePost(ctx context.Context, post models.PostInp
 		return 0, customerrors.MapSQLError(err)
 	}
 
+	_, err = tx.ExecContext(ctx, `
+		INSERT INTO post_category
+		(post_id, category_id, is_main) VALUES (?, ?, 1)
+		`, postID, post.MainCategoryID)
+	if err != nil {
+		return 0, customerrors.MapSQLError(err)
+	}
+
 	for _, catID := range post.CategoryIDs {
 		_, err := tx.ExecContext(ctx, `
 			INSERT INTO post_category (post_id, category_id) VALUES (?, ?)
@@ -101,7 +109,19 @@ func (r *postRepositoryImpl) GetPost(ctx context.Context, filter models.PostFilt
 	if len(conds) > 0 {
 		query += " WHERE " + strings.Join(conds, " AND ")
 	}
-	query += " ORDER BY post.created_at DESC"
+
+	//order by matching main category, using creation time as tiebreak (main2 -> main1 -> side2 -> side1)
+	if filter.CategoryID != nil {
+		query += `
+			ORDER BY (
+				SELECT is_main FROM post_category
+				WHERE post_id = post.id AND category_id = ?
+			)   DESC, post.created_at DESC
+		`
+		args = append(args, *filter.CategoryID)
+	} else {
+		query += " ORDER BY post.created_at DESC"
+	}
 
 	rows, err := r.db.QueryContext(ctx, query, args...)
 	if err != nil {
@@ -196,11 +216,18 @@ func (r *postRepositoryImpl) UpdatePost(ctx context.Context, update models.PostU
 		return customerrors.MapSQLError(err)
 	}
 
+	_, err = tx.ExecContext(ctx, `
+		INSERT INTO post_category
+		(post_id, category_id, is_main) VALUES (?, ?, 1)
+		`, update.ID, update.MainCategoryID)
+	if err != nil {
+		return customerrors.MapSQLError(err)
+	}
+
 	for _, catID := range update.CategoryIDs {
-		_, err = tx.ExecContext(ctx, `
-			INSERT INTO post_category
-			(post_id, category_id) VALUES (?, ?)
-			`, update.ID, catID)
+		_, err := tx.ExecContext(ctx, `
+			INSERT INTO post_category (post_id, category_id) VALUES (?, ?)
+		`, update.ID, catID)
 		if err != nil {
 			return customerrors.MapSQLError(err)
 		}
