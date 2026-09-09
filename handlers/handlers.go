@@ -22,6 +22,7 @@ func HomePage(w http.ResponseWriter, r *http.Request) {
 }
 
 func Profile(w http.ResponseWriter, r *http.Request) {
+
 	user, ok := r.Context().Value("user_session").(*models.UserInfo)
 	if !ok {
 		http.Redirect(w, r, "/user/login", http.StatusSeeOther)

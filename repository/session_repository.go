@@ -6,10 +6,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/google/uuid"
-
 	customerrors "gitea.kood.tech/jyrkikarhunen/forum/errors"
 	"gitea.kood.tech/jyrkikarhunen/forum/models"
+	"gitea.kood.tech/jyrkikarhunen/forum/utils"
 )
 
 const (
@@ -28,8 +27,12 @@ func NewSessionRepository(db *sql.DB) *SessionRepository {
 
 func (r *SessionRepository) CreateSession(cx context.Context, userID int) (*models.Session, error) {
 
+	uuid, uuidErr := utils.NewUuid()
+	if uuidErr != nil {
+		return nil, uuidErr
+	}
 	session := models.Session{
-		SesssionId: uuid.New().String(),
+		SesssionId: uuid,
 		UserID:     userID,
 		ExpiresAt:  time.Now().Add(30 * (24 * time.Hour)),
 	}
