@@ -59,6 +59,12 @@ func main() {
 	userService := service.NewUserService(userRepo, sessionRepo)
 	userHandler := handlers.NewUserHandler(userService)
 
+	postRepo := repository.NewPostRepository(db)
+	categoryRepo := repository.NewCategoryRepository(db)
+
+	postHandler := handlers.NewPostHandler(postRepo, categoryRepo)
+	categoryHandler := handlers.NewCategoryHandler(categoryRepo)
+
 	mux.Handle("GET /static/",
 		http.StripPrefix("/static/",
 			http.FileServer(http.Dir("static"))))
@@ -71,6 +77,9 @@ func main() {
 		}
 		// this ssafeguarded doest restrict you to have a session but will present diffrent data
 		// depending if you have a session or not
+		// GET / - fetches all posts. Optional, combinable query filters: ?category={id}  ?author={id|me|username}  ?liked=true
+		// mux.HandleFunc("GET /", postHandler.GetPosts)
+		// middleware.Recoverer(middleware.AllowGuest(sessionRepo, userRepo, postHandler.GetPosts))(w, r)
 		middleware.Recoverer(middleware.AllowGuest(sessionRepo, userRepo, handlers.HomePage))(w, r)
 	})
 
@@ -89,14 +98,6 @@ func main() {
 	mux.HandleFunc("GET /api/user/check-username", middleware.Recoverer(userHandler.CheckIfAvailabe))
 	mux.HandleFunc("GET /api/user/check-email", middleware.Recoverer(userHandler.CheckIfAvailabe))
 
-	postRepo := repository.NewPostRepository(db)
-	categoryRepo := repository.NewCategoryRepository(db)
-
-	postHandler := handlers.NewPostHandler(postRepo, categoryRepo)
-	categoryHandler := handlers.NewCategoryHandler(categoryRepo)
-
-	// GET / - fetches all posts. Optional, combinable query filters: ?category={id}  ?author={id|me|username}  ?liked=true
-	mux.HandleFunc("GET /", postHandler.GetPosts)
 	// GET /post/{id} - just an int
 	mux.HandleFunc("GET /post/{id}", postHandler.GetPostByID)
 
