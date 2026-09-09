@@ -144,3 +144,23 @@ func (f *CategoryForm) Validate() bool {
 	}
 	return len(f.Errors) == 0
 }
+
+// commentform
+type CommentForm struct {
+	//userdata
+	Content string
+	Errors  map[string]string
+}
+
+func (f *CommentForm) Validate() bool {
+	f.Errors = map[string]string{}
+
+	content := strings.TrimSpace(f.Content)
+
+	if content == "" {
+		f.Errors["Name"] = "Content is required"
+	} else if utf8.RuneCountInString(content) > 10000 {
+		f.Errors["Name"] = "Content is too long"
+	}
+	return len(f.Errors) == 0
+}
