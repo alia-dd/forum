@@ -1,0 +1,86 @@
+
+
+#registerdiv,
+#logindiv {
+  max-width: 420px;
+  margin: 4rem auto;
+  padding: 2.5rem 2.25rem;
+  background: var(--paper);
+  border: 1px solid var(--border);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+
+#registerdiv .title,
+#logindiv .title {
+  font-family: var(--font-head);
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--burgundy);
+  text-align: center;
+  margin-bottom: 1.75rem;
+  letter-spacing: 0.02em;
+}
+
+.inputContainer {
+  margin-bottom: 1.25rem;
+}
+
+.inputContainer label {
+  display: block;
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  color: var(--ink-muted);
+  margin-bottom: 0.35rem;
+  letter-spacing: 0.03em;
+}
+
+.inputContainer input {
+  width: 100%;
+  padding: 0.65rem 0.75rem;
+  background: var(--paper-dark);
+  border: 1px solid var(--border);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  border-radius: 2px;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.inputContainer input::placeholder {
+  color: #a89d8a;
+}
+
+.inputContainer input:focus {
+  outline: none;
+  border-color: var(--burgundy);
+  background: #fffdf8;
+}
+
+.btnSubmit {
+  width: 100%;
+  padding: 0.75rem;
+  margin-top: 0.5rem;
+  background: var(--burgundy);
+  color: var(--paper);
+  border: none;
+  border-radius: 2px;
+  font-family: var(--font-head);
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.btnSubmit:hover {
+  background: var(--burgundy-dk);
+}
+.hint {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--ink-muted);
+  margin-top: 0.35rem;
+}
+
+

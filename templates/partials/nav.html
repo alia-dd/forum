@@ -1,0 +1,34 @@
+{{define "nav"}}
+<nav class="nav">
+  <a href="/" class="nav__logo">
+    <span class="nav__logo-icon">⬡</span>
+    BOOKFORUM
+  </a>
+
+  <button class="nav__toggle" id="navToggle" aria-label="Toggle menu" aria-expanded="false">
+    <span></span>
+    <span></span>
+    <span></span>
+  </button>
+
+  <ul class="nav__links" id="navLinks">
+    <li><a href="/" class="nav__link" data-label="Home">Home</a></li>
+    <li><a href="/" class="nav__link" data-label="Favorites">
+      <span>Books</span>
+      <span class="nav__fav-icon"><i class="ph ph-heart"></i></span>
+    </a></li>
+    <li class="nav__divider"></li>
+    {{if .User}}
+    <li><a href="/user/profile" class="nav__link" data-label="Profile">Profile</a></li>
+    <li>
+      <form method="POST" action="/user/logout" class="nav__logout-form" >
+        <button type="submit" class="nav__link nav__link--cta">Sign out</button>
+      </form>
+    </li>
+    {{else}}
+    <li><a href="/user/login" class="nav__link">Sign in</a></li>
+    <li><a href="/user/register" class="nav__link nav__link--cta">Sign up</a></li>
+    {{end}}
+  </ul>
+</nav>
+{{end}}

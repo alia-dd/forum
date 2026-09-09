@@ -1,0 +1,19 @@
+{{define "base"}}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="literary lions forum" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/auth_forms.css">
+    <link rel="stylesheet" href="/static/css/nav.css">
+    <title>literary lions forum</title>
+</head>
+<body>
+     {{template "nav" .}}
+    <main id="mainContent">
+        {{block "content" .}}{{end}}
+    </main>
+</body>
+</html>
+{{end}}

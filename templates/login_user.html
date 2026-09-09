@@ -1,0 +1,16 @@
+{{define "content"}}
+<div id="logindiv">
+  <form method="POST" action="/user/login">
+    <div class="title">Login Form</div>
+    <div class="inputContainer">
+      <label for="identifier">Username or email address</label>
+      <div><input type="text" id="identifier" name="username" placeholder="Enter your username or email address" required/></div>
+    </div>
+    <div class="inputContainer">
+      <label for="password">Password</label>
+      <div><input type="password" id="password" name="password" placeholder="Enter your password" required/></div>
+    </div>
+    <button class="btnSubmit" type="submit">Submit</button>
+  </form>
+</div>
+{{end}}

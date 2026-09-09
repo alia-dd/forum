@@ -9,7 +9,11 @@ import (
 
 	"gitea.kood.tech/jyrkikarhunen/forum/database"
 	"gitea.kood.tech/jyrkikarhunen/forum/handlers"
+	"gitea.kood.tech/jyrkikarhunen/forum/middleware"
+	"gitea.kood.tech/jyrkikarhunen/forum/models"
 	"gitea.kood.tech/jyrkikarhunen/forum/repository"
+	"gitea.kood.tech/jyrkikarhunen/forum/service"
+	"gitea.kood.tech/jyrkikarhunen/forum/utils"
 )
 
 func main() {
@@ -45,7 +49,15 @@ func main() {
 		}
 	}
 
+	utils.InitializeTemplate()
+
 	mux := http.NewServeMux()
+
+	sessionRepo := repository.NewSessionRepository(db)
+	userRepo := repository.NewUserRepository(db)
+
+	userService := service.NewUserService(userRepo, sessionRepo)
+	userHandler := handlers.NewUserHandler(userService)
 
 	postRepo := repository.NewPostRepository(db)
 	categoryRepo := repository.NewCategoryRepository(db)
@@ -53,8 +65,39 @@ func main() {
 	postHandler := handlers.NewPostHandler(postRepo, categoryRepo)
 	categoryHandler := handlers.NewCategoryHandler(categoryRepo)
 
-	// GET / - fetches all posts. Optional, combinable query filters: ?category={id}  ?author={id|me|username}  ?liked=true
-	mux.HandleFunc("GET /", postHandler.GetPosts)
+	mux.Handle("GET /static/",
+		http.StripPrefix("/static/",
+			http.FileServer(http.Dir("static"))))
+
+	// route check if the routes bellow are not called and difult to this one and if not calls 404 page
+	mux.HandleFunc("GET /", func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/" {
+			utils.RenderTemplate(w, http.StatusNotFound, "error", &models.ErrorStruct{Error: "404", ErrorMs: "Page Not Found"})
+			return
+		}
+		// this ssafeguarded doest restrict you to have a session but will present diffrent data
+		// depending if you have a session or not
+		// GET / - fetches all posts. Optional, combinable query filters: ?category={id}  ?author={id|me|username}  ?liked=true
+		// mux.HandleFunc("GET /", postHandler.GetPosts)
+		// middleware.Recoverer(middleware.AllowGuest(sessionRepo, userRepo, postHandler.GetPosts))(w, r)
+		middleware.Recoverer(middleware.AllowGuest(sessionRepo, userRepo, handlers.HomePage))(w, r)
+	})
+
+	// Profile page is user specific and is safeguarded by the Restrict middleware
+	// if there is no active session, it redirects to the login page.
+	mux.HandleFunc("GET /user/profile", middleware.Recoverer(middleware.Restrict(sessionRepo, userRepo, handlers.Profile)))
+
+	mux.HandleFunc("GET /user/register", middleware.Recoverer(userHandler.GetRegisterUser))
+	mux.HandleFunc("POST /user/register", middleware.Recoverer(userHandler.PostRegisterUser))
+
+	mux.HandleFunc("GET /user/login", middleware.Recoverer(userHandler.GetSignInUser))
+	mux.HandleFunc("POST /user/login", middleware.Recoverer(userHandler.SignInUser))
+
+	mux.HandleFunc("POST /user/logout", middleware.Recoverer(userHandler.SignOutUser))
+
+	mux.HandleFunc("GET /api/user/check-username", middleware.Recoverer(userHandler.CheckIfAvailabe))
+	mux.HandleFunc("GET /api/user/check-email", middleware.Recoverer(userHandler.CheckIfAvailabe))
+
 	// GET /post/{id} - just an int
 	mux.HandleFunc("GET /post/{id}", postHandler.GetPostByID)
 

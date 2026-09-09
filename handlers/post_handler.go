@@ -25,6 +25,7 @@ func (h *PostHandler) GetPosts(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	fmt.Println("here")
 	//todo: user validation -> get user id for filtering if used
 	filter, err := h.parsePostFilter(r.Context(), r, "tempuser")
 	if err != nil {
@@ -51,13 +52,14 @@ func (h *PostHandler) GetPosts(w http.ResponseWriter, r *http.Request) {
 	for _, post := range posts {
 		post.Categories = cats[post.Post.ID]
 	}
-
+	fmt.Println("here2")
 	allCats, err := h.catRep.GetAllCategories(r.Context())
 	if err != nil {
 		handleError(w, err)
 		return
 	}
 
+	fmt.Println("here3")
 	fmt.Fprintf(w, "posts=%d allCats=%d filter=%+v", len(posts), len(allCats), filter)
 
 	//execute maintemplate with user, posts, allcats

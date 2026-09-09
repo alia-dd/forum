@@ -1,0 +1,30 @@
+{{define "content"}}
+<div id="registerdiv">
+  <form method="POST" action="/user/register">
+    <div class="title">Registration Form</div>
+    <div class="inputContainer">
+      <label for="fullname">Full Name</label>
+      <div><input type="text" id="fullname" name="fullname" placeholder="Enter your name" required/></div>
+    </div>
+    <div class="inputContainer">
+      <label for="username">Username</label>
+      <div><input type="text" id="username" name="username" placeholder="Enter your username" pattern="^[A-Za-z0-9]+(?:-[A-Za-z0-9]+)*$" title="Username may only contain alphanumeric characters or single hyphens, and cannot begin or end with a hyphen." required/></div>
+      <small class="hint">Username may only contain alphanumeric characters or single hyphens, and cannot begin or end with a hyphen.</small>
+    </div>
+    <div class="inputContainer">
+      <label for="email">Email</label>
+      <div><input type="email" id="email" name="email" placeholder="Enter your email" required/></div>
+    </div>
+    <div class="inputContainer">
+      <label for="password">Password</label>
+      <div><input type="password" autocomplete="new-password" id="password" name="password" placeholder="Enter your password"  pattern="(.{15,})|((?=.*[a-z])(?=.*[0-9]).{8,})" title="At least 15 characters, OR at least 8 characters including a number and a lowercase letter."  required/></div>
+    <small class="hint">Password should be at least 15 characters OR at least 8 characters including a number and a lowercase letter.</small>
+    </div>
+    <div class="inputContainer">
+      <label for="confirm_password">Confirm Password</label>
+      <div><input type="password" id="confirm_password" name="confirm_password" placeholder="Confirm your password" required/></div>
+    </div>
+    <button class="btnSubmit" type="submit">Submit</button>
+  </form>
+</div>
+{{end}}

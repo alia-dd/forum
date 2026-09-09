@@ -1,0 +1,9 @@
+#profile .title{
+  font-family: var(--font-head);
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--burgundy);
+  text-align: center;
+  margin-bottom: 1.75rem;
+  letter-spacing: 0.02em;
+}
