@@ -63,14 +63,19 @@ func main() {
 		http.StripPrefix("/static/",
 			http.FileServer(http.Dir("static"))))
 
+	// route check if the routes bellow are not called and difult to this one and if not calls 404 page
 	mux.HandleFunc("GET /", func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/" {
-			utils.RenderTemplate(w, http.StatusNotFound, "error", &models.ErrorStruct{Error: "400", ErrorMs: "Page Not Found"})
+			utils.RenderTemplate(w, http.StatusNotFound, "error", &models.ErrorStruct{Error: "404", ErrorMs: "Page Not Found"})
 			return
 		}
+		// this ssafeguarded doest restrict you to have a session but will present diffrent data
+		// depending if you have a session or not
 		middleware.Recoverer(middleware.AllowGuest(sessionRepo, userRepo, handlers.HomePage))(w, r)
 	})
 
+	// Profile page is user specific and is safeguarded by the Restrict middleware
+	// if there is no active session, it redirects to the login page.
 	mux.HandleFunc("GET /user/profile", middleware.Recoverer(middleware.Restrict(sessionRepo, userRepo, handlers.Profile)))
 
 	mux.HandleFunc("GET /user/register", middleware.Recoverer(userHandler.GetRegisterUser))
@@ -90,16 +95,31 @@ func main() {
 	postHandler := handlers.NewPostHandler(postRepo, categoryRepo)
 	categoryHandler := handlers.NewCategoryHandler(categoryRepo)
 
+	// GET / - fetches all posts. Optional, combinable query filters: ?category={id}  ?author={id|me|username}  ?liked=true
 	mux.HandleFunc("GET /", postHandler.GetPosts)
+	// GET /post/{id} - just an int
 	mux.HandleFunc("GET /post/{id}", postHandler.GetPostByID)
+
 	//below need auth
+	// GET /post/new - loads template (once implemented) for submitting post
 	mux.HandleFunc("GET /post/new", postHandler.NewPostForm)
+	// POST /post/new - create post. Form: title, content, main_category={id}, category={id}… (sides)
 	mux.HandleFunc("POST /post/new", postHandler.CreatePost)
+	// GET /post/{id}/edit - loads template (once implemented) for editing a post you own
 	mux.HandleFunc("GET /post/{id}/edit", postHandler.EditPostForm)
+	// POST /post/{id}/edit - update your post. Form: title, content, main_category={id}, category={id}… (sides)
 	mux.HandleFunc("POST /post/{id}/edit", postHandler.UpdatePost)
 
+	// GET /category/new - loads template (once implemented) for creating new category
 	mux.HandleFunc("GET /category/new", categoryHandler.NewCategoryForm)
+	// POST /category/new - create category. Form: name
 	mux.HandleFunc("POST /category/new", categoryHandler.CreateCategory)
+	// GET /category/{id}/edit - loads template (once implemented) for editing existing category
+	mux.HandleFunc("GET /category/{id}/edit", categoryHandler.EditCategoryForm)
+	// POST /category/{id}/edit - rename category. Form: name
+	mux.HandleFunc("POST /category/{id}/edit", categoryHandler.UpdateCategory)
+	// POST /category/{id}/delete - delete category (if it has no references elsewhere)
+	mux.HandleFunc("POST /category/{id}/delete", categoryHandler.DeleteCategory)
 	//above need auth
 
 	server := &http.Server{

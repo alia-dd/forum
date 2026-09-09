@@ -20,12 +20,11 @@ var (
 	ErrIDNotANumber         = errors.New("Id not a number")
 	ErrInvalidData          = errors.New("Invalid Entery")
 	ErrInternalError        = errors.New("Internal Server Error")
-
-	ErrInvalidName    = errors.New("Username may only contain alphanumeric characters or single hyphens, and cannot begin or end with a hyphen.")
-	ErrDuplicateEmail = errors.New("The email you have provided is already associated with an account.")
-
-	ErrBadRequest = errors.New("bad request")
-	ErrForbidden  = errors.New("forbidden")
+	ErrInvalidName          = errors.New("Username may only contain alphanumeric characters or single hyphens, and cannot begin or end with a hyphen.")
+	ErrDuplicateEmail       = errors.New("The email you have provided is already associated with an account.")
+	ErrBadRequest           = errors.New("bad request")
+	ErrForbidden            = errors.New("forbidden")
+	ErrInUse                = errors.New("resource still in use")
 )
 
 func MapSQLError(err error) error {

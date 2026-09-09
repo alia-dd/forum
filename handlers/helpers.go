@@ -7,16 +7,18 @@ import (
 	"strings"
 	"unicode/utf8"
 
+	customerrors "gitea.kood.tech/jyrkikarhunen/forum/errors"
 	"gitea.kood.tech/jyrkikarhunen/forum/models"
 )
 
 // postform
 type PostForm struct {
 	//userdata
-	Title       string
-	Content     string
-	CategoryIDs []int
-	Errors      map[string]string // [field]message
+	Title          string
+	Content        string
+	MainCategoryID int
+	CategoryIDs    []int
+	Errors         map[string]string // [field]message
 }
 
 // maxlen of title and content
@@ -36,8 +38,8 @@ func (f *PostForm) Validate() bool {
 	} else if utf8.RuneCountInString(content) > 10000 {
 		f.Errors["Content"] = "Content is too long"
 	}
-	if len(f.CategoryIDs) == 0 {
-		f.Errors["CategoryIDs"] = "At least one category required"
+	if f.MainCategoryID == 0 {
+		f.Errors["MainCategoryID"] = "Main category is required"
 	}
 	return len(f.Errors) == 0
 }
@@ -89,6 +91,38 @@ func (h *PostHandler) getAuthorID(ctx context.Context, author string, usermodel 
 
 	//placeholder return
 	return 0, nil
+}
+
+func (h *PostHandler) parsePostForm(w http.ResponseWriter, r *http.Request) (PostForm, bool) {
+	if err := r.ParseForm(); err != nil {
+		handleError(w, customerrors.ErrBadRequest)
+		return PostForm{}, false
+	}
+
+	mainCat, err := strconv.Atoi(r.FormValue("main_category"))
+	if err != nil {
+		handleError(w, customerrors.ErrBadRequest)
+		return PostForm{}, false
+	}
+
+	var categoryIDs []int
+	for _, cat := range r.Form["category"] {
+		id, err := strconv.Atoi(cat)
+		if err != nil {
+			handleError(w, customerrors.ErrBadRequest)
+			return PostForm{}, false
+		}
+		if id != mainCat { // avoid duplicating maincategory into categorylist
+			categoryIDs = append(categoryIDs, id)
+		}
+	}
+
+	return PostForm{
+		Title:          strings.TrimSpace(r.FormValue("title")),
+		Content:        strings.TrimSpace(r.FormValue("content")),
+		MainCategoryID: mainCat,
+		CategoryIDs:    categoryIDs,
+	}, true
 }
 
 // categoryform

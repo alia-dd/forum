@@ -53,6 +53,8 @@ func AllowGuest(sessionRepo *repository.SessionRepository, userRepo *repository.
 func Restrict(sessionRepo *repository.SessionRepository, userRepo *repository.UserRepository, handler http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		cx := r.Context()
+		// we saved the sessoion token data when we create the session
+		// it retrieves that and uses hte cookie session uuid to get the useid
 		cookie, cookieErr := r.Cookie("session_token")
 		if cookieErr != nil {
 			http.Redirect(w, r, "/user/login", http.StatusSeeOther)

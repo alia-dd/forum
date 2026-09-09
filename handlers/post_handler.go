@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
-	"strings"
 
 	customerrors "gitea.kood.tech/jyrkikarhunen/forum/errors"
 	"gitea.kood.tech/jyrkikarhunen/forum/models"
@@ -108,25 +107,9 @@ func (h *PostHandler) CreatePost(w http.ResponseWriter, r *http.Request) {
 	//user validation
 	//return if not logged in
 
-	if err := r.ParseForm(); err != nil {
-		handleError(w, customerrors.ErrBadRequest)
+	form, ok := h.parsePostForm(w, r)
+	if !ok {
 		return
-	}
-
-	var categoryIDs []int
-	for _, cat := range r.Form["category"] {
-		id, err := strconv.Atoi(cat)
-		if err != nil {
-			handleError(w, customerrors.ErrBadRequest)
-			return
-		}
-		categoryIDs = append(categoryIDs, id)
-	}
-
-	form := PostForm{
-		Title:       strings.TrimSpace(r.FormValue("title")),
-		Content:     strings.TrimSpace(r.FormValue("content")),
-		CategoryIDs: categoryIDs,
 	}
 
 	if !form.Validate() {
@@ -136,10 +119,11 @@ func (h *PostHandler) CreatePost(w http.ResponseWriter, r *http.Request) {
 
 	//need userid from validated user (middleware?)
 	postInput := models.PostInput{
-		UserID:      1,
-		Title:       form.Title,
-		Content:     form.Content,
-		CategoryIDs: form.CategoryIDs,
+		UserID:         1,
+		Title:          form.Title,
+		Content:        form.Content,
+		MainCategoryID: form.MainCategoryID,
+		CategoryIDs:    form.CategoryIDs,
 	}
 	id, err := h.postRep.CreatePost(r.Context(), postInput)
 	if err != nil {
@@ -167,7 +151,7 @@ func (h *PostHandler) EditPostForm(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if tempUserID != post.Post.UserID { //or userid nil
-		handleError(w, customerrors.ErrBadRequest)
+		handleError(w, customerrors.ErrForbidden)
 		return
 	}
 
@@ -192,25 +176,9 @@ func (h *PostHandler) UpdatePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := r.ParseForm(); err != nil {
-		handleError(w, customerrors.ErrBadRequest)
+	form, ok := h.parsePostForm(w, r)
+	if !ok {
 		return
-	}
-
-	var categoryIDs []int
-	for _, cat := range r.Form["category"] {
-		id, err := strconv.Atoi(cat)
-		if err != nil {
-			handleError(w, customerrors.ErrBadRequest)
-			return
-		}
-		categoryIDs = append(categoryIDs, id)
-	}
-
-	form := PostForm{
-		Title:       strings.TrimSpace(r.FormValue("title")),
-		Content:     strings.TrimSpace(r.FormValue("content")),
-		CategoryIDs: categoryIDs,
 	}
 
 	if !form.Validate() {
@@ -220,15 +188,16 @@ func (h *PostHandler) UpdatePost(w http.ResponseWriter, r *http.Request) {
 
 	//need userid from validated user (middleware?)
 	postUpdate := models.PostUpdate{
-		ID:          id,
-		Title:       form.Title,
-		Content:     form.Content,
-		CategoryIDs: form.CategoryIDs,
+		ID:             id,
+		Title:          form.Title,
+		Content:        form.Content,
+		MainCategoryID: form.MainCategoryID,
+		CategoryIDs:    form.CategoryIDs,
 	}
 
 	err = h.postRep.UpdatePost(r.Context(), postUpdate, tempUserID)
 	if err != nil {
-		handleError(w, customerrors.ErrForbidden)
+		handleError(w, err)
 		return
 	}
 
