@@ -31,7 +31,6 @@ func handleError(w http.ResponseWriter, err error) {
 		code = "INVALID_REFERENCE"
 		message = "Referenced item does not exist"
 		status = http.StatusBadRequest
-<<<<<<< HEAD
 	case errors.Is(err, customerrors.ErrNotFound):
 		code = "NOT_FOUND"
 		message = customerrors.ErrNotFound.Error()
@@ -57,7 +56,6 @@ func handleError(w http.ResponseWriter, err error) {
 		message = customerrors.ErrInternalError.Error()
 		status = http.StatusInternalServerError
 
-=======
 	case errors.Is(err, customerrors.ErrBadRequest):
 		code = "BAD_REQUEST"
 		message = "Invalid request"
@@ -70,7 +68,6 @@ func handleError(w http.ResponseWriter, err error) {
 		code = "DUPLICATE_ENTRY"
 		message = "That item already exists"
 		status = http.StatusConflict
->>>>>>> main
 	default:
 		code = "INTERNAL_ERROR"
 		message = "An unexpected error occurred while processing the request"

@@ -55,6 +55,7 @@ func main() {
 
 	sessionRepo := repository.NewSessionRepository(db)
 	userRepo := repository.NewUserRepository(db)
+
 	userService := service.NewUserService(userRepo, sessionRepo)
 	userHandler := handlers.NewUserHandler(userService)
 

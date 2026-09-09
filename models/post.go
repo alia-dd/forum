@@ -1,6 +1,4 @@
 package models
-<<<<<<< HEAD
-=======
 
 import (
 	"time"
@@ -43,4 +41,3 @@ type PostFilter struct {
 	AuthorID   *int
 	LikedByID  *int
 }
->>>>>>> main
