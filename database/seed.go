@@ -9,7 +9,7 @@ import (
 func SeedData(db *sql.DB) error {
 	var userCount int
 	if err := db.QueryRow(`SELECT COUNT(*) FROM user`).Scan(&userCount); err != nil {
-		return fmt.Errorf("seed: counting users: %w", err)
+		return fmt.Errorf("seed: counting user: %w", err)
 	}
 	if userCount > 0 {
 		return nil
@@ -53,7 +53,7 @@ func SeedData(db *sql.DB) error {
 	heidi := insert(`INSERT INTO user (username, email, password_hash) VALUES (?, ?, ?)`,
 		"heidi", "heidi@example.com", "1234")
 
-	insert(`INSERT INTO session (id, user_id, expires_at)
+	insert(`INSERT INTO session (uuid, user_id, expires_at)
 	        VALUES (?, ?, datetime('now', '+7 days'))`,
 		"dev-session-alice", alice)
 
@@ -177,5 +177,7 @@ func SeedData(db *sql.DB) error {
 	if err = tx.Commit(); err != nil {
 		return fmt.Errorf("seed: commit: %w", err)
 	}
+
+	fmt.Println("seed works")
 	return nil
 }

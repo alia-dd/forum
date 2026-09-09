@@ -109,7 +109,6 @@ func (r *postRepositoryImpl) GetPost(ctx context.Context, filter models.PostFilt
 	if len(conds) > 0 {
 		query += " WHERE " + strings.Join(conds, " AND ")
 	}
-
 	//order by matching main category, using creation time as tiebreak (main2 -> main1 -> side2 -> side1)
 	if filter.CategoryID != nil {
 		query += `
@@ -122,7 +121,6 @@ func (r *postRepositoryImpl) GetPost(ctx context.Context, filter models.PostFilt
 	} else {
 		query += " ORDER BY post.created_at DESC"
 	}
-
 	rows, err := r.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, customerrors.MapSQLError(err)
