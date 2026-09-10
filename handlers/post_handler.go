@@ -8,6 +8,7 @@ import (
 	customerrors "gitea.kood.tech/jyrkikarhunen/forum/errors"
 	"gitea.kood.tech/jyrkikarhunen/forum/models"
 	"gitea.kood.tech/jyrkikarhunen/forum/repository"
+	"gitea.kood.tech/jyrkikarhunen/forum/utils"
 )
 
 type PostHandler struct {
@@ -20,12 +21,11 @@ func NewPostHandler(postRep repository.PostRepository, catRep repository.Categor
 }
 
 func (h *PostHandler) GetPosts(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path != "/" {
-		handleError(w, customerrors.ErrNotFound)
-		return
-	}
+	// if r.URL.Path != "/" {
+	// 	handleError(w, customerrors.ErrNotFound)
+	// 	return
+	// }
 
-	fmt.Println("here")
 	//todo: user validation -> get user id for filtering if used
 	filter, err := h.parsePostFilter(r.Context(), r, "tempuser")
 	if err != nil {
@@ -38,12 +38,10 @@ func (h *PostHandler) GetPosts(w http.ResponseWriter, r *http.Request) {
 		handleError(w, err)
 		return
 	}
-
 	ids := make([]int, len(posts))
 	for i, post := range posts {
 		ids[i] = post.Post.ID
 	}
-
 	cats, err := h.catRep.GetCatByPostIDs(r.Context(), ids)
 	if err != nil {
 		handleError(w, err)
@@ -52,16 +50,27 @@ func (h *PostHandler) GetPosts(w http.ResponseWriter, r *http.Request) {
 	for _, post := range posts {
 		post.Categories = cats[post.Post.ID]
 	}
-	fmt.Println("here2")
 	allCats, err := h.catRep.GetAllCategories(r.Context())
 	if err != nil {
 		handleError(w, err)
 		return
 	}
 
-	fmt.Println("here3")
-	fmt.Fprintf(w, "posts=%d allCats=%d filter=%+v", len(posts), len(allCats), filter)
+	fmt.Println("cats: ", allCats)
+	fmt.Println("post: ", posts)
+	// fmt.Fprintf(w, "posts=%d allCats=%d filter=%+v", len(posts), len(allCats), filter)
 
+	// get user data
+	user, _ := r.Context().Value("user_session").(*models.UserInfo)
+
+	var pageData models.PageData
+	pageData = models.PageData{
+		User:        user,
+		PageContent: posts,
+	}
+
+	fmt.Println(pageData)
+	utils.RenderTemplate(w, http.StatusOK, "home", pageData)
 	//execute maintemplate with user, posts, allcats
 }
 

@@ -11,9 +11,9 @@ import (
 )
 
 const (
-	RegisterUserQuery       = ` INSERT INTO users (username, name, email, password_hash) VALUES(?,?,?,?)`
-	fetchUserInfoQurrey     = ` SELECT  id, username, name, email, password_hash, created_at, updated_at  FROM users WHERE (username = ? or email = ?)`
-	fetchUserInfoByIdQurrey = ` SELECT id, username, name, email FROM users WHERE id = ?`
+	RegisterUserQuery       = ` INSERT INTO user (username, name, email, password_hash) VALUES(?,?,?,?)`
+	fetchUserInfoQurrey     = ` SELECT  id, username, name, email, password_hash, created_at, updated_at  FROM user WHERE (username = ? or email = ?)`
+	fetchUserInfoByIdQurrey = ` SELECT id, username, name, email FROM user WHERE id = ?`
 )
 
 type UserRepository struct {
@@ -64,7 +64,7 @@ func (r *UserRepository) FetchUserData(cx context.Context, userId int) (models.U
 }
 
 func (r *UserRepository) CheckIfAvailable(cx context.Context, col string) (bool, error) {
-	qurrey := `SELECT EXISTS(SELECT 1 FROM users WHERE (username = ? or email = ?))`
+	qurrey := `SELECT EXISTS(SELECT 1 FROM user WHERE (username = ? or email = ?))`
 	var exist bool
 	fetchErr := r.db.QueryRowContext(cx, qurrey, col, col).Scan(&exist)
 	if fetchErr != nil {

@@ -79,8 +79,8 @@ func main() {
 		// depending if you have a session or not
 		// GET / - fetches all posts. Optional, combinable query filters: ?category={id}  ?author={id|me|username}  ?liked=true
 		// mux.HandleFunc("GET /", postHandler.GetPosts)
-		// middleware.Recoverer(middleware.AllowGuest(sessionRepo, userRepo, postHandler.GetPosts))(w, r)
-		middleware.Recoverer(middleware.AllowGuest(sessionRepo, userRepo, handlers.HomePage))(w, r)
+		middleware.Recoverer(middleware.AllowGuest(sessionRepo, userRepo, postHandler.GetPosts))(w, r)
+		// middleware.Recoverer(middleware.AllowGuest(sessionRepo, userRepo, handlers.HomePage))(w, r)
 	})
 
 	// Profile page is user specific and is safeguarded by the Restrict middleware

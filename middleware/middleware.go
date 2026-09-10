@@ -2,7 +2,6 @@ package middleware
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 
 	customerrors "gitea.kood.tech/jyrkikarhunen/forum/errors"
@@ -41,7 +40,6 @@ func AllowGuest(sessionRepo *repository.SessionRepository, userRepo *repository.
 			handler(w, r)
 			return
 		}
-		fmt.Println("middle", user)
 
 		ctx := context.WithValue(r.Context(), "user_session", &user)
 		handler(w, r.WithContext(ctx))
