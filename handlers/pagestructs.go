@@ -7,3 +7,14 @@ type MainPage struct {
 	Posts      []*models.PostView
 	Categories []models.Category
 }
+
+type PostPage struct {
+	Post *models.PostView
+	//comments
+}
+
+type PostFormPage struct {
+	PostID     int
+	Form       PostForm
+	Categories []models.Category
+}

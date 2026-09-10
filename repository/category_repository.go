@@ -72,10 +72,11 @@ func (r *categoryRepositoryImpl) GetCatByPostIDs(ctx context.Context, postIDs []
 	}
 
 	query := fmt.Sprintf(`
-		SELECT pc.post_id, category.id, category.name
+		SELECT pc.post_id, category.id, category.name, pc.is_main
 		FROM post_category pc
 		JOIN category ON category.id = pc.category_id
-		WHERE pc.post_id IN (%s)`, strings.Join(conds, ", "))
+		WHERE pc.post_id IN (%s)
+		ORDER BY pc.post_id, pc.is_main DESC, category.name`, strings.Join(conds, ", "))
 
 	rows, err := r.db.QueryContext(ctx, query, args...)
 	if err != nil {
@@ -86,7 +87,7 @@ func (r *categoryRepositoryImpl) GetCatByPostIDs(ctx context.Context, postIDs []
 	for rows.Next() {
 		var postID int
 		var cat models.Category
-		if err := rows.Scan(&postID, &cat.ID, &cat.Name); err != nil {
+		if err := rows.Scan(&postID, &cat.ID, &cat.Name, &cat.IsMain); err != nil {
 			return nil, customerrors.MapSQLError(err)
 		}
 		res[postID] = append(res[postID], cat)

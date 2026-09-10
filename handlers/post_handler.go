@@ -21,7 +21,7 @@ func NewPostHandler(postRep repository.PostRepository, catRep repository.Categor
 }
 
 func (h *PostHandler) GetPosts(w http.ResponseWriter, r *http.Request) {
-	user := r.Context().Value("user_session").(*models.UserInfo)
+	user, _ := r.Context().Value("user_session").(*models.UserInfo)
 
 	filter, err := h.parsePostFilter(r.Context(), r)
 	if err != nil {
@@ -69,6 +69,7 @@ func (h *PostHandler) GetPosts(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *PostHandler) GetPostByID(w http.ResponseWriter, r *http.Request) {
+	user, _ := r.Context().Value("user_session").(*models.UserInfo)
 	id, err := strconv.Atoi(r.PathValue("id"))
 	if err != nil {
 		handleError(w, customerrors.ErrBadRequest)
@@ -89,22 +90,32 @@ func (h *PostHandler) GetPostByID(w http.ResponseWriter, r *http.Request) {
 	post.Categories = cats[id]
 
 	//get comments linked to post or its subcomments
+	pageData := models.PageData{
+		User: user,
+		PageContent: PostPage{
+			Post: post,
+		},
+	}
 
-	fmt.Fprintf(w, "posts=%v cats=%v", post, cats)
-
-	//execute postviewtemplate with user, post
+	utils.RenderTemplate(w, http.StatusOK, "post", pageData)
 }
 
 func (h *PostHandler) NewPostForm(w http.ResponseWriter, r *http.Request) {
+	user, _ := r.Context().Value("user_session").(*models.UserInfo)
 	cats, err := h.catRep.GetAllCategories(r.Context())
 	if err != nil {
 		handleError(w, err)
 		return
 	}
 
-	fmt.Fprintf(w, "cats=%v", cats)
+	pageData := models.PageData{
+		User: user,
+		PageContent: PostFormPage{
+			Categories: cats,
+		},
+	}
 
-	//execute createposttemplate with user, cats
+	utils.RenderTemplate(w, http.StatusOK, "post_new", pageData)
 }
 
 func (h *PostHandler) CreatePost(w http.ResponseWriter, r *http.Request) {
@@ -115,7 +126,19 @@ func (h *PostHandler) CreatePost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if !form.Validate() {
-		//execute same template with form values (prefilled) and form errors next to relevant sections
+		cats, err := h.catRep.GetAllCategories(r.Context())
+		if err != nil {
+			handleError(w, err)
+			return
+		}
+		pageData := models.PageData{
+			User: user,
+			PageContent: PostFormPage{
+				Form:       form,
+				Categories: cats,
+			},
+		}
+		utils.RenderTemplate(w, http.StatusOK, "post_new", pageData)
 		return
 	}
 
@@ -161,9 +184,30 @@ func (h *PostHandler) EditPostForm(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Fprintf(w, "post=%v cats=%v", post, cats)
+	postCats, err := h.catRep.GetCatByPostIDs(r.Context(), []int{id})
+	if err != nil {
+		handleError(w, err)
+		return
+	}
 
-	//execute postedittemplate with user, post, cats
+	form := PostForm{Title: post.Post.Title, Content: post.Post.Content}
+	for _, c := range postCats[id] {
+		if c.IsMain {
+			form.MainCategoryID = c.ID
+		} else {
+			form.CategoryIDs = append(form.CategoryIDs, c.ID)
+		}
+	}
+
+	pageData := models.PageData{
+		User: user,
+		PageContent: PostFormPage{
+			PostID:     id,
+			Form:       form,
+			Categories: cats,
+		},
+	}
+	utils.RenderTemplate(w, http.StatusOK, "post_edit", pageData)
 }
 
 func (h *PostHandler) UpdatePost(w http.ResponseWriter, r *http.Request) {
@@ -181,7 +225,23 @@ func (h *PostHandler) UpdatePost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if !form.Validate() {
-		//execute same template with form values (prefilled) and form errors next to relevant sections
+		cats, err := h.catRep.GetAllCategories(r.Context())
+		if err != nil {
+			handleError(w, err)
+			return
+		}
+		pageData := models.PageData{
+			User: user,
+			PageContent: PostFormPage{
+				PostID: id,
+				Form: PostForm{
+					Title:   form.Title,
+					Content: form.Content,
+				},
+				Categories: cats,
+			},
+		}
+		utils.RenderTemplate(w, http.StatusOK, "post_edit", pageData)
 		return
 	}
 

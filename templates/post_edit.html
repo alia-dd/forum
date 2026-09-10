@@ -1,0 +1,19 @@
+{{define "content"}}
+<h1>Edit post</h1>
+<form method="POST" action="/post/{{.PageContent.PostID}}/edit">
+  <p><label>Title<br><input name="title" value="{{.PageContent.Form.Title}}" required></label>
+     {{with .PageContent.Form.Errors.Title}}<span>{{.}}</span>{{end}}</p>
+  <p><label>Content<br><textarea name="content" required>{{.PageContent.Form.Content}}</textarea></label>
+     {{with .PageContent.Form.Errors.Content}}<span>{{.}}</span>{{end}}</p>
+  <p><label>Main category<br>
+     <select name="main_category" required>
+       <option value="">— choose —</option>
+       {{range .PageContent.Categories}}<option value="{{.ID}}" {{if eq .ID $.PageContent.Form.MainCategoryID}}selected{{end}}>{{.Name}}</option>{{end}}
+     </select></label>
+     {{with .PageContent.Form.Errors.MainCategoryID}}<span>{{.}}</span>{{end}}</p>
+  <fieldset><legend>Extra categories</legend>
+    {{range .PageContent.Categories}}<label><input type="checkbox" name="category" value="{{.ID}}" {{if $.PageContent.Form.HasCategory .ID}}checked{{end}}> {{.Name}}</label><br>{{end}}
+  </fieldset>
+  <button type="submit">Save</button>
+</form>
+{{end}}

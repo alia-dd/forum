@@ -44,6 +44,15 @@ func (f *PostForm) Validate() bool {
 	return len(f.Errors) == 0
 }
 
+func (f PostForm) HasCategory(id int) bool {
+	for _, cat := range f.CategoryIDs {
+		if cat == id {
+			return true
+		}
+	}
+	return false
+}
+
 // post helpers
 func (h *PostHandler) parsePostFilter(ctx context.Context, r *http.Request) (models.PostFilter, error) {
 	var pf models.PostFilter
@@ -69,8 +78,10 @@ func (h *PostHandler) parsePostFilter(ctx context.Context, r *http.Request) (mod
 
 	liked := q.Get("liked")
 	if liked == "true" {
-		user := ctx.Value("user_session").(*models.UserInfo)
-		pf.LikedByID = &user.Id
+		if user, ok := ctx.Value("user_session").(*models.UserInfo); ok {
+			id := user.Id
+			pf.LikedByID = &id
+		}
 	}
 
 	return pf, nil
@@ -79,7 +90,10 @@ func (h *PostHandler) parsePostFilter(ctx context.Context, r *http.Request) (mod
 
 func (h *PostHandler) getAuthorID(ctx context.Context, author string) (int, error) {
 	if author == "me" {
-		user := ctx.Value("user_session").(*models.UserInfo)
+		user, ok := ctx.Value("user_session").(*models.UserInfo)
+		if !ok {
+			return 0, customerrors.ErrBadRequest
+		}
 		return user.Id, nil
 	}
 
