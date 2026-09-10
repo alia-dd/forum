@@ -115,7 +115,7 @@ func (h *PostHandler) NewPostForm(w http.ResponseWriter, r *http.Request) {
 		},
 	}
 
-	utils.RenderTemplate(w, http.StatusOK, "post_new", pageData)
+	utils.RenderTemplate(w, http.StatusOK, "post_form", pageData)
 }
 
 func (h *PostHandler) CreatePost(w http.ResponseWriter, r *http.Request) {
@@ -138,7 +138,7 @@ func (h *PostHandler) CreatePost(w http.ResponseWriter, r *http.Request) {
 				Categories: cats,
 			},
 		}
-		utils.RenderTemplate(w, http.StatusOK, "post_new", pageData)
+		utils.RenderTemplate(w, http.StatusOK, "post_form", pageData)
 		return
 	}
 
@@ -207,7 +207,7 @@ func (h *PostHandler) EditPostForm(w http.ResponseWriter, r *http.Request) {
 			Categories: cats,
 		},
 	}
-	utils.RenderTemplate(w, http.StatusOK, "post_edit", pageData)
+	utils.RenderTemplate(w, http.StatusOK, "post_form", pageData)
 }
 
 func (h *PostHandler) UpdatePost(w http.ResponseWriter, r *http.Request) {
@@ -241,7 +241,7 @@ func (h *PostHandler) UpdatePost(w http.ResponseWriter, r *http.Request) {
 				Categories: cats,
 			},
 		}
-		utils.RenderTemplate(w, http.StatusOK, "post_edit", pageData)
+		utils.RenderTemplate(w, http.StatusOK, "post_form", pageData)
 		return
 	}
 

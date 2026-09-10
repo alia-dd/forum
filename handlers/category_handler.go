@@ -2,13 +2,14 @@ package handlers
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
 
 	customerrors "gitea.kood.tech/jyrkikarhunen/forum/errors"
+	"gitea.kood.tech/jyrkikarhunen/forum/models"
 	"gitea.kood.tech/jyrkikarhunen/forum/repository"
+	"gitea.kood.tech/jyrkikarhunen/forum/utils"
 )
 
 type CategoryHandler struct {
@@ -21,11 +22,16 @@ func NewCategoryHandler(catRep repository.CategoryRepository) *CategoryHandler {
 
 func (h *CategoryHandler) NewCategoryForm(w http.ResponseWriter, r *http.Request) {
 	//require admin?
-	//execute new category template
-	fmt.Fprintf(w, "requesting category form")
+	user, _ := r.Context().Value("user_session").(*models.UserInfo)
+	pageData := models.PageData{
+		User:        user,
+		PageContent: CategoryFormPage{},
+	}
+	utils.RenderTemplate(w, http.StatusOK, "category_form", pageData)
 }
 
 func (h *CategoryHandler) CreateCategory(w http.ResponseWriter, r *http.Request) {
+	user, _ := r.Context().Value("user_session").(*models.UserInfo)
 	if err := r.ParseForm(); err != nil {
 		handleError(w, customerrors.ErrBadRequest)
 		return
@@ -36,7 +42,9 @@ func (h *CategoryHandler) CreateCategory(w http.ResponseWriter, r *http.Request)
 	}
 
 	if !form.Validate() {
-		//execute same template with form values (prefilled) and form errors next to relevant sections
+		utils.RenderTemplate(w, http.StatusOK, "category_form", models.PageData{
+			User: user, PageContent: CategoryFormPage{Form: form},
+		})
 		return
 	}
 
@@ -44,7 +52,9 @@ func (h *CategoryHandler) CreateCategory(w http.ResponseWriter, r *http.Request)
 	if err != nil {
 		if errors.Is(err, customerrors.ErrDuplicateEntry) {
 			form.Errors["Name"] = "That category already exists"
-			//execute same template with form values (prefilled) and form errors next to relevant sections
+			utils.RenderTemplate(w, http.StatusOK, "category_form", models.PageData{
+				User: user, PageContent: CategoryFormPage{Form: form},
+			})
 			return
 		}
 		handleError(w, err)
@@ -55,6 +65,7 @@ func (h *CategoryHandler) CreateCategory(w http.ResponseWriter, r *http.Request)
 }
 
 func (h *CategoryHandler) EditCategoryForm(w http.ResponseWriter, r *http.Request) {
+	user, _ := r.Context().Value("user_session").(*models.UserInfo)
 	id, err := strconv.Atoi(r.PathValue("id"))
 	if err != nil {
 		handleError(w, customerrors.ErrBadRequest)
@@ -67,14 +78,23 @@ func (h *CategoryHandler) EditCategoryForm(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
+	pageData := models.PageData{
+		User: user,
+		PageContent: CategoryFormPage{
+			CategoryID: id,
+			Form: CategoryForm{
+				Name: cat.Name,
+			},
+		},
+	}
+
 	//admin validation
 
-	fmt.Fprintf(w, "cat=%v", cat)
-
-	//execute categoryedittemplate with user, cat
+	utils.RenderTemplate(w, http.StatusOK, "category_form", pageData)
 }
 
 func (h *CategoryHandler) UpdateCategory(w http.ResponseWriter, r *http.Request) {
+	user, _ := r.Context().Value("user_session").(*models.UserInfo)
 	id, err := strconv.Atoi(r.PathValue("id"))
 	if err != nil {
 		handleError(w, customerrors.ErrBadRequest)
@@ -91,7 +111,9 @@ func (h *CategoryHandler) UpdateCategory(w http.ResponseWriter, r *http.Request)
 	}
 
 	if !form.Validate() {
-		//execute same template with form values (prefilled) and form errors next to relevant sections
+		utils.RenderTemplate(w, http.StatusOK, "category_form", models.PageData{
+			User: user, PageContent: CategoryFormPage{CategoryID: id, Form: form},
+		})
 		return
 	}
 
@@ -99,7 +121,9 @@ func (h *CategoryHandler) UpdateCategory(w http.ResponseWriter, r *http.Request)
 	if err != nil {
 		if errors.Is(err, customerrors.ErrDuplicateEntry) {
 			form.Errors["Name"] = "That category already exists"
-			//execute same template with form values (prefilled) and form errors next to relevant sections
+			utils.RenderTemplate(w, http.StatusOK, "category_form", models.PageData{
+				User: user, PageContent: CategoryFormPage{CategoryID: id, Form: form},
+			})
 			return
 		}
 		handleError(w, err)

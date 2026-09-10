@@ -18,3 +18,8 @@ type PostFormPage struct {
 	Form       PostForm
 	Categories []models.Category
 }
+
+type CategoryFormPage struct {
+	CategoryID int
+	Form       CategoryForm
+}
