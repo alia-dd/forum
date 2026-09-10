@@ -55,8 +55,6 @@ func (h *CategoryHandler) CreateCategory(w http.ResponseWriter, r *http.Request)
 }
 
 func (h *CategoryHandler) EditCategoryForm(w http.ResponseWriter, r *http.Request) {
-	//todo: get user id
-
 	id, err := strconv.Atoi(r.PathValue("id"))
 	if err != nil {
 		handleError(w, customerrors.ErrBadRequest)

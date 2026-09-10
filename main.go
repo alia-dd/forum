@@ -99,28 +99,28 @@ func main() {
 	mux.HandleFunc("GET /api/user/check-email", middleware.Recoverer(userHandler.CheckIfAvailabe))
 
 	// GET /post/{id} - just an int
-	mux.HandleFunc("GET /post/{id}", postHandler.GetPostByID)
+	mux.HandleFunc("GET /post/{id}", middleware.Recoverer(middleware.AllowGuest(sessionRepo, userRepo, postHandler.GetPostByID)))
 
 	//below need auth
 	// GET /post/new - loads template (once implemented) for submitting post
-	mux.HandleFunc("GET /post/new", postHandler.NewPostForm)
+	mux.HandleFunc("GET /post/new", middleware.Recoverer(middleware.Restrict(sessionRepo, userRepo, postHandler.NewPostForm)))
 	// POST /post/new - create post. Form: title, content, main_category={id}, category={id}… (sides)
-	mux.HandleFunc("POST /post/new", postHandler.CreatePost)
+	mux.HandleFunc("POST /post/new", middleware.Recoverer(middleware.Restrict(sessionRepo, userRepo, postHandler.CreatePost)))
 	// GET /post/{id}/edit - loads template (once implemented) for editing a post you own
-	mux.HandleFunc("GET /post/{id}/edit", postHandler.EditPostForm)
+	mux.HandleFunc("GET /post/{id}/edit", middleware.Recoverer(middleware.Restrict(sessionRepo, userRepo, postHandler.EditPostForm)))
 	// POST /post/{id}/edit - update your post. Form: title, content, main_category={id}, category={id}… (sides)
-	mux.HandleFunc("POST /post/{id}/edit", postHandler.UpdatePost)
+	mux.HandleFunc("POST /post/{id}/edit", middleware.Recoverer(middleware.Restrict(sessionRepo, userRepo, postHandler.UpdatePost)))
 
 	// GET /category/new - loads template (once implemented) for creating new category
-	mux.HandleFunc("GET /category/new", categoryHandler.NewCategoryForm)
+	mux.HandleFunc("GET /category/new", middleware.Recoverer(middleware.Restrict(sessionRepo, userRepo, categoryHandler.NewCategoryForm)))
 	// POST /category/new - create category. Form: name
-	mux.HandleFunc("POST /category/new", categoryHandler.CreateCategory)
+	mux.HandleFunc("POST /category/new", middleware.Recoverer(middleware.Restrict(sessionRepo, userRepo, categoryHandler.CreateCategory)))
 	// GET /category/{id}/edit - loads template (once implemented) for editing existing category
-	mux.HandleFunc("GET /category/{id}/edit", categoryHandler.EditCategoryForm)
+	mux.HandleFunc("GET /category/{id}/edit", middleware.Recoverer(middleware.Restrict(sessionRepo, userRepo, categoryHandler.EditCategoryForm)))
 	// POST /category/{id}/edit - rename category. Form: name
-	mux.HandleFunc("POST /category/{id}/edit", categoryHandler.UpdateCategory)
+	mux.HandleFunc("POST /category/{id}/edit", middleware.Recoverer(middleware.Restrict(sessionRepo, userRepo, categoryHandler.UpdateCategory)))
 	// POST /category/{id}/delete - delete category (if it has no references elsewhere)
-	mux.HandleFunc("POST /category/{id}/delete", categoryHandler.DeleteCategory)
+	mux.HandleFunc("POST /category/{id}/delete", middleware.Recoverer(middleware.Restrict(sessionRepo, userRepo, categoryHandler.DeleteCategory)))
 	//above need auth
 
 	server := &http.Server{
