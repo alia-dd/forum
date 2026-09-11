@@ -21,13 +21,9 @@ func NewPostHandler(postRep repository.PostRepository, catRep repository.Categor
 }
 
 func (h *PostHandler) GetPosts(w http.ResponseWriter, r *http.Request) {
-	// if r.URL.Path != "/" {
-	// 	handleError(w, customerrors.ErrNotFound)
-	// 	return
-	// }
+	user, _ := r.Context().Value("user_session").(*models.UserInfo) // guests allowed
 
-	//todo: user validation -> get user id for filtering if used
-	filter, err := h.parsePostFilter(r.Context(), r, "tempuser")
+	filter, err := h.parsePostFilter(r.Context(), r)
 	if err != nil {
 		handleError(w, customerrors.ErrBadRequest)
 		return
@@ -58,23 +54,22 @@ func (h *PostHandler) GetPosts(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Println("cats: ", allCats)
 	fmt.Println("post: ", posts)
-	// fmt.Fprintf(w, "posts=%d allCats=%d filter=%+v", len(posts), len(allCats), filter)
-
-	// get user data
-	user, _ := r.Context().Value("user_session").(*models.UserInfo)
 
 	var pageData models.PageData
 	pageData = models.PageData{
-		User:        user,
-		PageContent: posts,
+		User: user,
+		PageContent: MainPage{
+			Posts:      posts,
+			Categories: allCats,
+		},
 	}
 
 	fmt.Println(pageData)
 	utils.RenderTemplate(w, http.StatusOK, "home", pageData)
-	//execute maintemplate with user, posts, allcats
 }
 
 func (h *PostHandler) GetPostByID(w http.ResponseWriter, r *http.Request) {
+	user, _ := r.Context().Value("user_session").(*models.UserInfo) // guests allowed
 	id, err := strconv.Atoi(r.PathValue("id"))
 	if err != nil {
 		handleError(w, customerrors.ErrBadRequest)
@@ -95,42 +90,69 @@ func (h *PostHandler) GetPostByID(w http.ResponseWriter, r *http.Request) {
 	post.Categories = cats[id]
 
 	//get comments linked to post or its subcomments
+	pageData := models.PageData{
+		User: user,
+		PageContent: PostPage{
+			Post: post,
+		},
+	}
 
-	fmt.Fprintf(w, "posts=%v cats=%v", post, cats)
-
-	//execute postviewtemplate with user, post
+	utils.RenderTemplate(w, http.StatusOK, "post", pageData)
 }
 
 func (h *PostHandler) NewPostForm(w http.ResponseWriter, r *http.Request) {
+	user, ok := r.Context().Value("user_session").(*models.UserInfo)
+	if !ok {
+		http.Redirect(w, r, "/user/login", http.StatusSeeOther)
+		return
+	}
+
 	cats, err := h.catRep.GetAllCategories(r.Context())
 	if err != nil {
 		handleError(w, err)
 		return
 	}
-	//validate user logged in (unregistered can't post)
 
-	fmt.Fprintf(w, "cats=%v", cats)
+	pageData := models.PageData{
+		User: user,
+		PageContent: PostFormPage{
+			Categories: cats,
+		},
+	}
 
-	//execute createposttemplate with user, cats
+	utils.RenderTemplate(w, http.StatusOK, "post_form", pageData)
 }
 
 func (h *PostHandler) CreatePost(w http.ResponseWriter, r *http.Request) {
-	//user validation
-	//return if not logged in
-
+	user, ok := r.Context().Value("user_session").(*models.UserInfo)
+	if !ok {
+		http.Redirect(w, r, "/user/login", http.StatusSeeOther)
+		return
+	}
 	form, ok := h.parsePostForm(w, r)
 	if !ok {
 		return
 	}
 
 	if !form.Validate() {
-		//execute same template with form values (prefilled) and form errors next to relevant sections
+		cats, err := h.catRep.GetAllCategories(r.Context())
+		if err != nil {
+			handleError(w, err)
+			return
+		}
+		pageData := models.PageData{
+			User: user,
+			PageContent: PostFormPage{
+				Form:       form,
+				Categories: cats,
+			},
+		}
+		utils.RenderTemplate(w, http.StatusOK, "post_form", pageData)
 		return
 	}
 
-	//need userid from validated user (middleware?)
 	postInput := models.PostInput{
-		UserID:         1,
+		UserID:         user.Id,
 		Title:          form.Title,
 		Content:        form.Content,
 		MainCategoryID: form.MainCategoryID,
@@ -146,8 +168,11 @@ func (h *PostHandler) CreatePost(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *PostHandler) EditPostForm(w http.ResponseWriter, r *http.Request) {
-	//todo: get user id
-	tempUserID := 1
+	user, ok := r.Context().Value("user_session").(*models.UserInfo)
+	if !ok {
+		http.Redirect(w, r, "/user/login", http.StatusSeeOther)
+		return
+	}
 
 	id, err := strconv.Atoi(r.PathValue("id"))
 	if err != nil {
@@ -161,7 +186,7 @@ func (h *PostHandler) EditPostForm(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if tempUserID != post.Post.UserID { //or userid nil
+	if user.Id != post.Post.UserID {
 		handleError(w, customerrors.ErrForbidden)
 		return
 	}
@@ -172,14 +197,38 @@ func (h *PostHandler) EditPostForm(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Fprintf(w, "post=%v cats=%v", post, cats)
+	postCats, err := h.catRep.GetCatByPostIDs(r.Context(), []int{id})
+	if err != nil {
+		handleError(w, err)
+		return
+	}
 
-	//execute postedittemplate with user, post, cats
+	form := PostForm{Title: post.Post.Title, Content: post.Post.Content}
+	for _, c := range postCats[id] {
+		if c.IsMain {
+			form.MainCategoryID = c.ID
+		} else {
+			form.CategoryIDs = append(form.CategoryIDs, c.ID)
+		}
+	}
+
+	pageData := models.PageData{
+		User: user,
+		PageContent: PostFormPage{
+			PostID:     id,
+			Form:       form,
+			Categories: cats,
+		},
+	}
+	utils.RenderTemplate(w, http.StatusOK, "post_form", pageData)
 }
 
 func (h *PostHandler) UpdatePost(w http.ResponseWriter, r *http.Request) {
-	//todo: get user id
-	tempUserID := 1
+	user, ok := r.Context().Value("user_session").(*models.UserInfo)
+	if !ok {
+		http.Redirect(w, r, "/user/login", http.StatusSeeOther)
+		return
+	}
 
 	id, err := strconv.Atoi(r.PathValue("id"))
 	if err != nil {
@@ -193,11 +242,26 @@ func (h *PostHandler) UpdatePost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if !form.Validate() {
-		//execute same template with form values (prefilled) and form errors next to relevant sections
+		cats, err := h.catRep.GetAllCategories(r.Context())
+		if err != nil {
+			handleError(w, err)
+			return
+		}
+		pageData := models.PageData{
+			User: user,
+			PageContent: PostFormPage{
+				PostID: id,
+				Form: PostForm{
+					Title:   form.Title,
+					Content: form.Content,
+				},
+				Categories: cats,
+			},
+		}
+		utils.RenderTemplate(w, http.StatusOK, "post_form", pageData)
 		return
 	}
 
-	//need userid from validated user (middleware?)
 	postUpdate := models.PostUpdate{
 		ID:             id,
 		Title:          form.Title,
@@ -206,7 +270,7 @@ func (h *PostHandler) UpdatePost(w http.ResponseWriter, r *http.Request) {
 		CategoryIDs:    form.CategoryIDs,
 	}
 
-	err = h.postRep.UpdatePost(r.Context(), postUpdate, tempUserID)
+	err = h.postRep.UpdatePost(r.Context(), postUpdate, user.Id)
 	if err != nil {
 		handleError(w, err)
 		return

@@ -1,0 +1,21 @@
+{{define "content"}}
+{{$user := .User}}
+{{with .PageContent.Post}}
+<article>
+  <h1>{{.Post.Title}}</h1>
+  <p>by {{.AuthorName}} — likes {{.LikeCount}}, dislikes {{.DislikeCount}}, comments {{.CommentCount}}</p>
+  <p>{{range .Categories}}[{{.Name}}] {{end}}</p>
+  <div>{{.Post.Content}}</div>
+    {{if $user}}
+        {{if eq $user.Id .Post.UserID}}
+            <p><a href="/post/{{.Post.ID}}/edit">Edit</a></p>
+        {{end}}
+    {{end}}
+</article>
+{{end}}
+
+<section>
+  <h2>Comments ({{.PageContent.Post.CommentCount}})</h2>
+  <p>Comments not in this branch yet.</p>
+</section>
+{{end}}

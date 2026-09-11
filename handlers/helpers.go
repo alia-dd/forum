@@ -44,8 +44,17 @@ func (f *PostForm) Validate() bool {
 	return len(f.Errors) == 0
 }
 
+func (f PostForm) HasCategory(id int) bool {
+	for _, cat := range f.CategoryIDs {
+		if cat == id {
+			return true
+		}
+	}
+	return false
+}
+
 // post helpers
-func (h *PostHandler) parsePostFilter(ctx context.Context, r *http.Request, usermodel string) (models.PostFilter, error) {
+func (h *PostHandler) parsePostFilter(ctx context.Context, r *http.Request) (models.PostFilter, error) {
 	var pf models.PostFilter
 	q := r.URL.Query()
 
@@ -60,7 +69,7 @@ func (h *PostHandler) parsePostFilter(ctx context.Context, r *http.Request, user
 
 	author := q.Get("author")
 	if author != "" {
-		id, err := h.getAuthorID(ctx, author, usermodel)
+		id, err := h.getAuthorID(ctx, author)
 		if err != nil {
 			return pf, err
 		}
@@ -68,23 +77,31 @@ func (h *PostHandler) parsePostFilter(ctx context.Context, r *http.Request, user
 	}
 
 	liked := q.Get("liked")
-	//if liked *and* if userid not nil (logged in)
-	//likes are private, created posts are public
 	if liked == "true" {
-		tempUserIDVal := 0
-		pf.LikedByID = &tempUserIDVal
+		if user, ok := ctx.Value("user_session").(*models.UserInfo); ok {
+			id := user.Id
+			pf.LikedByID = &id
+		}
 	}
 
 	return pf, nil
 
 }
 
-func (h *PostHandler) getAuthorID(ctx context.Context, author string, usermodel string) (int, error) {
+func (h *PostHandler) getAuthorID(ctx context.Context, author string) (int, error) {
 	if author == "me" {
-		//todo: return userid or error if not logged in
+		user, ok := ctx.Value("user_session").(*models.UserInfo)
+		if !ok {
+			return 0, customerrors.ErrBadRequest
+		}
+		return user.Id, nil
 	}
+
 	authorID, err := strconv.Atoi(author)
 	if err == nil {
+		if authorID <= 0 {
+			return 0, customerrors.ErrBadRequest
+		}
 		return authorID, nil
 	}
 	//todo: get userid by username and return that or error if not found

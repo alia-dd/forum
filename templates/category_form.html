@@ -1,0 +1,18 @@
+{{define "content"}}
+{{$id := .PageContent.CategoryID}}
+<h1>{{if $id}}Edit category{{else}}New category{{end}}</h1>
+
+<form method="POST" action="{{if $id}}/category/{{$id}}/edit{{else}}/category/new{{end}}">
+  <p>
+    <label>Name<br><input name="name" value="{{.PageContent.Form.Name}}" required></label>
+    {{with .PageContent.Form.Errors.Name}}<span>{{.}}</span>{{end}}
+  </p>
+  <button type="submit">{{if $id}}Save{{else}}Create{{end}}</button>
+</form>
+
+{{if $id}}
+<form method="POST" action="/category/{{$id}}/delete">
+  <button type="submit">Delete</button>
+</form>
+{{end}}
+{{end}}

@@ -1,6 +1,25 @@
 {{define "content"}}
-<div>
-    <p class="title">Post</p>
-      <span>{{.PageContent}}</span>
-</div>
+<h1>Posts</h1>
+<p>{{if .User}}Signed in as {{.User.Username}} — <a href="/post/new">New post</a>{{else}}<a href="/user/login">Sign in</a> to post{{end}}</p>
+
+<form method="GET" action="/">
+  <label>Category
+    <select name="category">
+      <option value="">All categories</option>
+      {{range .PageContent.Categories}}<option value="{{.ID}}">{{.Name}}</option>{{end}}
+    </select>
+  </label>
+  <button type="submit">Filter</button>
+  {{if .User}} · <a href="/?author=me">My posts</a> · <a href="/?liked=true">Liked</a>{{end}}
+</form>
+
+{{range .PageContent.Posts}}
+  <article>
+    <h2><a href="/post/{{.Post.ID}}">{{.Post.Title}}</a></h2>
+    <p>by {{.AuthorName}} — likes {{.LikeCount}}, dislikes {{.DislikeCount}}, comments {{.CommentCount}}</p>
+    <p>{{range .Categories}}[{{.Name}}] {{end}}</p>
+  </article>
+{{else}}
+  <p>No posts.</p>
+{{end}}
 {{end}}
