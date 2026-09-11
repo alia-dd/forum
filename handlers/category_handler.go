@@ -22,7 +22,12 @@ func NewCategoryHandler(catRep repository.CategoryRepository) *CategoryHandler {
 
 func (h *CategoryHandler) NewCategoryForm(w http.ResponseWriter, r *http.Request) {
 	//require admin?
-	user, _ := r.Context().Value("user_session").(*models.UserInfo)
+	user, ok := r.Context().Value("user_session").(*models.UserInfo)
+	if !ok {
+		http.Redirect(w, r, "/user/login", http.StatusSeeOther)
+		return
+	}
+
 	pageData := models.PageData{
 		User:        user,
 		PageContent: CategoryFormPage{},
@@ -31,7 +36,12 @@ func (h *CategoryHandler) NewCategoryForm(w http.ResponseWriter, r *http.Request
 }
 
 func (h *CategoryHandler) CreateCategory(w http.ResponseWriter, r *http.Request) {
-	user, _ := r.Context().Value("user_session").(*models.UserInfo)
+	user, ok := r.Context().Value("user_session").(*models.UserInfo)
+	if !ok {
+		http.Redirect(w, r, "/user/login", http.StatusSeeOther)
+		return
+	}
+
 	if err := r.ParseForm(); err != nil {
 		handleError(w, customerrors.ErrBadRequest)
 		return
@@ -65,7 +75,12 @@ func (h *CategoryHandler) CreateCategory(w http.ResponseWriter, r *http.Request)
 }
 
 func (h *CategoryHandler) EditCategoryForm(w http.ResponseWriter, r *http.Request) {
-	user, _ := r.Context().Value("user_session").(*models.UserInfo)
+	user, ok := r.Context().Value("user_session").(*models.UserInfo)
+	if !ok {
+		http.Redirect(w, r, "/user/login", http.StatusSeeOther)
+		return
+	}
+
 	id, err := strconv.Atoi(r.PathValue("id"))
 	if err != nil {
 		handleError(w, customerrors.ErrBadRequest)
@@ -94,7 +109,12 @@ func (h *CategoryHandler) EditCategoryForm(w http.ResponseWriter, r *http.Reques
 }
 
 func (h *CategoryHandler) UpdateCategory(w http.ResponseWriter, r *http.Request) {
-	user, _ := r.Context().Value("user_session").(*models.UserInfo)
+	user, ok := r.Context().Value("user_session").(*models.UserInfo)
+	if !ok {
+		http.Redirect(w, r, "/user/login", http.StatusSeeOther)
+		return
+	}
+
 	id, err := strconv.Atoi(r.PathValue("id"))
 	if err != nil {
 		handleError(w, customerrors.ErrBadRequest)

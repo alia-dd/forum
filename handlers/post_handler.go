@@ -21,7 +21,7 @@ func NewPostHandler(postRep repository.PostRepository, catRep repository.Categor
 }
 
 func (h *PostHandler) GetPosts(w http.ResponseWriter, r *http.Request) {
-	user, _ := r.Context().Value("user_session").(*models.UserInfo)
+	user, _ := r.Context().Value("user_session").(*models.UserInfo) // guests allowed
 
 	filter, err := h.parsePostFilter(r.Context(), r)
 	if err != nil {
@@ -69,7 +69,7 @@ func (h *PostHandler) GetPosts(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *PostHandler) GetPostByID(w http.ResponseWriter, r *http.Request) {
-	user, _ := r.Context().Value("user_session").(*models.UserInfo)
+	user, _ := r.Context().Value("user_session").(*models.UserInfo) // guests allowed
 	id, err := strconv.Atoi(r.PathValue("id"))
 	if err != nil {
 		handleError(w, customerrors.ErrBadRequest)
@@ -101,7 +101,12 @@ func (h *PostHandler) GetPostByID(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *PostHandler) NewPostForm(w http.ResponseWriter, r *http.Request) {
-	user, _ := r.Context().Value("user_session").(*models.UserInfo)
+	user, ok := r.Context().Value("user_session").(*models.UserInfo)
+	if !ok {
+		http.Redirect(w, r, "/user/login", http.StatusSeeOther)
+		return
+	}
+
 	cats, err := h.catRep.GetAllCategories(r.Context())
 	if err != nil {
 		handleError(w, err)
@@ -119,7 +124,11 @@ func (h *PostHandler) NewPostForm(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *PostHandler) CreatePost(w http.ResponseWriter, r *http.Request) {
-	user := r.Context().Value("user_session").(*models.UserInfo)
+	user, ok := r.Context().Value("user_session").(*models.UserInfo)
+	if !ok {
+		http.Redirect(w, r, "/user/login", http.StatusSeeOther)
+		return
+	}
 	form, ok := h.parsePostForm(w, r)
 	if !ok {
 		return
@@ -159,7 +168,11 @@ func (h *PostHandler) CreatePost(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *PostHandler) EditPostForm(w http.ResponseWriter, r *http.Request) {
-	user := r.Context().Value("user_session").(*models.UserInfo)
+	user, ok := r.Context().Value("user_session").(*models.UserInfo)
+	if !ok {
+		http.Redirect(w, r, "/user/login", http.StatusSeeOther)
+		return
+	}
 
 	id, err := strconv.Atoi(r.PathValue("id"))
 	if err != nil {
@@ -211,7 +224,11 @@ func (h *PostHandler) EditPostForm(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *PostHandler) UpdatePost(w http.ResponseWriter, r *http.Request) {
-	user := r.Context().Value("user_session").(*models.UserInfo)
+	user, ok := r.Context().Value("user_session").(*models.UserInfo)
+	if !ok {
+		http.Redirect(w, r, "/user/login", http.StatusSeeOther)
+		return
+	}
 
 	id, err := strconv.Atoi(r.PathValue("id"))
 	if err != nil {
