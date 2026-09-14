@@ -31,6 +31,61 @@ func (s *UserService) CreateUserService(cx context.Context, u models.UserRegiste
 	return s.repo.RegisterUser(cx, u)
 }
 
+// register new use
+func (s *UserService) GetUserService(cx context.Context, username string) (models.UserInfo, error) {
+
+	return s.repo.FetchUserDataByUserName(cx, username)
+}
+
+// patch user
+func (s *UserService) UpdateUserService(cx context.Context, u models.UserUpdate) error {
+	// move this to the service layer maybe
+	if u.Username != nil {
+		notAvailable, availableErr := s.repo.CheckIfAvailableExcludeUser(cx, *u.Username, u.Id)
+		fmt.Println("name check err ? ", notAvailable, availableErr)
+		if availableErr != nil {
+			return availableErr
+		}
+		if notAvailable {
+			return customerrors.ErrDuplicateEntry
+		}
+
+	}
+
+	if u.Email != nil {
+		notAvailable, availableErr := s.repo.CheckIfAvailableExcludeUser(cx, *u.Email, u.Id)
+		fmt.Println("email check err ? ", notAvailable, availableErr)
+		if availableErr != nil {
+			return availableErr
+		}
+		if notAvailable {
+			return customerrors.ErrDuplicateEntry
+		}
+	}
+	fmt.Println("service err ?")
+	return s.repo.UpdateUserData(cx, u)
+}
+
+func (s *UserService) ChangePasswordService(cx context.Context, userID int, currentPass, newPass string) error {
+	currentPassHash, fetchErr := s.repo.GetPasswordHash(cx, userID)
+	if fetchErr != nil {
+		return fetchErr
+	}
+	if compareErr := bcrypt.CompareHashAndPassword([]byte(currentPassHash), []byte(currentPass)); compareErr != nil {
+		fmt.Println("not a match")
+		return customerrors.ErrIncorrectPassword
+	}
+	newPassHash, hashErr := bcrypt.GenerateFromPassword([]byte(newPass), bcrypt.DefaultCost)
+	if hashErr != nil {
+		return customerrors.ErrInternalError
+	}
+	if updateErr := s.repo.UpdatePassword(cx, userID, string(newPassHash)); updateErr != nil {
+		fmt.Println(">>>", updateErr)
+		return updateErr
+	}
+	return s.sessionRepo.DeleteSessionsByUserId(cx, userID)
+}
+
 // authernticate use with their email/usename and password
 func (s *UserService) AuthenticateUserService(cx context.Context, u models.UserLogin) (*models.Session, error) {
 
@@ -38,7 +93,7 @@ func (s *UserService) AuthenticateUserService(cx context.Context, u models.UserL
 	if fetchErr != nil {
 		return nil, fetchErr
 	}
-	fmt.Println(user)
+	// fmt.Println(user)
 	compareErr := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(u.Password))
 	if compareErr != nil {
 		return nil, customerrors.ErrInvalidData
@@ -47,7 +102,6 @@ func (s *UserService) AuthenticateUserService(cx context.Context, u models.UserL
 	if sessionErr != nil {
 		return nil, sessionErr
 	}
-
 	return session, nil
 }
 

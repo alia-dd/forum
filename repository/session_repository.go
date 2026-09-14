@@ -12,9 +12,10 @@ import (
 )
 
 const (
-	createUserSession = ` INSERT INTO session (uuid, user_id, expires_at) VALUES(?,?,?)`
-	GetUserSession    = ` SELECT user_id, expires_at FROM session WHERE uuid = ?`
-	deleteUserSession = ` DELETE FROM session WHERE uuid = ?`
+	createUserSession      = ` INSERT INTO session (uuid, user_id, expires_at) VALUES(?,?,?)`
+	GetUserSession         = ` SELECT user_id, expires_at FROM session WHERE uuid = ?`
+	deleteUserSession      = ` DELETE FROM session WHERE uuid = ?`
+	deleteSessionsByUserId = ` DELETE FROM session WHERE user_id = ?`
 )
 
 type SessionRepository struct {
@@ -73,6 +74,14 @@ func (r *SessionRepository) DeleteSession(cx context.Context, sessionId string) 
 	rows, _ := resp.RowsAffected()
 	if rows == 0 {
 		return customerrors.ErrNotFound
+	}
+	return nil
+}
+
+func (r *SessionRepository) DeleteSessionsByUserId(cx context.Context, userID int) error {
+	_, deleteErr := r.db.ExecContext(cx, deleteSessionsByUserId, userID)
+	if deleteErr != nil {
+		return customerrors.ErrInternalError
 	}
 	return nil
 }

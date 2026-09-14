@@ -1,9 +1,73 @@
-#profile .title{
-  font-family: var(--font-head);
-  font-size: 1.6rem;
-  font-weight: 700;
-  color: var(--burgundy);
-  text-align: center;
-  margin-bottom: 1.75rem;
-  letter-spacing: 0.02em;
+#profile {
+max-width: 500px;
+margin: 2rem auto;
+padding: 2rem;
+color: var(--ink);
+font-family: var(--font-body);
+}
+
+#profile .title {
+display: block;
+font-family: var(--font-head);
+font-size: 1.6rem;
+font-weight: 700;
+color: var(--burgundy);
+text-align: center;
+margin-bottom: 1.75rem;
+letter-spacing: 0.02em;
+}
+
+#view,
+#edit {
+display: block;
+}
+
+.row {
+display: flex;
+align-items: center;
+gap: 10px;
+margin-bottom: 1rem;
+}
+
+.label {
+min-width: 80px;
+font-weight: 600;
+color: var(--ink-muted);
+}
+
+.input {
+flex: 1;
+padding: 0.6rem 0.7rem;
+border: 1px solid var(--border);
+border-radius: 4px;
+background: var(--paper);
+color: var(--ink);
+font-family: var(--font-body);
+font-size: 1rem;
+}
+
+.input:focus {
+outline: none;
+border-color: var(--burgundy);
+}
+
+.btn {
+padding: 0.6rem 1rem;
+border: 1px solid var(--burgundy);
+border-radius: 4px;
+background: var(--burgundy);
+color: var(--paper);
+font-family: var(--font-body);
+cursor: pointer;
+margin-right: 0.5rem;
+}
+
+.btn:hover {
+background: var(--burgundy-dk);
+}
+
+
+
+.error{
+    color: var(--burgundy);
 }

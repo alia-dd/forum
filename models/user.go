@@ -27,3 +27,10 @@ type UserInfo struct {
 	CreatedAt time.Time `json:"createdat"`
 	UpdatedAt time.Time `json:"updatedat"`
 }
+
+type UserUpdate struct {
+	Id       int     `json:"id"`
+	Username *string `json:"username"`
+	Name     *string `json:"name"`
+	Email    *string `json:"email"`
+}
