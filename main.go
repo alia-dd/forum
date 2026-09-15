@@ -102,8 +102,8 @@ func main() {
 
 	mux.HandleFunc("POST /user/logout", middleware.Recoverer(userHandler.SignOutUser))
 
-	mux.HandleFunc("GET /api/user/check-username", middleware.Recoverer(userHandler.CheckIfAvailabe))
-	mux.HandleFunc("GET /api/user/check-email", middleware.Recoverer(userHandler.CheckIfAvailabe))
+	// mux.HandleFunc("GET /api/user/check-username", middleware.Recoverer(userHandler.CheckIfAvailabe))
+	// mux.HandleFunc("GET /api/user/check-email", middleware.Recoverer(userHandler.CheckIfAvailabe))
 
 	// GET /post/{id} - just an int
 	mux.HandleFunc("GET /post/{id}", middleware.Recoverer(middleware.AllowGuest(sessionRepo, userRepo, postHandler.GetPostByID)))

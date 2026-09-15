@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"strings"
@@ -27,6 +26,7 @@ func (h *UseHandler) GetRegisterUser(w http.ResponseWriter, r *http.Request) {
 func (h *UseHandler) PostRegisterUser(w http.ResponseWriter, r *http.Request) {
 	cx := r.Context()
 
+	// change the handleErr to return to htmx page instead of new page
 	if parseErr := r.ParseForm(); parseErr != nil {
 		handleError(w, customerrors.ErrInternalError)
 		return
@@ -37,16 +37,6 @@ func (h *UseHandler) PostRegisterUser(w http.ResponseWriter, r *http.Request) {
 	email := strings.TrimSpace(r.FormValue("email"))
 	password := strings.TrimSpace(r.FormValue("password"))
 	conformPassword := strings.TrimSpace(r.FormValue("confirm_password"))
-
-	if password != conformPassword {
-		pageData := models.PageData{
-			User:    nil,
-			IsOwner: false,
-			Error:   "password does not match confirmation password.",
-		}
-		utils.RenderTemplate(w, http.StatusBadRequest, "user_registration", pageData)
-		return
-	}
 
 	userData := models.UserRegister{
 		Username:        username,
@@ -110,15 +100,18 @@ func (h *UseHandler) GetOtherUserProfile(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
+	// is this actually secure i hope so
+	// needs extra fix
+	// new problem if i were to go to  my profile why clicking on the auther name(me)
+	// the user will not be able to edit or change their profile is that actual an edge case or what
 	pageData := models.PageData{
 		User:        &profileData,
-		IsOwner:     ok,
+		IsOwner:     false,
 		PageContent: nil,
 	}
 	utils.RenderTemplate(w, http.StatusOK, "profile", pageData)
 }
 
-// currenly not working
 func (h *UseHandler) UpdateUserProfile(w http.ResponseWriter, r *http.Request) {
 	cx := r.Context()
 
@@ -128,7 +121,6 @@ func (h *UseHandler) UpdateUserProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if parseErr := r.ParseForm(); parseErr != nil {
-		fmt.Println("here")
 		handleError(w, customerrors.ErrInternalError)
 		return
 	}
@@ -137,11 +129,18 @@ func (h *UseHandler) UpdateUserProfile(w http.ResponseWriter, r *http.Request) {
 	email := strings.TrimSpace(r.FormValue("email"))
 
 	userData := models.UserUpdate{
-		Id:       user.Id,
-		Username: &username,
-		Name:     &name,
-		Email:    &email,
+		Id: user.Id,
 	}
+	if username != "" {
+		userData.Username = &username
+	}
+	if name != "" {
+		userData.Name = &name
+	}
+	if email != "" {
+		userData.Email = &email
+	}
+
 	if UpdateErr := h.service.UpdateUserService(cx, userData); UpdateErr != nil {
 		fmt.Println("here>>", UpdateErr)
 		pageData := models.PageData{
@@ -161,7 +160,7 @@ func (h *UseHandler) UpdateUserProfile(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/user/profile", http.StatusSeeOther)
 }
 
-// change pass
+// render change password page
 func (h *UseHandler) GetChangePassword(w http.ResponseWriter, r *http.Request) {
 	user, ok := r.Context().Value("user_session").(*models.UserInfo)
 	if !ok {
@@ -224,48 +223,48 @@ func (h *UseHandler) PostChangePassword(w http.ResponseWriter, r *http.Request) 
 
 // i dont think this it needed any more
 // this does a server side extra check on the usename and email for duplicets and incorrect format
-func (h *UseHandler) CheckIfAvailabe(w http.ResponseWriter, r *http.Request) {
-	cx := r.Context()
-	var (
-		exists   bool
-		checkErr error
-		message  string
-	)
-	switch r.URL.Path {
-	case "/check-username":
-		username := r.URL.Query().Get("username")
-		if !utils.IsValidName(username) {
-			message = customerrors.ErrInvalidName.Error()
-			break
-		}
-		exists, checkErr = h.service.CheckIfAvailable(cx, username)
-		message = fmt.Sprintf("Username %s is not availabl", username)
-	case "/check-email":
-		email := r.URL.Query().Get("email")
-		if !utils.IsValidEmail(email) {
-			message = customerrors.ErrInvalidData.Error()
-			break
-		}
-		exists, checkErr = h.service.CheckIfAvailable(cx, email)
-		message = customerrors.ErrDuplicateEmail.Error()
-	default:
-		handleError(w, customerrors.ErrInternalError)
-		return
-	}
-	if checkErr != nil {
-		http.Error(w, "Failed to Check Availability", http.StatusInternalServerError)
-		return
-	}
+// func (h *UseHandler) CheckIfAvailabe(w http.ResponseWriter, r *http.Request) {
+// 	cx := r.Context()
+// 	var (
+// 		exists   bool
+// 		checkErr error
+// 		message  string
+// 	)
+// 	switch r.URL.Path {
+// 	case "/check-username":
+// 		username := r.URL.Query().Get("username")
+// 		// if !models.IsValidName(username) {
+// 		// 	message = customerrors.ErrInvalidName.Error()
+// 		// 	break
+// 		// }
+// 		exists, checkErr = h.service.CheckIfAvailable(cx, username)
+// 		message = fmt.Sprintf("Username %s is not availabl", username)
+// 	case "/check-email":
+// 		email := r.URL.Query().Get("email")
+// 		// if !models.IsValidEmail(email) {
+// 		// 	message = customerrors.ErrInvalidData.Error()
+// 		// 	break
+// 		// }
+// 		exists, checkErr = h.service.CheckIfAvailable(cx, email)
+// 		message = customerrors.ErrDuplicateEmail.Error()
+// 	default:
+// 		handleError(w, customerrors.ErrInternalError)
+// 		return
+// 	}
+// 	if checkErr != nil {
+// 		http.Error(w, "Failed to Check Availability", http.StatusInternalServerError)
+// 		return
+// 	}
 
-	payload := struct {
-		Exists  bool   `json:"exists"`
-		Message string `json:"message"`
-	}{
-		Exists:  exists,
-		Message: message,
-	}
+// 	payload := struct {
+// 		Exists  bool   `json:"exists"`
+// 		Message string `json:"message"`
+// 	}{
+// 		Exists:  exists,
+// 		Message: message,
+// 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(payload)
-}
+// 	w.Header().Set("Content-Type", "application/json")
+// 	w.WriteHeader(http.StatusOK)
+// 	json.NewEncoder(w).Encode(payload)
+// }

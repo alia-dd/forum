@@ -71,3 +71,9 @@ background: var(--burgundy-dk);
 .error{
     color: var(--burgundy);
 }
+
+.username {
+min-width: 80px;
+font-weight: 400;
+color: var(--burgundy);
+}
