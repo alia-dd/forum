@@ -1,18 +1,37 @@
 {{define "content"}}
+
 <div id="profile">
-    <span class="title">loged in as</span>
-    
-    <div style="display: flex; flex-direction: row;" id="profile">
-        <span>username:</span>
-        <span style="width: 10px;"></span>
-        <span>{{.User.Username}}</span>
+
+    <span class="title">logged in as</span>
+    {{if .Error}} 
+        <div class="error"> {{.Error}} </div> 
+    {{end}}
+    <div id="view">
+
+        <div class="row">
+            <span class="label">username:</span>
+            <span>{{.User.Username}}</span>
+        </div>
+
+        <div class="row">
+            <span class="label">name:</span>
+            <span>{{.User.Name}}</span>
+        </div>
+
+        <div class="row">
+            <span class="label">email:</span>
+            <span>{{.User.Email}}</span>
+        </div>
+
+        {{if .IsOwner}}
+            <a class="btn" href="/user/profile/edit">Edit</a>
+            <a class="btn" href="/user/profile/password">Change password</a>
+            <!-- <button class="btn" type="button" > Edit </button> -->
+        {{end}}
+
     </div>
 
-    <div style="display: flex; flex-direction: row;" id="profile">
-        <span>name:</span>
-         <span style="width: 10px;"></span>
-        <span>{{.User.Name}}</span>
-        <span></span>
-    </div>
 </div>
+
+
 {{end}}

@@ -1,0 +1,33 @@
+{{define "content"}}
+
+<div id="profile">
+
+    <span class="title">Edit Profile Data</span>
+    {{if .Error}} 
+        <div class="error"> {{.Error}} </div> 
+    {{end}}
+    <div id="edit">
+        <!-- /user/profile/{id}/edit -->
+        <form method="POST" action="/user/profile/edit">
+            <div class="row">
+                <label class="label" for="username">username:</label>
+                <input class="input" type="text" id="username" name="username" value="{{.User.Username}}" >
+            </div>
+            <div class="row">
+                <label class="label" for="name">name:</label>
+                <input class="input" type="text" id="name" name="fullname" value="{{.User.Name}}">
+            </div>
+            <div class="row">
+                <label class="label" for="email">email:</label>
+                <input class="input" type="email" id="email" name="email" value="{{.User.Email}}">
+            </div>
+           <button class="btn" type="submit"> Update </button> 
+           <a class="btn" href="/user/profile"> Cancel </a>
+        </form>
+
+    </div>
+
+</div>
+
+
+{{end}}

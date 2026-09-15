@@ -1,6 +1,13 @@
 package models
 
-import "time"
+import (
+	"fmt"
+	"net/mail"
+	"regexp"
+	"time"
+
+	customerrors "gitea.kood.tech/jyrkikarhunen/forum/errors"
+)
 
 type UserRegister struct {
 	Id              int       `json:"user_id"`
@@ -26,4 +33,48 @@ type UserInfo struct {
 	Password  string    `json:"password"`
 	CreatedAt time.Time `json:"createdat"`
 	UpdatedAt time.Time `json:"updatedat"`
+}
+
+type UserUpdate struct {
+	Id       int     `json:"id"`
+	Username *string `json:"username"`
+	Name     *string `json:"name"`
+	Email    *string `json:"email"`
+}
+
+func (u *UserRegister) Isvalid() error {
+	if u.Name != "" && !IsValidName(u.Username) {
+		return customerrors.ErrInvalidName
+	}
+	if u.Email != "" && !IsValidEmail(u.Email) {
+		return customerrors.ErrInvalidData
+	}
+	if u.Password != "" && u.ConformPassword != "" && (u.Password != u.ConformPassword) {
+		return customerrors.ErrIncorrectPassword
+	}
+	return nil
+}
+
+func (u *UserUpdate) Isvalid() error {
+	if u.Username != nil && !IsValidName(*u.Username) {
+		return customerrors.ErrInvalidName
+	}
+	if u.Email != nil && !IsValidEmail(*u.Email) {
+		fmt.Println(u.Email)
+		return customerrors.ErrInvalidData
+	}
+	return nil
+}
+func IsValidName(name string) bool {
+	r, _ := regexp.Compile("^[A-Za-z0-9]+(?:-[A-Za-z0-9]+)*$")
+	if r.MatchString(name) {
+		return true
+	}
+	fmt.Println("not a march")
+	return false
+}
+
+func IsValidEmail(email string) bool {
+	validEmail, emailErr := mail.ParseAddress(email)
+	return emailErr == nil && validEmail.Address == email
 }

@@ -1,7 +1,11 @@
 {{define "content"}}
 <div id="registerdiv">
+  
   <form method="POST" action="/user/register">
     <div class="title">Registration Form</div>
+    {{if .Error}} 
+        <div class="error"> {{.Error}} </div> 
+    {{end}}
     <div class="inputContainer">
       <label for="fullname">Full Name</label>
       <div><input type="text" id="fullname" name="fullname" placeholder="Enter your name" required/></div>

@@ -52,8 +52,8 @@ func (h *PostHandler) GetPosts(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Println("cats: ", allCats)
-	fmt.Println("post: ", posts)
+	// fmt.Println("cats: ", allCats)
+	// fmt.Println("post: ", posts)
 
 	var pageData models.PageData
 	pageData = models.PageData{
@@ -64,7 +64,7 @@ func (h *PostHandler) GetPosts(w http.ResponseWriter, r *http.Request) {
 		},
 	}
 
-	fmt.Println(pageData)
+	// fmt.Println(pageData)
 	utils.RenderTemplate(w, http.StatusOK, "home", pageData)
 }
 
