@@ -238,19 +238,19 @@ func (r *postRepositoryImpl) UpdatePost(ctx context.Context, update models.PostU
 }
 
 func (r *postRepositoryImpl) DeletePost(ctx context.Context, id, authorID int) error {
-	var commentCount int
+	var hasComments bool
 	var err error
 	err = r.db.QueryRowContext(ctx, `
-		SELECT COUNT(*)
-		FROM comment
-		WHERE parent_post_id = ?
-		`, id).Scan(&commentCount)
+		SELECT EXISTS(
+			SELECT 1 FROM comment
+			WHERE parent_post_id = ?)
+		`, id).Scan(&hasComments)
 	if err != nil {
 		return customerrors.MapSQLError(err)
 	}
 
 	var res sql.Result
-	if commentCount == 0 {
+	if !hasComments {
 		res, err = r.db.ExecContext(ctx, `
 			DELETE FROM post
 			WHERE id = ? AND user_id = ?
