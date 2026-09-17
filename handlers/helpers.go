@@ -2,7 +2,11 @@ package handlers
 
 import (
 	"context"
+	"io"
+	"mime/multipart"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"unicode/utf8"
@@ -160,4 +164,26 @@ func (f *CategoryForm) Validate() bool {
 		f.Errors["Name"] = "Category name is too long"
 	}
 	return len(f.Errors) == 0
+}
+
+func SaveUploadedFile(file multipart.File, filename string) error {
+	uploadDirectory := "static/assets/images"
+
+	if err := os.MkdirAll(uploadDirectory, 0755); err != nil {
+		return customerrors.ErrBadRequest
+	}
+
+	path := filepath.Join(uploadDirectory, filename)
+
+	dst, err := os.Create(path)
+	if err != nil {
+		return customerrors.ErrBadRequest
+	}
+	defer dst.Close()
+
+	if _, err := io.Copy(dst, file); err != nil {
+		return customerrors.ErrBadRequest
+	}
+
+	return nil
 }

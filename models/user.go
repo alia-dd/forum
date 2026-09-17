@@ -14,6 +14,8 @@ type UserRegister struct {
 	Username        string    `json:"username"`
 	Email           string    `json:"email"`
 	Name            string    `json:"name"`
+	Image           string    `json:"imagePath"`
+	Bio             string    `json:"bio"`
 	Password        string    `json:"password"`
 	ConformPassword string    `json:"ConformPassword"`
 	CreatedAt       time.Time `json:"createdat"`
@@ -26,13 +28,15 @@ type UserLogin struct {
 }
 
 type UserInfo struct {
-	Id        int       `json:"id"`
-	Username  string    `json:"username"`
-	Name      string    `json:"name"`
-	Email     string    `json:"email"`
-	Password  string    `json:"password"`
-	CreatedAt time.Time `json:"createdat"`
-	UpdatedAt time.Time `json:"updatedat"`
+	Id        int       `json:"id,omitempty"`
+	Username  string    `json:"username,omitempty"`
+	Name      string    `json:"name,omitempty"`
+	Image     string    `json:"imagePath,omitempty"`
+	Bio       string    `json:"bio,omitempty"`
+	Email     string    `json:"email,omitempty"`
+	Password  string    `json:"password,omitempty"`
+	CreatedAt time.Time `json:"createdat,omitempty"`
+	UpdatedAt time.Time `json:"updatedat,omitempty"`
 }
 
 type UserUpdate struct {

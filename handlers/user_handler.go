@@ -26,6 +26,7 @@ func (h *UseHandler) GetRegisterUser(w http.ResponseWriter, r *http.Request) {
 func (h *UseHandler) PostRegisterUser(w http.ResponseWriter, r *http.Request) {
 	cx := r.Context()
 
+	r.ParseMultipartForm(10 << 20)
 	// change the handleErr to return to htmx page instead of new page
 	if parseErr := r.ParseForm(); parseErr != nil {
 		handleError(w, customerrors.ErrInternalError)
@@ -38,10 +39,32 @@ func (h *UseHandler) PostRegisterUser(w http.ResponseWriter, r *http.Request) {
 	password := strings.TrimSpace(r.FormValue("password"))
 	conformPassword := strings.TrimSpace(r.FormValue("confirm_password"))
 
+	file, header, fileErr := r.FormFile("imagepath")
+	if fileErr != nil || SaveUploadedFile(file, header.Filename) != nil {
+		pageData := models.PageData{
+			User:    nil,
+			IsOwner: false,
+			PageContent: &models.UserRegister{
+				Username:        username,
+				Name:            name,
+				Email:           email,
+				Password:        password,
+				ConformPassword: conformPassword,
+			},
+			Error: customerrors.ErrBadRequest.Error(),
+		}
+		utils.RenderTemplate(w, http.StatusBadRequest, "user_registration", pageData)
+
+	}
+	fileName := header.Filename
+
+	defer file.Close()
+
 	userData := models.UserRegister{
 		Username:        username,
 		Name:            name,
 		Email:           email,
+		Image:           fileName,
 		Password:        password,
 		ConformPassword: conformPassword,
 	}
@@ -100,6 +123,7 @@ func (h *UseHandler) GetOtherUserProfile(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
+	fmt.Println(profileData)
 	// is this actually secure i hope so
 	// needs extra fix
 	// new problem if i were to go to  my profile why clicking on the auther name(me)
@@ -142,7 +166,6 @@ func (h *UseHandler) UpdateUserProfile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if UpdateErr := h.service.UpdateUserService(cx, userData); UpdateErr != nil {
-		fmt.Println("here>>", UpdateErr)
 		pageData := models.PageData{
 			User: &models.UserInfo{
 				Id:       user.Id,

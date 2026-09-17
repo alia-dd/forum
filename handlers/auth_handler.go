@@ -19,6 +19,7 @@ func (h *UseHandler) SignInUser(w http.ResponseWriter, r *http.Request) {
 
 	if parseErr := r.ParseForm(); parseErr != nil {
 		handleError(w, customerrors.ErrInternalError)
+		return
 	}
 	username := strings.TrimSpace(r.FormValue("username"))
 	password := strings.TrimSpace(r.FormValue("password"))

@@ -56,12 +56,15 @@ func main() {
 	sessionRepo := repository.NewSessionRepository(db)
 	userRepo := repository.NewUserRepository(db)
 
-	userService := service.NewUserService(userRepo, sessionRepo)
-	userHandler := handlers.NewUserHandler(userService)
+	reactRepo := repository.NewReactionRepositry(db)
 
 	postRepo := repository.NewPostRepository(db)
 	categoryRepo := repository.NewCategoryRepository(db)
 
+	userService := service.NewUserService(userRepo, sessionRepo)
+	service.NewReactionHandler(reactRepo)
+
+	userHandler := handlers.NewUserHandler(userService)
 	postHandler := handlers.NewPostHandler(postRepo, categoryRepo)
 	categoryHandler := handlers.NewCategoryHandler(categoryRepo)
 
@@ -70,18 +73,29 @@ func main() {
 			http.FileServer(http.Dir("static"))))
 
 	// route check if the routes bellow are not called and difult to this one and if not calls 404 page
-	mux.HandleFunc("GET /", func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/" {
-			utils.RenderTemplate(w, http.StatusNotFound, "error", &models.ErrorStruct{Error: "404", ErrorMs: "Page Not Found"})
-			return
-		}
-		// this ssafeguarded doest restrict you to have a session but will present diffrent data
-		// depending if you have a session or not
-		// GET / - fetches all posts. Optional, combinable query filters: ?category={id}  ?author={id|me|username}  ?liked=true
-		// mux.HandleFunc("GET /", postHandler.GetPosts)
-		middleware.Recoverer(middleware.AllowGuest(sessionRepo, userRepo, postHandler.GetPosts))(w, r)
-		// middleware.Recoverer(middleware.AllowGuest(sessionRepo, userRepo, handlers.HomePage))(w, r)
-	})
+	// wrappes the whole with call with the safeguarded other while the user session will not we recognize and will log you out
+	mux.HandleFunc("GET /", middleware.Recoverer(
+		middleware.AllowGuest(sessionRepo, userRepo, func(w http.ResponseWriter, r *http.Request) {
+			if r.URL.Path != "/" {
+				user, ok := r.Context().Value("user_session").(*models.UserInfo)
+				if !ok {
+					http.Redirect(w, r, "/user/login", http.StatusSeeOther)
+					return
+				}
+
+				pageData := models.PageData{
+					User:        user,
+					IsOwner:     ok,
+					PageContent: &models.ErrorStruct{Error: "404", ErrorMs: "Page Not Found"},
+				}
+				utils.RenderTemplate(w, http.StatusNotFound, "error", pageData)
+				return
+			}
+
+			(postHandler.GetPosts)(w, r)
+
+		}),
+	))
 
 	// Profile page is user specific and is safeguarded by the Restrict middleware
 	// if there is no active session, it redirects to the login page.

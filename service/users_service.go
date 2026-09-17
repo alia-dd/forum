@@ -81,6 +81,7 @@ func (s *UserService) ChangePasswordService(cx context.Context, userID int, curr
 	if hashErr != nil {
 		return customerrors.ErrInternalError
 	}
+
 	if updateErr := s.repo.UpdatePassword(cx, userID, string(newPassHash)); updateErr != nil {
 		fmt.Println(">>>", updateErr)
 		return updateErr
@@ -95,7 +96,6 @@ func (s *UserService) AuthenticateUserService(cx context.Context, u models.UserL
 	if fetchErr != nil {
 		return nil, fetchErr
 	}
-	// fmt.Println(user)
 	compareErr := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(u.Password))
 	if compareErr != nil {
 		return nil, customerrors.ErrInvalidData

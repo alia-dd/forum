@@ -2,7 +2,11 @@
 
 <div id="profile">
 
-    <span class="title">logged in as</span>
+
+    <div class="row">
+        <img {{if .User.Image}} src="/static/assets/images/{{.User.Image}}" {{else}} src="/static/assets/images/avatar1.jpg" {{end}} alt="Avatar" class="avatar">
+        <span class="title">logged in as</span>
+    </div>
     {{if .Error}} 
         <div class="error"> {{.Error}} </div> 
     {{end}}
@@ -17,12 +21,16 @@
             <span class="label">name:</span>
             <span>{{.User.Name}}</span>
         </div>
-
         <div class="row">
-            <span class="label">email:</span>
-            <span>{{.User.Email}}</span>
+                <span class="label">Bio:</span>
+                <span>{{.User.Bio}}</span>
         </div>
-
+        {{if .IsOwner}}
+            <div class="row">
+                <span class="label">email:</span>
+                <span>{{.User.Email}}</span>
+            </div>
+        {{end}}
         {{if .IsOwner}}
             <a class="btn" href="/user/profile/edit">Edit</a>
             <a class="btn" href="/user/profile/password">Change password</a>
@@ -32,6 +40,5 @@
     </div>
 
 </div>
-
 
 {{end}}
