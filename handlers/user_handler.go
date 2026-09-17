@@ -30,7 +30,7 @@ func (h *UseHandler) PostRegisterUser(w http.ResponseWriter, r *http.Request) {
 
 	// change the handleErr to return to htmx page instead of new page
 	if parseErr := r.ParseForm(); parseErr != nil {
-		handleError(w, customerrors.ErrInternalError)
+		handleError(w, r, customerrors.ErrInternalError)
 		return
 	}
 
@@ -117,7 +117,7 @@ func (h *UseHandler) GetOtherUserProfile(w http.ResponseWriter, r *http.Request)
 
 	profileData, fetchErr := h.service.GetUserService(cx, username)
 	if fetchErr != nil {
-		handleError(w, fetchErr)
+		handleError(w, r, fetchErr)
 		return
 	}
 
@@ -141,7 +141,7 @@ func (h *UseHandler) UpdateUserProfile(w http.ResponseWriter, r *http.Request) {
 	r.ParseMultipartForm(10 << 20)
 
 	if parseErr := r.ParseForm(); parseErr != nil {
-		handleError(w, customerrors.ErrInternalError)
+		handleError(w, r, customerrors.ErrInternalError)
 		return
 	}
 	username := strings.TrimSpace(r.FormValue("username"))
@@ -232,7 +232,7 @@ func (h *UseHandler) PostChangePassword(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 	if parseErr := r.ParseForm(); parseErr != nil {
-		handleError(w, customerrors.ErrInternalError)
+		handleError(w, r, customerrors.ErrInternalError)
 		return
 	}
 

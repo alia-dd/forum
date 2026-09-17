@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS user (
 );
  
 CREATE TABLE IF NOT EXISTS session (
-    uuid         TEXT PRIMARY KEY,
+    uuid       TEXT PRIMARY KEY,
     user_id    INTEGER NOT NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     expires_at DATETIME NOT NULL,

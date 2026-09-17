@@ -131,6 +131,7 @@ func main() {
 	mux.HandleFunc("GET /post/{id}/edit", middleware.Recoverer(middleware.Restrict(sessionRepo, userRepo, postHandler.EditPostForm)))
 	// POST /post/{id}/edit - update your post. Form: title, content, main_category={id}, category={id}… (sides)
 	mux.HandleFunc("POST /post/{id}/edit", middleware.Recoverer(middleware.Restrict(sessionRepo, userRepo, postHandler.UpdatePost)))
+	mux.HandleFunc("POST /post/{id}/delete", middleware.Recoverer(middleware.Restrict(sessionRepo, userRepo, postHandler.DeletePost)))
 
 	// GET /category/new - loads template (once implemented) for creating new category
 	mux.HandleFunc("GET /category/new", middleware.Recoverer(middleware.Restrict(sessionRepo, userRepo, categoryHandler.NewCategoryForm)))
