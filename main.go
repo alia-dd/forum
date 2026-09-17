@@ -70,18 +70,20 @@ func main() {
 			http.FileServer(http.Dir("static"))))
 
 	// route check if the routes bellow are not called and difult to this one and if not calls 404 page
-	mux.HandleFunc("GET /", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("GET /", middleware.Recoverer(middleware.AllowGuest(sessionRepo, userRepo, func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/" {
-			utils.RenderTemplate(w, http.StatusNotFound, "error", &models.ErrorStruct{Error: "404", ErrorMs: "Page Not Found"})
+			user, _ := r.Context().Value("user_session").(*models.UserInfo)
+			utils.RenderTemplate(w, http.StatusNotFound, "error", models.PageData{
+				User: user, PageContent: models.ErrorStruct{Error: "404", ErrorMs: "Page Not Found"},
+			})
 			return
 		}
 		// this ssafeguarded doest restrict you to have a session but will present diffrent data
 		// depending if you have a session or not
 		// GET / - fetches all posts. Optional, combinable query filters: ?category={id}  ?author={id|me|username}  ?liked=true
 		// mux.HandleFunc("GET /", postHandler.GetPosts)
-		middleware.Recoverer(middleware.AllowGuest(sessionRepo, userRepo, postHandler.GetPosts))(w, r)
-		// middleware.Recoverer(middleware.AllowGuest(sessionRepo, userRepo, handlers.HomePage))(w, r)
-	})
+		postHandler.GetPosts(w, r)
+	})))
 
 	// Profile page is user specific and is safeguarded by the Restrict middleware
 	// if there is no active session, it redirects to the login page.
@@ -110,6 +112,7 @@ func main() {
 	mux.HandleFunc("GET /post/{id}/edit", middleware.Recoverer(middleware.Restrict(sessionRepo, userRepo, postHandler.EditPostForm)))
 	// POST /post/{id}/edit - update your post. Form: title, content, main_category={id}, category={id}… (sides)
 	mux.HandleFunc("POST /post/{id}/edit", middleware.Recoverer(middleware.Restrict(sessionRepo, userRepo, postHandler.UpdatePost)))
+	mux.HandleFunc("POST /post/{id}/delete", middleware.Recoverer(middleware.Restrict(sessionRepo, userRepo, postHandler.DeletePost)))
 
 	// GET /category/new - loads template (once implemented) for creating new category
 	mux.HandleFunc("GET /category/new", middleware.Recoverer(middleware.Restrict(sessionRepo, userRepo, categoryHandler.NewCategoryForm)))

@@ -9,6 +9,9 @@
     {{if $user}}
         {{if eq $user.Id .Post.UserID}}
             <p><a href="/post/{{.Post.ID}}/edit">Edit</a></p>
+            <form method="POST" action="/post/{{.Post.ID}}/delete" onsubmit="return confirm('Delete this post and all its comments?')">
+              <button type="submit">Delete</button>
+            </form>
         {{end}}
     {{end}}
 </article>

@@ -43,7 +43,7 @@ func (h *CategoryHandler) CreateCategory(w http.ResponseWriter, r *http.Request)
 	}
 
 	if err := r.ParseForm(); err != nil {
-		handleError(w, customerrors.ErrBadRequest)
+		handleError(w, r, customerrors.ErrBadRequest)
 		return
 	}
 
@@ -67,7 +67,7 @@ func (h *CategoryHandler) CreateCategory(w http.ResponseWriter, r *http.Request)
 			})
 			return
 		}
-		handleError(w, err)
+		handleError(w, r, err)
 		return
 	}
 
@@ -83,13 +83,13 @@ func (h *CategoryHandler) EditCategoryForm(w http.ResponseWriter, r *http.Reques
 
 	id, err := strconv.Atoi(r.PathValue("id"))
 	if err != nil {
-		handleError(w, customerrors.ErrBadRequest)
+		handleError(w, r, customerrors.ErrBadRequest)
 		return
 	}
 
 	cat, err := h.catRep.GetCategoryByID(r.Context(), id)
 	if err != nil {
-		handleError(w, err)
+		handleError(w, r, err)
 		return
 	}
 
@@ -117,12 +117,12 @@ func (h *CategoryHandler) UpdateCategory(w http.ResponseWriter, r *http.Request)
 
 	id, err := strconv.Atoi(r.PathValue("id"))
 	if err != nil {
-		handleError(w, customerrors.ErrBadRequest)
+		handleError(w, r, customerrors.ErrBadRequest)
 		return
 	}
 
 	if err := r.ParseForm(); err != nil {
-		handleError(w, customerrors.ErrBadRequest)
+		handleError(w, r, customerrors.ErrBadRequest)
 		return
 	}
 
@@ -146,7 +146,7 @@ func (h *CategoryHandler) UpdateCategory(w http.ResponseWriter, r *http.Request)
 			})
 			return
 		}
-		handleError(w, err)
+		handleError(w, r, err)
 		return
 	}
 
@@ -157,13 +157,13 @@ func (h *CategoryHandler) DeleteCategory(w http.ResponseWriter, r *http.Request)
 	//admin validation
 	id, err := strconv.Atoi(r.PathValue("id"))
 	if err != nil {
-		handleError(w, customerrors.ErrBadRequest)
+		handleError(w, r, customerrors.ErrBadRequest)
 		return
 	}
 
 	err = h.catRep.DeleteCategory(r.Context(), id)
 	if err != nil {
-		handleError(w, err)
+		handleError(w, r, err)
 		return
 	}
 	http.Redirect(w, r, "/", http.StatusSeeOther)

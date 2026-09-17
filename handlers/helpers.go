@@ -112,13 +112,13 @@ func (h *PostHandler) getAuthorID(ctx context.Context, author string) (int, erro
 
 func (h *PostHandler) parsePostForm(w http.ResponseWriter, r *http.Request) (PostForm, bool) {
 	if err := r.ParseForm(); err != nil {
-		handleError(w, customerrors.ErrBadRequest)
+		handleError(w, r, customerrors.ErrBadRequest)
 		return PostForm{}, false
 	}
 
 	mainCat, err := strconv.Atoi(r.FormValue("main_category"))
 	if err != nil {
-		handleError(w, customerrors.ErrBadRequest)
+		handleError(w, r, customerrors.ErrBadRequest)
 		return PostForm{}, false
 	}
 
@@ -126,7 +126,7 @@ func (h *PostHandler) parsePostForm(w http.ResponseWriter, r *http.Request) (Pos
 	for _, cat := range r.Form["category"] {
 		id, err := strconv.Atoi(cat)
 		if err != nil {
-			handleError(w, customerrors.ErrBadRequest)
+			handleError(w, r, customerrors.ErrBadRequest)
 			return PostForm{}, false
 		}
 		if id != mainCat { // avoid duplicating maincategory into categorylist
