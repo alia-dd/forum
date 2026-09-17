@@ -47,7 +47,7 @@ type UserUpdate struct {
 }
 
 func (u *UserRegister) Isvalid() error {
-	if u.Name != "" && !IsValidName(u.Username) {
+	if u.Username != "" && !IsValidName(u.Username) {
 		return customerrors.ErrInvalidName
 	}
 	if u.Email != "" && !IsValidEmail(u.Email) {

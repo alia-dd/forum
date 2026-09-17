@@ -98,7 +98,7 @@ func (s *UserService) AuthenticateUserService(cx context.Context, u models.UserL
 	}
 	compareErr := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(u.Password))
 	if compareErr != nil {
-		return nil, customerrors.ErrInvalidData
+		return nil, customerrors.ErrInvalidLogin
 	}
 	session, sessionErr := s.sessionRepo.CreateSession(cx, user.Id)
 	if sessionErr != nil {

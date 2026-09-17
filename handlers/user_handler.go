@@ -39,26 +39,31 @@ func (h *UseHandler) PostRegisterUser(w http.ResponseWriter, r *http.Request) {
 	password := strings.TrimSpace(r.FormValue("password"))
 	conformPassword := strings.TrimSpace(r.FormValue("confirm_password"))
 
+	var fileName string
+
 	file, header, fileErr := r.FormFile("imagepath")
-	if fileErr != nil || SaveUploadedFile(file, header.Filename) != nil {
-		pageData := models.PageData{
-			User:    nil,
-			IsOwner: false,
-			PageContent: &models.UserRegister{
-				Username:        username,
-				Name:            name,
-				Email:           email,
-				Password:        password,
-				ConformPassword: conformPassword,
-			},
-			Error: customerrors.ErrBadRequest.Error(),
+	if fileErr == nil && header.Size > 0 {
+		defer file.Close()
+		if saveErr := SaveUploadedFile(file, header.Filename); saveErr != nil {
+			pageData := models.PageData{
+				User:    nil,
+				IsOwner: false,
+				PageContent: &models.UserRegister{
+					Username:        username,
+					Name:            name,
+					Email:           email,
+					Password:        password,
+					ConformPassword: conformPassword,
+				},
+				Error: customerrors.ErrBadRequest.Error(),
+			}
+			utils.RenderTemplate(w, http.StatusBadRequest, "user_registration", pageData)
+			return
 		}
-		utils.RenderTemplate(w, http.StatusBadRequest, "user_registration", pageData)
-
+		fileName = header.Filename
 	}
-	fileName := header.Filename
 
-	defer file.Close()
+	// defer file.Close()
 
 	userData := models.UserRegister{
 		Username:        username,
@@ -108,12 +113,6 @@ func (h *UseHandler) GetEditUserProfile(w http.ResponseWriter, r *http.Request) 
 // shows profile data for other registred users
 func (h *UseHandler) GetOtherUserProfile(w http.ResponseWriter, r *http.Request) {
 	cx := r.Context()
-
-	_, ok := r.Context().Value("user_session").(*models.UserInfo)
-	if !ok {
-		http.Redirect(w, r, "/user/login", http.StatusSeeOther)
-		return
-	}
 
 	username := r.PathValue("username")
 	fmt.Println("name", username)

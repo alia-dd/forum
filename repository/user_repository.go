@@ -51,7 +51,7 @@ func (r *UserRepository) AuthenticateUser(cx context.Context, col string) (model
 	if fetchErr != nil {
 		fmt.Println(fetchErr)
 		if fetchErr == sql.ErrNoRows {
-			return user, customerrors.ErrNotFound
+			return user, customerrors.ErrInvalidLogin
 		}
 		return user, customerrors.ErrInternalError
 	}
