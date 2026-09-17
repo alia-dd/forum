@@ -29,6 +29,7 @@ CREATE TABLE IF NOT EXISTS post (
     content    TEXT NOT NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME,
+    deleted_at DATETIME,
     FOREIGN KEY (user_id) REFERENCES user(id) ON DELETE CASCADE
 );
  
