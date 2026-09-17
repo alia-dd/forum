@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"fmt"
 	"net/http"
 	"strings"
 
@@ -26,7 +25,9 @@ func (h *UseHandler) GetRegisterUser(w http.ResponseWriter, r *http.Request) {
 func (h *UseHandler) PostRegisterUser(w http.ResponseWriter, r *http.Request) {
 	cx := r.Context()
 
+	r.Body = http.MaxBytesReader(w, r.Body, 10<<20)
 	r.ParseMultipartForm(10 << 20)
+
 	// change the handleErr to return to htmx page instead of new page
 	if parseErr := r.ParseForm(); parseErr != nil {
 		handleError(w, customerrors.ErrInternalError)
@@ -44,7 +45,8 @@ func (h *UseHandler) PostRegisterUser(w http.ResponseWriter, r *http.Request) {
 	file, header, fileErr := r.FormFile("imagepath")
 	if fileErr == nil && header.Size > 0 {
 		defer file.Close()
-		if saveErr := SaveUploadedFile(file, header.Filename); saveErr != nil {
+		savename, saveErr := SaveUploadedFile(file)
+		if saveErr != nil {
 			pageData := models.PageData{
 				User:    nil,
 				IsOwner: false,
@@ -60,10 +62,8 @@ func (h *UseHandler) PostRegisterUser(w http.ResponseWriter, r *http.Request) {
 			utils.RenderTemplate(w, http.StatusBadRequest, "user_registration", pageData)
 			return
 		}
-		fileName = header.Filename
+		fileName = savename
 	}
-
-	// defer file.Close()
 
 	userData := models.UserRegister{
 		Username:        username,
@@ -95,7 +95,6 @@ func (h *UseHandler) PostRegisterUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *UseHandler) GetEditUserProfile(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("is it working?")
 	user, ok := r.Context().Value("user_session").(*models.UserInfo)
 	if !ok {
 		http.Redirect(w, r, "/user/login", http.StatusSeeOther)
@@ -113,36 +112,34 @@ func (h *UseHandler) GetEditUserProfile(w http.ResponseWriter, r *http.Request) 
 // shows profile data for other registred users
 func (h *UseHandler) GetOtherUserProfile(w http.ResponseWriter, r *http.Request) {
 	cx := r.Context()
-
+	user, ok := r.Context().Value("user_session").(*models.UserInfo)
 	username := r.PathValue("username")
-	fmt.Println("name", username)
+
 	profileData, fetchErr := h.service.GetUserService(cx, username)
 	if fetchErr != nil {
 		handleError(w, fetchErr)
 		return
 	}
 
-	fmt.Println(profileData)
-	// is this actually secure i hope so
-	// needs extra fix
-	// new problem if i were to go to  my profile why clicking on the auther name(me)
-	// the user will not be able to edit or change their profile is that actual an edge case or what
 	pageData := models.PageData{
-		User:        &profileData,
-		IsOwner:     false,
-		PageContent: nil,
+		User:        user,
+		IsOwner:     ok && user.Id == profileData.Id,
+		PageContent: profileData,
 	}
 	utils.RenderTemplate(w, http.StatusOK, "profile", pageData)
 }
 
 func (h *UseHandler) UpdateUserProfile(w http.ResponseWriter, r *http.Request) {
 	cx := r.Context()
-
 	user, ok := r.Context().Value("user_session").(*models.UserInfo)
 	if !ok {
 		http.Redirect(w, r, "/user/login", http.StatusSeeOther)
 		return
 	}
+
+	r.Body = http.MaxBytesReader(w, r.Body, 10<<20)
+	r.ParseMultipartForm(10 << 20)
+
 	if parseErr := r.ParseForm(); parseErr != nil {
 		handleError(w, customerrors.ErrInternalError)
 		return
@@ -150,9 +147,35 @@ func (h *UseHandler) UpdateUserProfile(w http.ResponseWriter, r *http.Request) {
 	username := strings.TrimSpace(r.FormValue("username"))
 	name := strings.TrimSpace(r.FormValue("fullname"))
 	email := strings.TrimSpace(r.FormValue("email"))
+	bio := strings.TrimSpace(r.FormValue("bio"))
+	var fileName string
+
+	file, header, fileErr := r.FormFile("imagepath")
+	if fileErr == nil && header.Size > 0 {
+		defer file.Close()
+		savename, saveErr := SaveUploadedFile(file)
+		if saveErr != nil {
+			pageData := models.PageData{
+				User: &models.UserInfo{
+					Username: username,
+					Name:     name,
+					Email:    email,
+					Bio:      bio,
+					Image:    fileName,
+				},
+				IsOwner:     ok,
+				PageContent: nil,
+				Error:       customerrors.ErrBadRequest.Error(),
+			}
+			utils.RenderTemplate(w, http.StatusBadRequest, "profileEdit", pageData)
+			return
+		}
+		fileName = savename
+	}
 
 	userData := models.UserUpdate{
-		Id: user.Id,
+		Id:  user.Id,
+		Bio: &bio,
 	}
 	if username != "" {
 		userData.Username = &username
@@ -163,7 +186,9 @@ func (h *UseHandler) UpdateUserProfile(w http.ResponseWriter, r *http.Request) {
 	if email != "" {
 		userData.Email = &email
 	}
-
+	if fileName != "" {
+		userData.Image = &fileName
+	}
 	if UpdateErr := h.service.UpdateUserService(cx, userData); UpdateErr != nil {
 		pageData := models.PageData{
 			User: &models.UserInfo{
@@ -171,8 +196,10 @@ func (h *UseHandler) UpdateUserProfile(w http.ResponseWriter, r *http.Request) {
 				Username: username,
 				Name:     name,
 				Email:    email,
+				Bio:      bio,
+				Image:    fileName,
 			},
-			IsOwner:     true,
+			IsOwner:     ok,
 			PageContent: nil,
 			Error:       UpdateErr.Error(),
 		}

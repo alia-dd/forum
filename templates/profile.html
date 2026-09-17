@@ -1,10 +1,10 @@
 {{define "content"}}
 
 <div id="profile">
-
-
+{{$user := .PageContent}}
+{{if .IsOwner}}{{$user = .User}}{{end}}
     <div class="row">
-        <img {{if .User.Image}} src="/static/assets/images/{{.User.Image}}" {{else}} src="/static/assets/images/avatar1.jpg" {{end}} alt="Avatar" class="avatar">
+        <img {{if $user.Image}} src="/static/assets/images/{{$user.Image}}" {{else}} src="/static/assets/images/avatar1.jpg" {{end}} alt="Avatar" class="avatar">
         <span class="title">logged in as</span>
     </div>
     {{if .Error}} 
@@ -14,21 +14,21 @@
 
         <div class="row">
             <span class="label">username:</span>
-            <span>{{.User.Username}}</span>
+            <span>{{$user.Username}}</span>
         </div>
 
         <div class="row">
             <span class="label">name:</span>
-            <span>{{.User.Name}}</span>
+            <span>{{$user.Name}}</span>
         </div>
         <div class="row">
                 <span class="label">Bio:</span>
-                <span>{{.User.Bio}}</span>
+                <span>{{$user.Bio}}</span>
         </div>
         {{if .IsOwner}}
             <div class="row">
                 <span class="label">email:</span>
-                <span>{{.User.Email}}</span>
+                <span>{{$user.Email}}</span>
             </div>
         {{end}}
         {{if .IsOwner}}

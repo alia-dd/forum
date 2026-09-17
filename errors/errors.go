@@ -26,7 +26,7 @@ var (
 	ErrForbidden            = errors.New("forbidden")
 	ErrInUse                = errors.New("resource still in use")
 	ErrIncorrectPassword    = errors.New("Incorrect Password")
-	ErrInvalidLogin         = errors.New("invalid username or password")
+	ErrInvalidLogin         = errors.New("Invalid username or password")
 )
 
 func MapSQLError(err error) error {

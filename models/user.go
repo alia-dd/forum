@@ -35,8 +35,17 @@ type UserInfo struct {
 	Bio       string    `json:"bio,omitempty"`
 	Email     string    `json:"email,omitempty"`
 	Password  string    `json:"password,omitempty"`
-	CreatedAt time.Time `json:"createdat,omitempty"`
-	UpdatedAt time.Time `json:"updatedat,omitempty"`
+	CreatedAt time.Time `json:"createdat"`
+	UpdatedAt time.Time `json:"updatedat"`
+}
+
+type PublicUserInfo struct {
+	Id        int       `json:"id,omitempty"`
+	Username  string    `json:"username,omitempty"`
+	Name      string    `json:"name,omitempty"`
+	Image     string    `json:"imagePath,omitempty"`
+	Bio       string    `json:"bio,omitempty"`
+	CreatedAt time.Time `json:"createdat"`
 }
 
 type UserUpdate struct {
@@ -44,6 +53,8 @@ type UserUpdate struct {
 	Username *string `json:"username"`
 	Name     *string `json:"name"`
 	Email    *string `json:"email"`
+	Image    *string `json:"imagePath"`
+	Bio      *string `json:"bio"`
 }
 
 func (u *UserRegister) Isvalid() error {
@@ -65,6 +76,9 @@ func (u *UserUpdate) Isvalid() error {
 	}
 	if u.Email != nil && !IsValidEmail(*u.Email) {
 		fmt.Println(u.Email)
+		return customerrors.ErrInvalidData
+	}
+	if u.Bio != nil && len(*u.Bio) > 200 {
 		return customerrors.ErrInvalidData
 	}
 	return nil

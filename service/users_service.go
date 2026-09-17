@@ -35,8 +35,7 @@ func (s *UserService) CreateUserService(cx context.Context, u models.UserRegiste
 }
 
 // register new use
-func (s *UserService) GetUserService(cx context.Context, username string) (models.UserInfo, error) {
-
+func (s *UserService) GetUserService(cx context.Context, username string) (models.PublicUserInfo, error) {
 	return s.repo.FetchUserDataByUserName(cx, username)
 }
 
