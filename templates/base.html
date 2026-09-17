@@ -11,6 +11,7 @@
 </head>
 <body>
      {{template "nav" .}}
+     {{if .Error}}<div class="page-error">{{.Error}}</div>{{end}}
     <main id="mainContent">
         {{block "content" .}}{{end}}
     </main>
