@@ -20,11 +20,11 @@ func (r *SearchRepository) SearchUsers(ctx context.Context, search string) ([]mo
 	searchArg := "%" + search + "%"
 
 	rows, err := r.db.QueryContext(ctx, `
-			SELECT id, username, COALESCE(name, '')
+			SELECT id, username
 			FROM user
-			WHERE username LIKE ? OR name LIKE ?
-			ORDER BY username
-			`, searchArg, searchArg)
+			WHERE username LIKE ?
+			ORDER BY username DESC
+			`, searchArg)
 	if err != nil {
 		return nil, customerrors.MapSQLError(err)
 	}
@@ -33,7 +33,7 @@ func (r *SearchRepository) SearchUsers(ctx context.Context, search string) ([]mo
 	result := []models.UserResult{}
 	for rows.Next() {
 		var ur models.UserResult
-		err := rows.Scan(&ur.ID, &ur.Username, &ur.Name)
+		err := rows.Scan(&ur.ID, &ur.Username)
 		if err != nil {
 			return nil, customerrors.MapSQLError(err)
 		}
@@ -49,7 +49,7 @@ func (r *SearchRepository) SearchPosts(ctx context.Context, term string) ([]mode
 		SELECT post.id, post.title, user.username
 		FROM post JOIN user ON user.id = post.user_id
 		WHERE post.title LIKE ? OR post.content LIKE ?
-		ORDER BY post.created_at DESC LIMIT 50
+		ORDER BY post.created_at DESC
 		`, searchArg, searchArg)
 	if err != nil {
 		return nil, customerrors.MapSQLError(err)
@@ -74,7 +74,7 @@ func (r *SearchRepository) SearchComments(ctx context.Context, term string) ([]m
 		SELECT comment.id, comment.content, comment.parent_post_id, user.username
 		FROM comment JOIN user ON user.id = comment.user_id
 		WHERE comment.content LIKE ? AND comment.deleted_at IS NULL
-		ORDER BY comment.created_at DESC LIMIT 50
+		ORDER BY comment.created_at DESC
 		`, searchArg)
 	if err != nil {
 		return nil, customerrors.MapSQLError(err)

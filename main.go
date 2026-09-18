@@ -65,6 +65,9 @@ func main() {
 	postHandler := handlers.NewPostHandler(postRepo, categoryRepo)
 	categoryHandler := handlers.NewCategoryHandler(categoryRepo)
 
+	searchRepo := repository.NewSearchRepository(db)
+	searchHandler := handlers.NewSearchHandler(searchRepo)
+
 	mux.Handle("GET /static/",
 		http.StripPrefix("/static/",
 			http.FileServer(http.Dir("static"))))
@@ -125,6 +128,8 @@ func main() {
 	// POST /category/{id}/delete - delete category (if it has no references elsewhere)
 	mux.HandleFunc("POST /category/{id}/delete", middleware.Recoverer(middleware.Restrict(sessionRepo, userRepo, categoryHandler.DeleteCategory)))
 	//above need auth
+
+	mux.HandleFunc("GET /search", middleware.Recoverer(middleware.AllowGuest(sessionRepo, userRepo, searchHandler.Search)))
 
 	server := &http.Server{
 		Addr:         ":8080",

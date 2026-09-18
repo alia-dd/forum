@@ -41,6 +41,7 @@ CREATE TABLE IF NOT EXISTS comment (
     content           TEXT NOT NULL,
     created_at        DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at        DATETIME,
+    deleted_at        DATETIME,
     FOREIGN KEY (user_id)           REFERENCES user(id)    ON DELETE CASCADE,
     FOREIGN KEY (parent_post_id)    REFERENCES post(id)    ON DELETE CASCADE,
     FOREIGN KEY (parent_comment_id) REFERENCES comment(id) ON DELETE CASCADE
