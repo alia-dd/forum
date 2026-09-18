@@ -221,3 +221,23 @@ func validateMIMEType(file multipart.File, allowedTypes []string) (string, error
 
 	return "", customerrors.ErrBadRequest
 }
+
+// commentform
+type CommentForm struct {
+	//userdata
+	Content string
+	Errors  map[string]string
+}
+
+func (f *CommentForm) Validate() bool {
+	f.Errors = map[string]string{}
+
+	content := strings.TrimSpace(f.Content)
+
+	if content == "" {
+		f.Errors["Name"] = "Content is required"
+	} else if utf8.RuneCountInString(content) > 10000 {
+		f.Errors["Name"] = "Content is too long"
+	}
+	return len(f.Errors) == 0
+}

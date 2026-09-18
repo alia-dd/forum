@@ -31,6 +31,7 @@ a { text-decoration: none; color: inherit; }
   z-index: 100;
   height: var(--nav-h);
   background: var(--surface);
+  background-color: white;
   border-bottom: 1px solid var(--border);
   display: flex;
   align-items: center;

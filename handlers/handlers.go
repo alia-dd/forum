@@ -10,10 +10,10 @@ import (
 
 func HomePage(w http.ResponseWriter, r *http.Request) {
 	user, ok := r.Context().Value("user_session").(*models.UserInfo)
-	pageData := models.PageData{
+	pageData := models.PageData[MainPage]{
 		User:        user,
 		IsOwner:     ok,
-		PageContent: nil,
+		PageContent: MainPage{},
 	}
 
 	utils.RenderTemplate(w, http.StatusOK, "home", pageData)
@@ -29,10 +29,11 @@ func Profile(w http.ResponseWriter, r *http.Request) {
 	}
 	fmt.Println(user)
 
-	pageData := models.PageData{
+	// replace mainpage with a dedicated profile struct later
+	pageData := models.PageData[MainPage]{
 		User:        user,
 		IsOwner:     ok,
-		PageContent: nil,
+		PageContent: MainPage{},
 	}
 	utils.RenderTemplate(w, http.StatusOK, "profile", pageData)
 }

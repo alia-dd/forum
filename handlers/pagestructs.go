@@ -9,8 +9,8 @@ type MainPage struct {
 }
 
 type PostPage struct {
-	Post *models.PostView
-	//comments
+	Post     *models.PostView
+	Comments []*models.CommentView
 }
 
 type PostFormPage struct {
