@@ -10,30 +10,16 @@ import (
 )
 
 const (
+	getUserPostReaction    = ` SELECT value FROM post_like WHERE WHERE user_id = ? AND post_id = ?`
 	createUserPostReaction = ` INSERT INTO post_like (user_id, post_id, value) VALUES(?,?,?)`
-	deleteUserPostReaction = ` DELETE FROM post_like WHERE (user_id = ? && post_id)`
+	deleteUserPostReaction = ` DELETE FROM post_like WHERE WHERE user_id = ? AND post_id = ?`
+	updateUserPostReaction = ` UPDATE post_like SET value = ? WHERE user_id = ? AND post_id = ?`
 
+	getUserCommentReaction    = ` SELECT value FROM comment_like WHERE WHERE user_id = ? AND comment_id = ?`
 	createUserCommentReaction = ` INSERT INTO comment_like (user_id, comment_id, value) VALUES(?,?,?)`
-	deleteUserCommentReaction = ` DELETE FROM comment_like WHERE (user_id = ? && comment_id)`
+	deleteUserCommentReaction = ` DELETE FROM comment_like WHERE WHERE user_id = ? AND comment_id = ?`
+	updateUserCommentReaction = ` UPDATE comment_like SET value = ? WHERE user_id = ? AND comment_id = ?`
 )
-
-// CREATE TABLE IF NOT EXISTS post_like (
-//     user_id INTEGER NOT NULL,
-//     post_id INTEGER NOT NULL,
-//     value   INTEGER NOT NULL,
-//     PRIMARY KEY (user_id, post_id),
-//     FOREIGN KEY (user_id) REFERENCES user(id) ON DELETE CASCADE,
-//     FOREIGN KEY (post_id) REFERENCES post(id) ON DELETE CASCADE
-// );
-
-// CREATE TABLE IF NOT EXISTS comment_like (
-//     user_id    INTEGER NOT NULL,
-//     comment_id INTEGER NOT NULL,
-//     value      INTEGER NOT NULL,
-//     PRIMARY KEY (user_id, comment_id),
-//     FOREIGN KEY (user_id)    REFERENCES user(id)    ON DELETE CASCADE,
-//     FOREIGN KEY (comment_id) REFERENCES comment(id) ON DELETE CASCADE
-// );`
 
 type ReactionRepository struct {
 	db *sql.DB
@@ -43,8 +29,18 @@ func NewReactionRepository(db *sql.DB) *ReactionRepository {
 	return &ReactionRepository{db: db}
 }
 
+func (r *ReactionRepository) GetPostReaction(cx context.Context, rec models.Reaction) (*int, error) {
+	var value int
+	fetchErr := r.db.QueryRowContext(cx, getUserPostReaction, rec.User_id, rec.Id).Scan(&value)
+	if fetchErr != nil {
+		if fetchErr == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, customerrors.ErrInternalError
+	}
+	return &value, nil
+}
 func (r *ReactionRepository) CreatePostReaction(cx context.Context, rec models.Reaction) error {
-
 	_, postErr := r.db.ExecContext(cx, createUserPostReaction, rec.User_id, rec.Id, rec.Value)
 	if postErr != nil {
 		if strings.Contains(postErr.Error(), "UNIQUE constraint failed") {
@@ -54,8 +50,16 @@ func (r *ReactionRepository) CreatePostReaction(cx context.Context, rec models.R
 	}
 	return nil
 }
+func (r *ReactionRepository) UpdatePostReaction(cx context.Context, rec models.Reaction) error {
+	_, err := r.db.ExecContext(cx, updateUserPostReaction, rec.Value, rec.User_id, rec.Id)
 
-func (r *SessionRepository) DeletePostReaction(cx context.Context, rec models.Reaction) error {
+	if err != nil {
+		return customerrors.ErrInternalError
+	}
+
+	return nil
+}
+func (r *ReactionRepository) DeletePostReaction(cx context.Context, rec models.Reaction) error {
 	_, deleteErr := r.db.ExecContext(cx, deleteUserPostReaction, rec.User_id, rec.Id)
 	if deleteErr != nil {
 		return customerrors.ErrInternalError
@@ -63,8 +67,19 @@ func (r *SessionRepository) DeletePostReaction(cx context.Context, rec models.Re
 	return nil
 }
 
+// comment reaction repo
+func (r *ReactionRepository) GetCommentReaction(cx context.Context, rec models.Reaction) (*int, error) {
+	var value int
+	fetchErr := r.db.QueryRowContext(cx, getUserCommentReaction, rec.User_id, rec.Id).Scan(&value)
+	if fetchErr != nil {
+		if fetchErr == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, customerrors.ErrInternalError
+	}
+	return &value, nil
+}
 func (r *ReactionRepository) CreateCommentReaction(cx context.Context, rec models.Reaction) error {
-
 	_, postErr := r.db.ExecContext(cx, createUserCommentReaction, rec.User_id, rec.Id, rec.Value)
 	if postErr != nil {
 		if strings.Contains(postErr.Error(), "UNIQUE constraint failed") {
@@ -74,9 +89,17 @@ func (r *ReactionRepository) CreateCommentReaction(cx context.Context, rec model
 	}
 	return nil
 }
+func (r *ReactionRepository) UpdateCommentReaction(cx context.Context, rec models.Reaction) error {
+	_, err := r.db.ExecContext(cx, updateUserCommentReaction, rec.Value, rec.User_id, rec.Id)
+	if err != nil {
+		return customerrors.ErrInternalError
+	}
 
-func (r *SessionRepository) DeleteCommentReaction(cx context.Context, rec models.Reaction) error {
-	_, deleteErr := r.db.ExecContext(cx, deleteUserPostReaction, rec.User_id, rec.Id)
+	return nil
+}
+
+func (r *ReactionRepository) DeleteCommentReaction(cx context.Context, rec models.Reaction) error {
+	_, deleteErr := r.db.ExecContext(cx, deleteUserCommentReaction, rec.User_id, rec.Id)
 	if deleteErr != nil {
 		return customerrors.ErrInternalError
 	}

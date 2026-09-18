@@ -1,34 +1,31 @@
-<!-- {{define "react"}}
+{{define "react"}}
+<div id="react-container-{{.Post.ID}}">
+<!-- need to make this temp genereic with terget id from pagecontent -->
+  <form hx-post="/react" hx-target="#react-container-{{.Post.ID}}" hx-swap="outerHTML">
 
-<form action="" method="POST" style="display: inline;">
-    <input type="hidden" name="post_id" value="{{.Post.ID}}">
-    <input type="hidden" name="user_id" value="{{.User.Id}}">
+    <input type="hidden" name="target_type" value="{{.TargetType}}">
+    <input type="hidden" name="target_id" value="{{.Post.ID}}">
     <input type="hidden" name="value" value="1">
-          
-    <button type="submit" aria-label="like_count" class="vote-submit-btn">
-        <i class="ph ph-arrow-fat-up"></i> {{.LikeCount}}
-    </button>
-</form>
 
-<form action="" method="POST" style="display: inline;">
+    <button type="submit">
+      <i class="ph ph-arrow-fat-up"></i> {{.LikeCount}}
+    </button>
+  </form>
+
+  <form hx-post="/react"
+        hx-target="#react-container-{{.Post.ID}}"
+        hx-swap="outerHTML">
+
+    <input type="hidden" name="target_type" value="{{.TargetType}}">
     <input type="hidden" name="post_id" value="{{.Post.ID}}">
-    <input type="hidden" name="user_id" value="{{.User.Id}}">
     <input type="hidden" name="value" value="-1">
-          
-    <button type="submit" aria-label="dislike_count" class="vote-submit-btn">
-        <i class="ph ph-arrow-fat-down"></i> {{.DislikeCount}}
+
+    <button type="submit">
+      <i class="ph ph-arrow-fat-down"></i> {{.DislikeCount}}
     </button>
-</form>
+  </form>
 
-    <i class="ph ph-chat-circle"></i> {{.CommentCount}}
+  <i class="ph ph-chat-circle"></i> {{.CommentCount}}
 
-
-       <a aria-label="dislike_count" href="">
-          <i class="ph ph-arrow-fat-down"></i> {{.DislikeCount}}
-        </a>
-        <a aria-label="comment_count" href="">
-          <i class="ph ph-chat-circle"></i> {{.CommentCount}}
-        </a>
+</div>
 {{end}}
-
- -->

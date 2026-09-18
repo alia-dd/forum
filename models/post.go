@@ -19,6 +19,7 @@ type PostView struct {
 	Categories   []Category
 	LikeCount    int
 	DislikeCount int
+	TargetType   string
 	CommentCount int
 }
 

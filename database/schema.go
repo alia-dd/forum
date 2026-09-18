@@ -7,15 +7,17 @@ func InitTable(db *sql.DB) (sql.Result, error) {
 CREATE TABLE IF NOT EXISTS user (
     id            INTEGER PRIMARY KEY AUTOINCREMENT,
     username      TEXT NOT NULL UNIQUE,
-    name          TEXT,
     email         TEXT NOT NULL UNIQUE,
+    name          TEXT,
+    bio           TEXT,
+    imagepath     TEXT,
     password_hash TEXT NOT NULL,
     created_at    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
  
 CREATE TABLE IF NOT EXISTS session (
-    uuid         TEXT PRIMARY KEY,
+    uuid       TEXT PRIMARY KEY,
     user_id    INTEGER NOT NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     expires_at DATETIME NOT NULL,

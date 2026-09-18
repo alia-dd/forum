@@ -18,6 +18,7 @@ type PostRepository interface {
 	GetPost(ctx context.Context, filter models.PostFilter) ([]*models.PostView, error)
 	GetPostByID(ctx context.Context, id int) (*models.PostView, error)
 	UpdatePost(ctx context.Context, update models.PostUpdate, authorID int) error
+	DeletePost(ctx context.Context, id, authorID int) error
 }
 
 func NewPostRepository(db *sql.DB) PostRepository {
@@ -144,10 +145,11 @@ func (r *postRepositoryImpl) GetPost(ctx context.Context, filter models.PostFilt
 			&pv.DislikeCount,
 			&pv.CommentCount,
 		)
+
 		if err != nil {
 			return nil, customerrors.MapSQLError(err)
 		}
-
+		pv.TargetType = "post"
 		posts = append(posts, &pv)
 	}
 
@@ -231,4 +233,25 @@ func (r *postRepositoryImpl) UpdatePost(ctx context.Context, update models.PostU
 		}
 	}
 	return tx.Commit()
+}
+
+func (r *postRepositoryImpl) DeletePost(ctx context.Context, id, authorID int) error {
+	res, err := r.db.ExecContext(ctx, `
+		DELETE FROM post
+		WHERE id = ? AND user_id = ?
+		`, id, authorID)
+	if err != nil {
+		return customerrors.MapSQLError(err)
+	}
+
+	rowCount, err := res.RowsAffected()
+	if err != nil {
+		return customerrors.MapSQLError(err)
+	}
+
+	if rowCount == 0 {
+		return customerrors.ErrNotFound
+	}
+
+	return nil
 }

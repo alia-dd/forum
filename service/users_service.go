@@ -35,8 +35,7 @@ func (s *UserService) CreateUserService(cx context.Context, u models.UserRegiste
 }
 
 // register new use
-func (s *UserService) GetUserService(cx context.Context, username string) (models.UserInfo, error) {
-
+func (s *UserService) GetUserService(cx context.Context, username string) (models.PublicUserInfo, error) {
 	return s.repo.FetchUserDataByUserName(cx, username)
 }
 
@@ -81,6 +80,7 @@ func (s *UserService) ChangePasswordService(cx context.Context, userID int, curr
 	if hashErr != nil {
 		return customerrors.ErrInternalError
 	}
+
 	if updateErr := s.repo.UpdatePassword(cx, userID, string(newPassHash)); updateErr != nil {
 		fmt.Println(">>>", updateErr)
 		return updateErr
@@ -95,10 +95,9 @@ func (s *UserService) AuthenticateUserService(cx context.Context, u models.UserL
 	if fetchErr != nil {
 		return nil, fetchErr
 	}
-	// fmt.Println(user)
 	compareErr := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(u.Password))
 	if compareErr != nil {
-		return nil, customerrors.ErrInvalidData
+		return nil, customerrors.ErrInvalidLogin
 	}
 	session, sessionErr := s.sessionRepo.CreateSession(cx, user.Id)
 	if sessionErr != nil {

@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
 
 	"gitea.kood.tech/jyrkikarhunen/forum/models"
@@ -22,9 +23,11 @@ func Profile(w http.ResponseWriter, r *http.Request) {
 
 	user, ok := r.Context().Value("user_session").(*models.UserInfo)
 	if !ok {
+		fmt.Println("user handler profile cookie session data >", user, ok)
 		http.Redirect(w, r, "/user/login", http.StatusSeeOther)
 		return
 	}
+	fmt.Println(user)
 
 	pageData := models.PageData{
 		User:        user,

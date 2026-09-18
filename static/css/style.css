@@ -7,15 +7,17 @@ font-family: var(--font-body);
 }
 
 #profile .title {
-display: block;
+display: flex;
 font-family: var(--font-head);
 font-size: 1.6rem;
 font-weight: 700;
 color: var(--burgundy);
-text-align: center;
+flex-direction: column;
+align-self: flex-end; 
 margin-bottom: 1.75rem;
 letter-spacing: 0.02em;
 }
+
 
 #view,
 #edit {
@@ -49,6 +51,13 @@ font-size: 1rem;
 .input:focus {
 outline: none;
 border-color: var(--burgundy);
+}
+
+.avatar {
+  vertical-align: middle;
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
 }
 
 .btn {

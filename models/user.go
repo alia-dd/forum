@@ -14,6 +14,8 @@ type UserRegister struct {
 	Username        string    `json:"username"`
 	Email           string    `json:"email"`
 	Name            string    `json:"name"`
+	Image           string    `json:"imagePath"`
+	Bio             string    `json:"bio"`
 	Password        string    `json:"password"`
 	ConformPassword string    `json:"ConformPassword"`
 	CreatedAt       time.Time `json:"createdat"`
@@ -26,13 +28,24 @@ type UserLogin struct {
 }
 
 type UserInfo struct {
-	Id        int       `json:"id"`
-	Username  string    `json:"username"`
-	Name      string    `json:"name"`
-	Email     string    `json:"email"`
-	Password  string    `json:"password"`
+	Id        int       `json:"id,omitempty"`
+	Username  string    `json:"username,omitempty"`
+	Name      string    `json:"name,omitempty"`
+	Image     string    `json:"imagePath,omitempty"`
+	Bio       string    `json:"bio,omitempty"`
+	Email     string    `json:"email,omitempty"`
+	Password  string    `json:"password,omitempty"`
 	CreatedAt time.Time `json:"createdat"`
 	UpdatedAt time.Time `json:"updatedat"`
+}
+
+type PublicUserInfo struct {
+	Id        int       `json:"id,omitempty"`
+	Username  string    `json:"username,omitempty"`
+	Name      string    `json:"name,omitempty"`
+	Image     string    `json:"imagePath,omitempty"`
+	Bio       string    `json:"bio,omitempty"`
+	CreatedAt time.Time `json:"createdat"`
 }
 
 type UserUpdate struct {
@@ -40,10 +53,12 @@ type UserUpdate struct {
 	Username *string `json:"username"`
 	Name     *string `json:"name"`
 	Email    *string `json:"email"`
+	Image    *string `json:"imagePath"`
+	Bio      *string `json:"bio"`
 }
 
 func (u *UserRegister) Isvalid() error {
-	if u.Name != "" && !IsValidName(u.Username) {
+	if u.Username != "" && !IsValidName(u.Username) {
 		return customerrors.ErrInvalidName
 	}
 	if u.Email != "" && !IsValidEmail(u.Email) {
@@ -61,6 +76,9 @@ func (u *UserUpdate) Isvalid() error {
 	}
 	if u.Email != nil && !IsValidEmail(*u.Email) {
 		fmt.Println(u.Email)
+		return customerrors.ErrInvalidData
+	}
+	if u.Bio != nil && len(*u.Bio) > 200 {
 		return customerrors.ErrInvalidData
 	}
 	return nil

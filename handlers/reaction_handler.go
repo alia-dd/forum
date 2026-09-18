@@ -1,33 +1,50 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
+	"strconv"
 
-	"gitea.kood.tech/jyrkikarhunen/forum/repository"
+	customerrors "gitea.kood.tech/jyrkikarhunen/forum/errors"
+	"gitea.kood.tech/jyrkikarhunen/forum/models"
+	"gitea.kood.tech/jyrkikarhunen/forum/service"
 )
 
 type ReactionHandler struct {
-	repo *repository.ReactionRepository
+	service *service.ReactionService
 }
 
-func NewReactionHandler(repo *repository.ReactionRepository) *ReactionHandler {
-	return &ReactionHandler{repo: repo}
+func NewReactionHandler(service *service.ReactionService) *ReactionHandler {
+	return &ReactionHandler{service: service}
 }
 
-func (h *UseHandler) PostReaction(w http.ResponseWriter, r *http.Request) {
+func (h *ReactionHandler) Reaction(w http.ResponseWriter, r *http.Request) {
 	// cx := r.Context()
 
-	// _, ok := r.Context().Value("user_session").(*models.UserInfo)
-	// if !ok {
-	// 	http.Redirect(w, r, "/user/login", http.StatusSeeOther)
-	// 	return
-	// }
-	// value := r.PathValue("reactionValue")
+	user, ok := r.Context().Value("user_session").(*models.UserInfo)
+	if !ok {
+		http.Redirect(w, r, "/user/login", http.StatusSeeOther)
+		return
+	}
 
-	// if PostErr := h.service.CreateUserService(cx, userData); PostErr != nil {
-	// 	handleError(w, customerrors.ErrBadRequest)
-	// 	return
-	// }
+	targetType := r.FormValue("target_type")
+	targetID, _ := strconv.Atoi(r.FormValue("target_id"))
+	value, _ := strconv.Atoi(r.FormValue("value"))
 
-	http.Redirect(w, r, "/user/login", http.StatusSeeOther)
+	view := models.Reaction{
+		Id:         targetID,
+		User_id:    user.Id,
+		Value:      value,
+		TargetType: targetType,
+	}
+	fmt.Printf("%+v\n", view)
+	switch targetType {
+	case "post":
+
+	case "comment":
+
+	default:
+		handleError(w, r, customerrors.ErrInternalError)
+		return
+	}
 }

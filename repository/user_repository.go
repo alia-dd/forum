@@ -11,14 +11,14 @@ import (
 )
 
 const (
-	RegisterUserQuery              = ` INSERT INTO user (username, name, email, password_hash) VALUES(?,?,?,?)`
-	fetchUserInfoQurrey            = ` SELECT  id, username, name, email, password_hash, created_at, updated_at  FROM user WHERE (username = ? or email = ?)`
-	fetchUserInfoByIdQurrey        = ` SELECT id, username, name, email FROM user WHERE id = ?`
-	fetchUserInfoByUsernameQurey   = ` SELECT id, username, name, email FROM user WHERE username = ?`
+	RegisterUserQuery              = ` INSERT INTO user (username, name, email, imagepath, bio, password_hash) VALUES(?,?,?,?,?,?)`
+	fetchUserInfoQurrey            = ` SELECT  id, username, name, email, bio, imagepath, password_hash, created_at, updated_at  FROM user WHERE (username = ? or email = ?)`
+	fetchUserInfoByIdQurrey        = ` SELECT id, username, name, email, bio, imagepath FROM user WHERE id = ?`
+	fetchUserInfoByUsernameQurey   = ` SELECT id, username, name, ifnull(bio, ''), ifnull(imagepath, '')  FROM user WHERE username = ?`
 	UpdateUserByIdQuery            = ` UPDATE user SET updated_at = CURRENT_TIMESTAMP, `
 	DeleteUserQuery                = ` DELETE user WHERE id = ?`
 	fetchPasswordHashQuery         = ` SELECT password_hash FROM user WHERE id = ?`
-	updatePasswordQuery            = ` UPDATE user SET password_hash = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`
+	updatePasswordQuery            = ` UPDATE user SET  updated_at = CURRENT_TIMESTAMP, password_hash = ? WHERE id = ?`
 	checkAvailableExcludeUserQuery = ` SELECT EXISTS(SELECT 1 FROM user WHERE (username = ? or email = ?) AND id != ?)`
 )
 
@@ -31,7 +31,7 @@ func NewUserRepository(db *sql.DB) *UserRepository {
 }
 
 func (r *UserRepository) RegisterUser(cx context.Context, u models.UserRegister) error {
-	_, postErr := r.db.ExecContext(cx, RegisterUserQuery, u.Username, u.Name, u.Email, u.Password)
+	_, postErr := r.db.ExecContext(cx, RegisterUserQuery, u.Username, u.Name, u.Email, u.Image, u.Bio, u.Password)
 	if postErr != nil {
 		if strings.Contains(postErr.Error(), "UNIQUE constraint failed") {
 			return customerrors.ErrDuplicateEntry
@@ -45,13 +45,11 @@ func (r *UserRepository) RegisterUser(cx context.Context, u models.UserRegister)
 // check if use exist in the database
 // this func is used for the login to authentica the profided use credentials
 func (r *UserRepository) AuthenticateUser(cx context.Context, col string) (models.UserInfo, error) {
-	fmt.Println("here")
 	var user models.UserInfo
-	fetchErr := r.db.QueryRowContext(cx, fetchUserInfoQurrey, col, col).Scan(&user.Id, &user.Username, &user.Name, &user.Email, &user.Password, &user.CreatedAt, &user.UpdatedAt)
+	fetchErr := r.db.QueryRowContext(cx, fetchUserInfoQurrey, col, col).Scan(&user.Id, &user.Username, &user.Name, &user.Email, &user.Bio, &user.Image, &user.Password, &user.CreatedAt, &user.UpdatedAt)
 	if fetchErr != nil {
-		fmt.Println(fetchErr)
 		if fetchErr == sql.ErrNoRows {
-			return user, customerrors.ErrNotFound
+			return user, customerrors.ErrInvalidLogin
 		}
 		return user, customerrors.ErrInternalError
 	}
@@ -60,7 +58,7 @@ func (r *UserRepository) AuthenticateUser(cx context.Context, col string) (model
 
 func (r *UserRepository) FetchUserData(cx context.Context, userId int) (models.UserInfo, error) {
 	var user models.UserInfo
-	fetchErr := r.db.QueryRowContext(cx, fetchUserInfoByIdQurrey, userId).Scan(&user.Id, &user.Username, &user.Name, &user.Email)
+	fetchErr := r.db.QueryRowContext(cx, fetchUserInfoByIdQurrey, userId).Scan(&user.Id, &user.Username, &user.Name, &user.Email, &user.Bio, &user.Image)
 	if fetchErr != nil {
 		if fetchErr == sql.ErrNoRows {
 			return user, customerrors.ErrNotFound
@@ -71,11 +69,10 @@ func (r *UserRepository) FetchUserData(cx context.Context, userId int) (models.U
 }
 
 // this repo func is used by the profile fetch for another user using their username
-func (r *UserRepository) FetchUserDataByUserName(cx context.Context, username string) (models.UserInfo, error) {
-	var user models.UserInfo
-	fetchErr := r.db.QueryRowContext(cx, fetchUserInfoByUsernameQurey, username).Scan(&user.Id, &user.Username, &user.Name, &user.Email)
+func (r *UserRepository) FetchUserDataByUserName(cx context.Context, username string) (models.PublicUserInfo, error) {
+	var user models.PublicUserInfo
+	fetchErr := r.db.QueryRowContext(cx, fetchUserInfoByUsernameQurey, username).Scan(&user.Id, &user.Username, &user.Name, &user.Bio, &user.Image)
 	if fetchErr != nil {
-		fmt.Println("fet", fetchUserInfoByUsernameQurey, fetchErr)
 		if fetchErr == sql.ErrNoRows {
 			return user, customerrors.ErrNotFound
 		}
@@ -104,6 +101,14 @@ func (r *UserRepository) UpdateUserData(cx context.Context, user models.UserUpda
 		extraQuery = append(extraQuery, "email = ?")
 		args = append(args, *user.Email)
 	}
+	if user.Bio != nil {
+		extraQuery = append(extraQuery, "bio = ?")
+		args = append(args, *user.Bio)
+	}
+	if user.Image != nil {
+		extraQuery = append(extraQuery, "imagepath = ?")
+		args = append(args, *user.Image)
+	}
 
 	if len(extraQuery) == 0 {
 		return nil
@@ -112,10 +117,8 @@ func (r *UserRepository) UpdateUserData(cx context.Context, user models.UserUpda
 	query := UpdateUserByIdQuery + strings.Join(extraQuery, ", ") + " WHERE id = ?"
 
 	args = append(args, user.Id)
-
 	_, err := r.db.ExecContext(cx, query, args...)
 	if err != nil {
-		fmt.Println("quey eerr", query, err)
 		if strings.Contains(err.Error(), "UNIQUE constraint failed") {
 			return customerrors.ErrBadRequest
 		}
@@ -152,7 +155,7 @@ func (r *UserRepository) GetPasswordHash(cx context.Context, userID int) (string
 }
 
 func (r *UserRepository) UpdatePassword(cx context.Context, userID int, newPass string) error {
-	_, fetchErr := r.db.ExecContext(cx, updatePasswordQuery, userID, newPass)
+	_, fetchErr := r.db.ExecContext(cx, updatePasswordQuery, newPass, userID)
 	if fetchErr != nil {
 		return customerrors.ErrInternalError
 	}

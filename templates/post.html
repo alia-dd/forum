@@ -1,15 +1,22 @@
 {{define "content"}}
 {{$user := .User}}
+{{$page := .PageContent}}
 {{with .PageContent.Post}}
+
 <article>
   <h1>{{.Post.Title}}</h1>
   <p>by<a href="user/profile/{{.AuthorName}}" class="username"> {{.AuthorName}}</a> 
-  </p>
+      {{ template "react" .}}
+
+    </p>
   <p>{{range .Categories}}[{{.Name}}] {{end}}</p>
   <div>{{.Post.Content}}</div>
     {{if $user}}
         {{if eq $user.Id .Post.UserID}}
             <p><a href="/post/{{.Post.ID}}/edit">Edit</a></p>
+            <form method="POST" action="/post/{{.Post.ID}}/delete" onsubmit="return confirm('Delete this post and all its comments?')">
+              <button type="submit">Delete</button>
+            </form>
         {{end}}
     {{end}}
 </article>
