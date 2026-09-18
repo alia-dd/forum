@@ -9,15 +9,13 @@ import (
 )
 
 func HomePage(w http.ResponseWriter, r *http.Request) {
-	var pageData models.PageData
 	user, ok := r.Context().Value("user_session").(*models.UserInfo)
-	fmt.Println(ok)
-	pageData = models.PageData{
+	pageData := models.PageData{
 		User:        user,
+		IsOwner:     ok,
 		PageContent: nil,
 	}
 
-	fmt.Println(pageData)
 	utils.RenderTemplate(w, http.StatusOK, "home", pageData)
 }
 
@@ -25,11 +23,15 @@ func Profile(w http.ResponseWriter, r *http.Request) {
 
 	user, ok := r.Context().Value("user_session").(*models.UserInfo)
 	if !ok {
+		fmt.Println("user handler profile cookie session data >", user, ok)
 		http.Redirect(w, r, "/user/login", http.StatusSeeOther)
 		return
 	}
+	fmt.Println(user)
+
 	pageData := models.PageData{
 		User:        user,
+		IsOwner:     ok,
 		PageContent: nil,
 	}
 	utils.RenderTemplate(w, http.StatusOK, "profile", pageData)

@@ -67,6 +67,14 @@ func handleError(w http.ResponseWriter, r *http.Request, err error) {
 		//code = "IN_USE"
 		message = "This item is still referenced and cannot be deleted"
 		status = http.StatusConflict
+	case errors.Is(err, customerrors.ErrIncorrectPassword):
+		// code = "INCORRECT_PASSWORD"
+		message = customerrors.ErrIncorrectPassword.Error()
+		status = http.StatusBadRequest
+	case errors.Is(err, customerrors.ErrInvalidLogin):
+		// code = "INVALID_LOGIN"
+		message = customerrors.ErrInvalidLogin.Error()
+		status = http.StatusBadRequest
 	default:
 		//code = "INTERNAL_ERROR"
 		message = "An unexpected error occurred while processing the request"

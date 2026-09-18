@@ -3,7 +3,7 @@
 {{with .PageContent.Post}}
 <article>
   <h1>{{.Post.Title}}</h1>
-  <p>by {{.AuthorName}} — likes {{.LikeCount}}, dislikes {{.DislikeCount}}, comments {{.CommentCount}}</p>
+  <p>by<a href="/user/profile/{{.AuthorName}}" class="username"> {{.AuthorName}}</a> — likes {{.LikeCount}}, dislikes {{.DislikeCount}}, comments {{.CommentCount}}</p>
   <p>{{range .Categories}}[{{.Name}}] {{end}}</p>
   <div>{{.Post.Content}}</div>
     {{if $user}}

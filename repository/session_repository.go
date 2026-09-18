@@ -12,9 +12,10 @@ import (
 )
 
 const (
-	createUserSession = ` INSERT INTO session (uuid, user_id, expires_at) VALUES(?,?,?)`
-	GetUserSession    = ` SELECT user_id, expires_at FROM session WHERE uuid = ?`
-	deleteUserSession = ` DELETE FROM session WHERE uuid = ?`
+	createUserSession      = ` INSERT INTO session (uuid, user_id, expires_at) VALUES(?,?,?)`
+	GetUserSession         = ` SELECT user_id, expires_at FROM session WHERE uuid = ?`
+	deleteUserSession      = ` DELETE FROM session WHERE uuid = ?`
+	deleteSessionsByUserId = ` DELETE FROM session WHERE user_id = ?`
 )
 
 type SessionRepository struct {
@@ -27,6 +28,7 @@ func NewSessionRepository(db *sql.DB) *SessionRepository {
 
 func (r *SessionRepository) CreateSession(cx context.Context, userID int) (*models.Session, error) {
 
+	// New uuid func retund a uuid v7
 	uuid, uuidErr := utils.NewUuid()
 	if uuidErr != nil {
 		return nil, uuidErr
@@ -34,7 +36,7 @@ func (r *SessionRepository) CreateSession(cx context.Context, userID int) (*mode
 	session := models.Session{
 		SesssionId: uuid,
 		UserID:     userID,
-		ExpiresAt:  time.Now().Add(30 * (24 * time.Hour)),
+		ExpiresAt:  time.Now().Add(30 * (24 * time.Hour)), // the expire is currently set to 30 days
 	}
 	_, postErr := r.db.ExecContext(cx, createUserSession, session.SesssionId, session.UserID, session.ExpiresAt)
 	if postErr != nil {
@@ -73,6 +75,15 @@ func (r *SessionRepository) DeleteSession(cx context.Context, sessionId string) 
 	rows, _ := resp.RowsAffected()
 	if rows == 0 {
 		return customerrors.ErrNotFound
+	}
+	return nil
+}
+
+// this delets the session by userId
+func (r *SessionRepository) DeleteSessionsByUserId(cx context.Context, userID int) error {
+	_, deleteErr := r.db.ExecContext(cx, deleteSessionsByUserId, userID)
+	if deleteErr != nil {
+		return customerrors.ErrInternalError
 	}
 	return nil
 }

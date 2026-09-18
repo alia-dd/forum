@@ -5,8 +5,6 @@ import (
 	"html/template"
 	"log"
 	"net/http"
-	"net/mail"
-	"regexp"
 
 	"gitea.kood.tech/jyrkikarhunen/forum/models"
 )
@@ -67,17 +65,4 @@ func renderExecuted(w http.ResponseWriter, t *template.Template, statusCode int,
 	}
 	w.WriteHeader(statusCode)
 	buf.WriteTo(w)
-}
-
-func IsValidName(name string) bool {
-	r, _ := regexp.Compile("^[A-Za-z0-9]+(?:-[A-Za-z0-9]+)*$")
-	if r.MatchString(name) {
-		return true
-	}
-	return false
-}
-
-func IsValidEmail(email string) bool {
-	validEmail, emailErr := mail.ParseAddress(email)
-	return emailErr == nil && validEmail.Address == email
 }

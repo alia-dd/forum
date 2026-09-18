@@ -16,7 +16,7 @@
 {{range .PageContent.Posts}}
   <article>
     <h2><a href="/post/{{.Post.ID}}">{{.Post.Title}}</a></h2>
-    <p>by {{.AuthorName}} — likes {{.LikeCount}}, dislikes {{.DislikeCount}}, comments {{.CommentCount}}</p>
+    <p>by<a href="/user/profile/{{.AuthorName}}" class="username"> {{.AuthorName}}</a> — likes {{.LikeCount}}, dislikes {{.DislikeCount}}, comments {{.CommentCount}}</p>
     <p>{{range .Categories}}[{{.Name}}] {{end}}</p>
   </article>
 {{else}}
