@@ -1,0 +1,34 @@
+<!-- {{define "react"}}
+
+<form action="" method="POST" style="display: inline;">
+    <input type="hidden" name="post_id" value="{{.Post.ID}}">
+    <input type="hidden" name="user_id" value="{{.User.Id}}">
+    <input type="hidden" name="value" value="1">
+          
+    <button type="submit" aria-label="like_count" class="vote-submit-btn">
+        <i class="ph ph-arrow-fat-up"></i> {{.LikeCount}}
+    </button>
+</form>
+
+<form action="" method="POST" style="display: inline;">
+    <input type="hidden" name="post_id" value="{{.Post.ID}}">
+    <input type="hidden" name="user_id" value="{{.User.Id}}">
+    <input type="hidden" name="value" value="-1">
+          
+    <button type="submit" aria-label="dislike_count" class="vote-submit-btn">
+        <i class="ph ph-arrow-fat-down"></i> {{.DislikeCount}}
+    </button>
+</form>
+
+    <i class="ph ph-chat-circle"></i> {{.CommentCount}}
+
+
+       <a aria-label="dislike_count" href="">
+          <i class="ph ph-arrow-fat-down"></i> {{.DislikeCount}}
+        </a>
+        <a aria-label="comment_count" href="">
+          <i class="ph ph-chat-circle"></i> {{.CommentCount}}
+        </a>
+{{end}}
+
+ -->

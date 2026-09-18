@@ -16,7 +16,20 @@
 {{range .PageContent.Posts}}
   <article>
     <h2><a href="/post/{{.Post.ID}}">{{.Post.Title}}</a></h2>
-    <p>by<a href="user/profile/{{.AuthorName}}" class="username"> {{.AuthorName}}</a> — likes {{.LikeCount}}, dislikes {{.DislikeCount}}, comments {{.CommentCount}}</p>
+    <p>by
+
+        <a href="user/profile/{{.AuthorName}}" class="username"> {{.AuthorName}}</a> 
+        <a aria-label="like_count" href="">
+          <i class="ph ph-arrow-fat-up"></i> {{.LikeCount}}
+        </a>
+        <a aria-label="dislike_count" href="">
+          <i class="ph ph-arrow-fat-down"></i> {{.DislikeCount}}
+        </a>
+        <a aria-label="comment_count" href="">
+          <i class="ph ph-chat-circle"></i> {{.CommentCount}}
+        </a>
+        
+      </p>
     <p>{{range .Categories}}[{{.Name}}] {{end}}</p>
   </article>
 {{else}}
