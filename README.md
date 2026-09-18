@@ -1,1 +1,1 @@
-![description](assets/ERD.svg)
+![description](static/assets/ERD.svg)

@@ -20,14 +20,26 @@ func (h *UseHandler) SignInUser(w http.ResponseWriter, r *http.Request) {
 	if parseErr := r.ParseForm(); parseErr != nil {
 		handleError(w, r, customerrors.ErrInternalError)
 	}
+	username := strings.TrimSpace(r.FormValue("username"))
+	password := strings.TrimSpace(r.FormValue("password"))
+
 	userData := models.UserLogin{
-		Username: strings.TrimSpace(r.FormValue("username")),
-		Password: strings.TrimSpace(r.FormValue("password")),
+		Username: username,
+		Password: password,
 	}
 
 	session, siginErr := h.service.AuthenticateUserService(cx, userData)
 	if siginErr != nil {
-		handleError(w, r, siginErr)
+		pageData := models.PageData{
+			User:    nil,
+			IsOwner: true,
+			PageContent: models.UserLogin{
+				Username: username,
+				Password: password,
+			},
+			Error: siginErr.Error(),
+		}
+		utils.RenderTemplate(w, http.StatusOK, "login_user", pageData)
 		return
 	}
 

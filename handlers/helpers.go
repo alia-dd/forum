@@ -2,9 +2,16 @@ package handlers
 
 import (
 	"context"
+	"fmt"
+	"io"
+	"mime/multipart"
 	"net/http"
+	"os"
+	"path/filepath"
+	"slices"
 	"strconv"
 	"strings"
+	"time"
 	"unicode/utf8"
 
 	customerrors "gitea.kood.tech/jyrkikarhunen/forum/errors"
@@ -160,4 +167,57 @@ func (f *CategoryForm) Validate() bool {
 		f.Errors["Name"] = "Category name is too long"
 	}
 	return len(f.Errors) == 0
+}
+
+func SaveUploadedFile(file multipart.File) (string, error) {
+	allowedTypes := []string{"image/jpeg", "image/png"}
+	ext, validationErr := validateMIMEType(file, allowedTypes)
+	if validationErr != nil {
+		return "", validationErr
+	}
+
+	uploadDirectory := "static/assets/images"
+
+	if err := os.MkdirAll(uploadDirectory, 0755); err != nil {
+		return "", customerrors.ErrInternalError
+	}
+	saveName := fmt.Sprintf("%d_%s", time.Now().UnixNano(), ext)
+	path := filepath.Join(uploadDirectory, saveName)
+
+	dst, err := os.Create(path)
+	if err != nil {
+		return "", customerrors.ErrInternalError
+	}
+	defer dst.Close()
+	if _, err := io.Copy(dst, file); err != nil {
+
+		return "", customerrors.ErrInternalError
+	}
+
+	return saveName, nil
+}
+
+func validateMIMEType(file multipart.File, allowedTypes []string) (string, error) {
+	// Read the first 512 bytes for detection
+	buffer := make([]byte, 512)
+	n, err := file.Read(buffer)
+	if err != nil && err != io.EOF {
+		return "", customerrors.ErrInternalError
+	}
+
+	// Reset file pointer
+	if _, err := file.Seek(0, io.SeekStart); err != nil {
+		return "", customerrors.ErrInternalError
+	}
+
+	contentType := http.DetectContentType(buffer[:n])
+	ext := ".jpg"
+	if slices.Contains(allowedTypes, contentType) {
+		if contentType == "image/png" {
+			ext = ".png"
+		}
+		return ext, nil
+	}
+
+	return "", customerrors.ErrBadRequest
 }

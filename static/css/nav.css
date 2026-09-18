@@ -7,8 +7,10 @@
   --burgundy:    #7a1414;
   --burgundy-dk: #5c0f0f;
   --border:      #d8cdb8;
-  --font-head:   'Playfair Display', Georgia, serif;
-  --font-body:   Georgia, 'Times New Roman', serif;
+  /* --font-head:   'Playfair Display', Georgia, serif;
+  --font-body:   Georgia, 'Times New Roman', serif; */
+  --font-head: 'Barlow Condensed', sans-serif;
+  --font-body: 'Barlow', sans-serif;
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -60,6 +62,12 @@ a { text-decoration: none; color: inherit; }
   align-items: center;
   gap: 0.25rem;
   list-style: none;
+}
+.nav__link:hover {
+  color: var(--ink-muted);
+}
+.nav__links.active {
+  color: var(--burgundy);
 }
 
 .nav__divider {
