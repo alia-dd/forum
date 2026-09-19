@@ -20,6 +20,7 @@ type PostView struct {
 	LikeCount    int
 	DislikeCount int
 	CommentCount int
+	Deleted      bool
 }
 
 type PostInput struct {

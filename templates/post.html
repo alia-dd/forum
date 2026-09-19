@@ -5,11 +5,15 @@
   <h1>{{.Post.Title}}</h1>
   <p>by<a href="/user/profile/{{.AuthorName}}" class="username"> {{.AuthorName}}</a> — likes {{.LikeCount}}, dislikes {{.DislikeCount}}, comments {{.CommentCount}}</p>
   <p>{{range .Categories}}[{{.Name}}] {{end}}</p>
-  <div>{{.Post.Content}}</div>
+  {{if .Deleted}}
+    <div><em>[deleted by user]</em></div>
+  {{else}}
+    <div>{{.Post.Content}}</div>
+  {{end}}
     {{if $user}}
-        {{if eq $user.Id .Post.UserID}}
+        {{if and (eq $user.Id .Post.UserID) (not .Deleted)}}
             <p><a href="/post/{{.Post.ID}}/edit">Edit</a></p>
-            <form method="POST" action="/post/{{.Post.ID}}/delete" onsubmit="return confirm('Delete this post and all its comments?')">
+            <form method="POST" action="/post/{{.Post.ID}}/delete" onsubmit="return confirm('Delete this post?')">
               <button type="submit">Delete</button>
             </form>
         {{end}}
