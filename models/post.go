@@ -14,12 +14,14 @@ type Post struct {
 }
 
 type PostView struct {
-	Post         Post
+	Post
 	AuthorName   string
 	Categories   []Category
+	Comments     []CommentView // keep empty if loading a list of posts, load if viewing single post
 	LikeCount    int
 	DislikeCount int
 	CommentCount int
+	UserVote     *int
 }
 
 type PostInput struct {

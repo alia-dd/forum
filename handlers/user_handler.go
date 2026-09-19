@@ -47,10 +47,10 @@ func (h *UseHandler) PostRegisterUser(w http.ResponseWriter, r *http.Request) {
 		defer file.Close()
 		savename, saveErr := SaveUploadedFile(file)
 		if saveErr != nil {
-			pageData := models.PageData{
+			pageData := models.PageData[models.UserRegister]{
 				User:    nil,
 				IsOwner: false,
-				PageContent: &models.UserRegister{
+				PageContent: models.UserRegister{
 					Username:        username,
 					Name:            name,
 					Email:           email,
@@ -75,10 +75,10 @@ func (h *UseHandler) PostRegisterUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if PostErr := h.service.CreateUserService(cx, userData); PostErr != nil {
-		pageData := models.PageData{
+		pageData := models.PageData[models.UserRegister]{
 			User:    nil,
 			IsOwner: false,
-			PageContent: &models.UserRegister{
+			PageContent: models.UserRegister{
 				Username:        username,
 				Name:            name,
 				Email:           email,
@@ -100,10 +100,11 @@ func (h *UseHandler) GetEditUserProfile(w http.ResponseWriter, r *http.Request) 
 		http.Redirect(w, r, "/user/login", http.StatusSeeOther)
 		return
 	}
-	pageData := models.PageData{
+	// replace mainpage with a dedicated profile struct later
+	pageData := models.PageData[MainPage]{
 		User:        user,
 		IsOwner:     ok,
-		PageContent: nil,
+		PageContent: MainPage{},
 	}
 
 	utils.RenderTemplate(w, http.StatusOK, "profileEdit", pageData)
@@ -121,7 +122,7 @@ func (h *UseHandler) GetOtherUserProfile(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	pageData := models.PageData{
+	pageData := models.PageData[models.PublicUserInfo]{
 		User:        user,
 		IsOwner:     ok && user.Id == profileData.Id,
 		PageContent: profileData,
@@ -155,7 +156,8 @@ func (h *UseHandler) UpdateUserProfile(w http.ResponseWriter, r *http.Request) {
 		defer file.Close()
 		savename, saveErr := SaveUploadedFile(file)
 		if saveErr != nil {
-			pageData := models.PageData{
+			// replace mainpage with a dedicated profile struct later
+			pageData := models.PageData[MainPage]{
 				User: &models.UserInfo{
 					Username: username,
 					Name:     name,
@@ -164,7 +166,7 @@ func (h *UseHandler) UpdateUserProfile(w http.ResponseWriter, r *http.Request) {
 					Image:    fileName,
 				},
 				IsOwner:     ok,
-				PageContent: nil,
+				PageContent: MainPage{},
 				Error:       customerrors.ErrBadRequest.Error(),
 			}
 			utils.RenderTemplate(w, http.StatusBadRequest, "profileEdit", pageData)
@@ -190,7 +192,8 @@ func (h *UseHandler) UpdateUserProfile(w http.ResponseWriter, r *http.Request) {
 		userData.Image = &fileName
 	}
 	if UpdateErr := h.service.UpdateUserService(cx, userData); UpdateErr != nil {
-		pageData := models.PageData{
+		// replace mainpage with a dedicated profile struct later
+		pageData := models.PageData[MainPage]{
 			User: &models.UserInfo{
 				Id:       user.Id,
 				Username: username,
@@ -200,7 +203,7 @@ func (h *UseHandler) UpdateUserProfile(w http.ResponseWriter, r *http.Request) {
 				Image:    fileName,
 			},
 			IsOwner:     ok,
-			PageContent: nil,
+			PageContent: MainPage{},
 			Error:       UpdateErr.Error(),
 		}
 		utils.RenderTemplate(w, http.StatusBadRequest, "profileEdit", pageData)
@@ -216,10 +219,11 @@ func (h *UseHandler) GetChangePassword(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/user/login", http.StatusSeeOther)
 		return
 	}
-	pageData := models.PageData{
+	// replace mainpage with a dedicated profile struct later
+	pageData := models.PageData[MainPage]{
 		User:        user,
 		IsOwner:     true,
-		PageContent: nil,
+		PageContent: MainPage{},
 	}
 	utils.RenderTemplate(w, http.StatusOK, "password_change", pageData)
 }
@@ -241,7 +245,8 @@ func (h *UseHandler) PostChangePassword(w http.ResponseWriter, r *http.Request) 
 	confirmPass := strings.TrimSpace(r.FormValue("confirmPassword"))
 
 	if newPass != confirmPass {
-		pageData := models.PageData{
+		// replace mainpage with a dedicated profile struct later
+		pageData := models.PageData[MainPage]{
 			User:    user,
 			IsOwner: true,
 			Error:   "password does not match confirmation password.",
@@ -251,7 +256,8 @@ func (h *UseHandler) PostChangePassword(w http.ResponseWriter, r *http.Request) 
 	}
 
 	if UpdateErr := h.service.ChangePasswordService(cx, user.Id, currentPass, newPass); UpdateErr != nil {
-		pageData := models.PageData{
+		// replace mainpage with a dedicated profile struct later
+		pageData := models.PageData[MainPage]{
 			User:    user,
 			IsOwner: true,
 			Error:   UpdateErr.Error(),
