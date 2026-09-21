@@ -19,7 +19,9 @@ type PostView struct {
 	Categories   []Category
 	LikeCount    int
 	DislikeCount int
+	UserReaction int // user post Reaction value
 	TargetType   string
+	TargetId     int
 	CommentCount int
 }
 

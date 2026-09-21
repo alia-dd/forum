@@ -63,7 +63,7 @@ func main() {
 	userService := service.NewUserService(userRepo, sessionRepo)
 	reactService := service.NewReactionService(reactRepo)
 
-	reactHandler := handlers.NewReactionHandler(reactService)
+	reactHandler := handlers.NewReactionHandler(reactService, postRepo)
 	userHandler := handlers.NewUserHandler(userService)
 	postHandler := handlers.NewPostHandler(postRepo, categoryRepo)
 	categoryHandler := handlers.NewCategoryHandler(categoryRepo)
@@ -79,7 +79,7 @@ func main() {
 			if r.URL.Path != "/" {
 				user, ok := r.Context().Value("user_session").(*models.UserInfo)
 				if !ok {
-					http.Redirect(w, r, "/user/login", http.StatusSeeOther)
+					utils.RedirectTologin(w, r)
 					return
 				}
 

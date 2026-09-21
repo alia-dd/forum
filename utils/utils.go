@@ -66,3 +66,30 @@ func renderExecuted(w http.ResponseWriter, t *template.Template, statusCode int,
 	w.WriteHeader(statusCode)
 	buf.WriteTo(w)
 }
+
+func RenderPartial(w http.ResponseWriter, statusCode int, templateName string, payload any) {
+	t, tmpErr := Tpl.Clone()
+	if tmpErr != nil {
+		http.Error(w, tmpErr.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	var buf bytes.Buffer
+	if err := t.ExecuteTemplate(&buf, templateName, payload); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	w.WriteHeader(statusCode)
+	buf.WriteTo(w)
+}
+
+func RedirectTologin(w http.ResponseWriter, r *http.Request) {
+	if r.Header.Get("HX-Request") == "true" {
+		w.Header().Set("HX-Redirect", "/user/login")
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+	http.Redirect(w, r, "/user/login", http.StatusSeeOther)
+}

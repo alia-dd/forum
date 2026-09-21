@@ -24,7 +24,7 @@ func Profile(w http.ResponseWriter, r *http.Request) {
 	user, ok := r.Context().Value("user_session").(*models.UserInfo)
 	if !ok {
 		fmt.Println("user handler profile cookie session data >", user, ok)
-		http.Redirect(w, r, "/user/login", http.StatusSeeOther)
+		utils.RedirectTologin(w, r)
 		return
 	}
 	fmt.Println(user)

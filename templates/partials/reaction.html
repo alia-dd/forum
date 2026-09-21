@@ -1,31 +1,44 @@
 {{define "react"}}
-<div id="react-container-{{.Post.ID}}">
-<!-- need to make this temp genereic with terget id from pagecontent -->
-  <form hx-post="/react" hx-target="#react-container-{{.Post.ID}}" hx-swap="outerHTML">
-
-    <input type="hidden" name="target_type" value="{{.TargetType}}">
-    <input type="hidden" name="target_id" value="{{.Post.ID}}">
-    <input type="hidden" name="value" value="1">
-
-    <button type="submit">
-      <i class="ph ph-arrow-fat-up"></i> {{.LikeCount}}
-    </button>
-  </form>
+<div id="react{{.TargetId}}" class="react">
 
   <form hx-post="/react"
-        hx-target="#react-container-{{.Post.ID}}"
-        hx-swap="outerHTML">
+        hx-target="#react{{.TargetId}}"
+        hx-swap="outerHTML"
+        class="recForm">
 
     <input type="hidden" name="target_type" value="{{.TargetType}}">
-    <input type="hidden" name="post_id" value="{{.Post.ID}}">
+    <input type="hidden" name="target_id" value="{{.TargetId}}">
+    <input type="hidden" name="value" value="1">
+
+    <button type="submit" class="recBtn {{if eq .UserReaction 1}} active{{end}}">
+        <i class="ph ph-arrow-fat-up"></i>
+        <span>{{.LikeCount}}</span>
+    </button>
+  
+</form>
+
+  <form hx-post="/react"
+        hx-target="#react{{.TargetId}}"
+        hx-swap="outerHTML"
+        class="recForm">
+
+    <input type="hidden" name="target_type" value="{{.TargetType}}">
+    <input type="hidden" name="target_id" value="{{.TargetId}}">
     <input type="hidden" name="value" value="-1">
 
-    <button type="submit">
-      <i class="ph ph-arrow-fat-down"></i> {{.DislikeCount}}
+    <button type="submit" class="recBtn {{if eq .UserReaction -1}} active{{end}}">
+        <i class="ph ph-arrow-fat-down"></i>
+        <span>{{.DislikeCount}}</span>
     </button>
+   
   </form>
 
-  <i class="ph ph-chat-circle"></i> {{.CommentCount}}
+  {{if eq .TargetType "post"}}
+    <div class="comCount">
+      <i class="ph ph-chat-circle"></i>
+      <span>{{.CommentCount}}</span>
+    </div>
+  {{end}}
 
 </div>
 {{end}}

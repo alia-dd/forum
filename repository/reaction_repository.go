@@ -10,14 +10,14 @@ import (
 )
 
 const (
-	getUserPostReaction    = ` SELECT value FROM post_like WHERE WHERE user_id = ? AND post_id = ?`
+	getUserPostReaction    = ` SELECT value FROM post_like WHERE user_id = ? AND post_id = ?`
 	createUserPostReaction = ` INSERT INTO post_like (user_id, post_id, value) VALUES(?,?,?)`
-	deleteUserPostReaction = ` DELETE FROM post_like WHERE WHERE user_id = ? AND post_id = ?`
+	deleteUserPostReaction = ` DELETE FROM post_like WHERE user_id = ? AND post_id = ?`
 	updateUserPostReaction = ` UPDATE post_like SET value = ? WHERE user_id = ? AND post_id = ?`
 
-	getUserCommentReaction    = ` SELECT value FROM comment_like WHERE WHERE user_id = ? AND comment_id = ?`
+	getUserCommentReaction    = ` SELECT value FROM comment_like WHERE user_id = ? AND comment_id = ?`
 	createUserCommentReaction = ` INSERT INTO comment_like (user_id, comment_id, value) VALUES(?,?,?)`
-	deleteUserCommentReaction = ` DELETE FROM comment_like WHERE WHERE user_id = ? AND comment_id = ?`
+	deleteUserCommentReaction = ` DELETE FROM comment_like WHERE user_id = ? AND comment_id = ?`
 	updateUserCommentReaction = ` UPDATE comment_like SET value = ? WHERE user_id = ? AND comment_id = ?`
 )
 
@@ -56,7 +56,6 @@ func (r *ReactionRepository) UpdatePostReaction(cx context.Context, rec models.R
 	if err != nil {
 		return customerrors.ErrInternalError
 	}
-
 	return nil
 }
 func (r *ReactionRepository) DeletePostReaction(cx context.Context, rec models.Reaction) error {

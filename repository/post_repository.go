@@ -15,8 +15,8 @@ type postRepositoryImpl struct {
 
 type PostRepository interface {
 	CreatePost(ctx context.Context, post models.PostInput) (int, error)
-	GetPost(ctx context.Context, filter models.PostFilter) ([]*models.PostView, error)
-	GetPostByID(ctx context.Context, id int) (*models.PostView, error)
+	GetPost(ctx context.Context, filter models.PostFilter, user_id int) ([]*models.PostView, error)
+	GetPostByID(ctx context.Context, id int, user_id int) (*models.PostView, error)
 	UpdatePost(ctx context.Context, update models.PostUpdate, authorID int) error
 	DeletePost(ctx context.Context, id, authorID int) error
 }
@@ -66,20 +66,22 @@ func (r *postRepositoryImpl) CreatePost(ctx context.Context, post models.PostInp
 	return int(postID), tx.Commit()
 }
 
-func (r *postRepositoryImpl) GetPost(ctx context.Context, filter models.PostFilter) ([]*models.PostView, error) {
+func (r *postRepositoryImpl) GetPost(ctx context.Context, filter models.PostFilter, user_id int) ([]*models.PostView, error) {
 	query := `
 		SELECT
 			post.id, post.user_id, post.title, post.content, post.created_at, post.updated_at,
 			user.username,
 			(SELECT COUNT(*) FROM post_like WHERE post_like.post_id = post.id AND post_like.value = 1)  AS like_count,
 			(SELECT COUNT(*) FROM post_like WHERE post_like.post_id = post.id AND post_like.value = -1) AS dislike_count,
-			(SELECT COUNT(*) FROM comment   WHERE comment.parent_post_id = post.id)                     AS comment_count
+			(SELECT COUNT(*) FROM comment   WHERE comment.parent_post_id = post.id)                     AS comment_count,
+			IFNULL((SELECT value FROM post_like WHERE user_id = ? AND post_id = post.id), 0)              AS user_reaction
 		FROM post
 		JOIN user ON user.id = post.user_id
 		`
 
 	var conds []string
 	var args []any
+	args = append(args, user_id)
 
 	if filter.AuthorID != nil {
 		conds = append(conds, "post.user_id = ?")
@@ -144,15 +146,16 @@ func (r *postRepositoryImpl) GetPost(ctx context.Context, filter models.PostFilt
 			&pv.LikeCount,
 			&pv.DislikeCount,
 			&pv.CommentCount,
+			&pv.UserReaction,
 		)
 
 		if err != nil {
 			return nil, customerrors.MapSQLError(err)
 		}
 		pv.TargetType = "post"
+		pv.TargetId = pv.Post.ID
 		posts = append(posts, &pv)
 	}
-
 	if err := rows.Err(); err != nil {
 		return nil, customerrors.MapSQLError(err)
 	}
@@ -160,27 +163,30 @@ func (r *postRepositoryImpl) GetPost(ctx context.Context, filter models.PostFilt
 	return posts, nil
 }
 
-func (r *postRepositoryImpl) GetPostByID(ctx context.Context, id int) (*models.PostView, error) {
+func (r *postRepositoryImpl) GetPostByID(ctx context.Context, id int, user_id int) (*models.PostView, error) {
 	query := `
 		SELECT
 			post.id, post.user_id, post.title, post.content, post.created_at, post.updated_at,
 			user.username,
 			(SELECT COUNT(*) FROM post_like WHERE post_like.post_id = post.id AND post_like.value = 1)  AS like_count,
 			(SELECT COUNT(*) FROM post_like WHERE post_like.post_id = post.id AND post_like.value = -1) AS dislike_count,
-			(SELECT COUNT(*) FROM comment   WHERE comment.parent_post_id = post.id)                     AS comment_count
+			(SELECT COUNT(*) FROM comment   WHERE comment.parent_post_id = post.id)                     AS comment_count,
+			IFNULL((SELECT value FROM post_like WHERE user_id = ? AND post_id = post.id), 0)              AS user_reaction
 		FROM post
 		JOIN user ON user.id = post.user_id
 		WHERE post.id = ?
 		`
 
 	var pv models.PostView
-	err := r.db.QueryRowContext(ctx, query, id).Scan(
+	err := r.db.QueryRowContext(ctx, query, user_id, id).Scan(
 		&pv.Post.ID, &pv.Post.UserID, &pv.Post.Title, &pv.Post.Content, &pv.Post.CreatedAt, &pv.Post.UpdatedAt,
-		&pv.AuthorName, &pv.LikeCount, &pv.DislikeCount, &pv.CommentCount,
+		&pv.AuthorName, &pv.LikeCount, &pv.DislikeCount, &pv.CommentCount, &pv.UserReaction,
 	)
 	if err != nil {
 		return nil, customerrors.MapSQLError(err)
 	}
+	pv.TargetType = "post"
+	pv.TargetId = pv.Post.ID
 	return &pv, nil
 }
 
