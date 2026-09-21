@@ -23,3 +23,11 @@ type CategoryFormPage struct {
 	CategoryID int
 	Form       CategoryForm
 }
+
+type SearchResultPage struct {
+	Query    string
+	Scope    string
+	Users    []models.UserResult
+	Posts    []models.PostResult
+	Comments []models.CommentResult
+}

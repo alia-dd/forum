@@ -198,6 +198,11 @@ func (h *PostHandler) EditPostForm(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if post.Deleted {
+		handleError(w, r, customerrors.ErrNotFound)
+		return
+	}
+
 	if user.Id != post.Post.UserID {
 		handleError(w, r, customerrors.ErrForbidden)
 		return

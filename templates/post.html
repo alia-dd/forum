@@ -8,9 +8,15 @@
 
   <p>{{range $post.Categories}}[{{.Name}}] {{end}}</p>
 
+  {{if .PageContent.Deleted}}
+    <div><em>[deleted by user]</em></div>
+  {{else}}
+    <div>{{$post.Content}}</div>
+  {{end}}
+
   <div>{{$post.Content}}</div>
     {{if $user}}
-        {{if eq $user.Id $post.UserID}}
+        {{if eq $user.Id $post.UserID (not $post.Deleted)}}
             <p><a href="/post/{{$post.ID}}/edit">Edit</a></p>
             <form method="POST" action="/post/{{$post.ID}}/delete" onsubmit="return confirm('Delete this post and all its comments?')">
               <button type="submit">Delete</button>

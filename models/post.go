@@ -21,7 +21,7 @@ type PostView struct {
 	LikeCount    int
 	DislikeCount int
 	CommentCount int
-	UserVote     *int
+	Deleted      bool
 }
 
 type PostInput struct {
