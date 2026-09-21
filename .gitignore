@@ -2,4 +2,5 @@
 *.db-shm
 *.db
 *.env
-*.tmp
+tmp/
+static/assets/images/
