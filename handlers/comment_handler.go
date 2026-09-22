@@ -64,7 +64,7 @@ func (h *CommentHandler) CreateComment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	newComment, err := h.comRep.GetCommentByID(r.Context(), comID) // Adjust method name to match your repo
+	newComment, err := h.comRep.GetCommentByID(r.Context(), comID)
 	if err != nil {
 		handleError(w, r, err)
 		return

@@ -53,5 +53,10 @@ func (h *SearchHandler) Search(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	utils.RenderTemplate(w, http.StatusOK, "search", models.PageData{User: user, PageContent: results})
+	pageData := models.PageData[SearchResultPage]{
+		User: user,
+		PageContent: results,
+	}
+
+	utils.RenderTemplate(w, http.StatusOK, "search", pageData)
 }

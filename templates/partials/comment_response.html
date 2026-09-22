@@ -9,12 +9,17 @@
         <strong>{{.AuthorName}}</strong> — 
         <small>{{.CreatedAt}}</small>
     </p>
+
     <p>{{.Content}}</p>
     
     <div class="comment-meta">
         <span>Likes: {{.LikeCount}}</span>
         <span>Dislikes: {{.DislikeCount}}</span>
-        <span>Replies: {{.ReplyCount}}</span>
+        <button></button>
+    </div>
+
+    <div>
+        <button>{{.ReplyCount}} Replies</button>
     </div>
 </div>
 {{end}}

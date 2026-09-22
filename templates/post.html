@@ -4,19 +4,21 @@
 
 <article>
   <h1>{{$post.Title}}</h1>
+  {{if $post.Deleted}}
+  <p>Anonymous — likes {{$post.LikeCount}}, dislikes {{$post.DislikeCount}}, comments {{$post.CommentCount}}</p>
+  {{else}}
   <p>by<a href="/user/profile/{{$post.AuthorName}}" class="username"> {{$post.AuthorName}}</a> — likes {{$post.LikeCount}}, dislikes {{$post.DislikeCount}}, comments {{$post.CommentCount}}</p>
+  {{end}}
 
   <p>{{range $post.Categories}}[{{.Name}}] {{end}}</p>
 
-  {{if .PageContent.Deleted}}
+  {{if $post.Deleted}}
     <div><em>[deleted by user]</em></div>
   {{else}}
     <div>{{$post.Content}}</div>
   {{end}}
-
-  <div>{{$post.Content}}</div>
     {{if $user}}
-        {{if eq $user.Id $post.UserID (not $post.Deleted)}}
+        {{if and (eq $user.Id $post.UserID) (not $post.Deleted)}}
             <p><a href="/post/{{$post.ID}}/edit">Edit</a></p>
             <form method="POST" action="/post/{{$post.ID}}/delete" onsubmit="return confirm('Delete this post and all its comments?')">
               <button type="submit">Delete</button>
@@ -38,7 +40,7 @@
 
 
 <section>
-  <h2 id="comment-count-header">Comments ({{.PageContent.Post.CommentCount}})</h2>
+  <h2 id="comment-count-header">Comments ({{$post.CommentCount}})</h2>
   <div id="comments-list">
     {{range .PageContent.Comments}}
       {{template "comment_card" .}} 
