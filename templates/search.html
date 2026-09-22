@@ -8,5 +8,5 @@
     {{range .PageContent.Comments}}<li><a href="/post/{{.ParentPostID}}">{{.Content}}</a> - by {{.AuthorName}}</li>{{end}}</ul>{{end}}
   {{if and (not .PageContent.Users) (not .PageContent.Posts) (not .PageContent.Comments)}}
   <p>No results for "{{.PageContent.Query}}"</p>{{end}}
-  {{end}}
-  {{end}}
+{{end}}
+{{end}}

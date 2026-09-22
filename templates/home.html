@@ -1,6 +1,6 @@
 {{define "content"}}
 <h1>Posts</h1>
-<p>{{if .User}}Signed in as {{.User.Username}} — <a href="/post/new">New post</a>{{else}}<a href="/user/login">Sign in</a> to post{{end}}</p>
+<p>{{if .User}}Signed in as <a href="/user/profile/{{.User.Username}}" class="username">{{.User.Username}}</a> — <a href="/post/new">New post</a>{{else}}<a href="/user/login">Sign in</a> to post{{end}}</p>
 
 <form method="GET" action="/">
   <label>Category
