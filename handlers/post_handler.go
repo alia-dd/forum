@@ -14,10 +14,11 @@ import (
 type PostHandler struct {
 	postRep repository.PostRepository
 	catRep  repository.CategoryRepository
+	comRep  repository.CommentRepository
 }
 
-func NewPostHandler(postRep repository.PostRepository, catRep repository.CategoryRepository) *PostHandler {
-	return &PostHandler{postRep: postRep, catRep: catRep}
+func NewPostHandler(postRep repository.PostRepository, catRep repository.CategoryRepository, comRep repository.CommentRepository) *PostHandler {
+	return &PostHandler{postRep: postRep, catRep: catRep, comRep: comRep}
 }
 
 func (h *PostHandler) GetPosts(w http.ResponseWriter, r *http.Request) {
@@ -55,8 +56,7 @@ func (h *PostHandler) GetPosts(w http.ResponseWriter, r *http.Request) {
 	// fmt.Println("cats: ", allCats)
 	// fmt.Println("post: ", posts)
 
-	var pageData models.PageData
-	pageData = models.PageData{
+	pageData := models.PageData[MainPage]{
 		User: user,
 		PageContent: MainPage{
 			Posts:      posts,
@@ -70,7 +70,12 @@ func (h *PostHandler) GetPosts(w http.ResponseWriter, r *http.Request) {
 
 func (h *PostHandler) GetPostByID(w http.ResponseWriter, r *http.Request) {
 	user, _ := r.Context().Value("user_session").(*models.UserInfo) // guests allowed
+	var userID *int
+	if user != nil {
+		userID = &user.Id
+	}
 	id, err := strconv.Atoi(r.PathValue("id"))
+
 	if err != nil {
 		handleError(w, r, customerrors.ErrBadRequest)
 		return
@@ -89,11 +94,18 @@ func (h *PostHandler) GetPostByID(w http.ResponseWriter, r *http.Request) {
 	}
 	post.Categories = cats[id]
 
+	comments, err := h.comRep.GetCommentsByPost(r.Context(), id, userID)
+	if err != nil {
+		handleError(w, r, err)
+		return
+	}
+
 	//get comments linked to post or its subcomments
-	pageData := models.PageData{
+	pageData := models.PageData[PostPage]{
 		User: user,
 		PageContent: PostPage{
-			Post: post,
+			Post:     post,
+			Comments: comments,
 		},
 	}
 
@@ -113,7 +125,7 @@ func (h *PostHandler) NewPostForm(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	pageData := models.PageData{
+	pageData := models.PageData[PostFormPage]{
 		User: user,
 		PageContent: PostFormPage{
 			Categories: cats,
@@ -140,7 +152,7 @@ func (h *PostHandler) CreatePost(w http.ResponseWriter, r *http.Request) {
 			handleError(w, r, err)
 			return
 		}
-		pageData := models.PageData{
+		pageData := models.PageData[PostFormPage]{
 			User: user,
 			PageContent: PostFormPage{
 				Form:       form,
@@ -217,7 +229,7 @@ func (h *PostHandler) EditPostForm(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	pageData := models.PageData{
+	pageData := models.PageData[PostFormPage]{
 		User: user,
 		PageContent: PostFormPage{
 			PostID:     id,
@@ -252,7 +264,7 @@ func (h *PostHandler) UpdatePost(w http.ResponseWriter, r *http.Request) {
 			handleError(w, r, err)
 			return
 		}
-		pageData := models.PageData{
+		pageData := models.PageData[PostFormPage]{
 			User: user,
 			PageContent: PostFormPage{
 				PostID: id,

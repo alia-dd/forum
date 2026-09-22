@@ -1,8 +1,8 @@
 package models
 
-type PageData struct {
+type PageData[T any] struct {
 	User        *UserInfo
 	IsOwner     bool
-	PageContent any
+	PageContent T
 	Error       string
 }

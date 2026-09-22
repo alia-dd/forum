@@ -1,28 +1,49 @@
 {{define "content"}}
 {{$user := .User}}
-{{with .PageContent.Post}}
+{{$post := .PageContent.Post}}
+
 <article>
-  <h1>{{.Post.Title}}</h1>
-  <p>by<a href="/user/profile/{{.AuthorName}}" class="username"> {{.AuthorName}}</a> — likes {{.LikeCount}}, dislikes {{.DislikeCount}}, comments {{.CommentCount}}</p>
-  <p>{{range .Categories}}[{{.Name}}] {{end}}</p>
-  {{if .Deleted}}
+  <h1>{{$post.Title}}</h1>
+  <p>by<a href="/user/profile/{{$post.AuthorName}}" class="username"> {{$post.AuthorName}}</a> — likes {{$post.LikeCount}}, dislikes {{$post.DislikeCount}}, comments {{$post.CommentCount}}</p>
+
+  <p>{{range $post.Categories}}[{{.Name}}] {{end}}</p>
+
+  {{if .PageContent.Deleted}}
     <div><em>[deleted by user]</em></div>
   {{else}}
-    <div>{{.Post.Content}}</div>
+    <div>{{$post.Content}}</div>
   {{end}}
+
+  <div>{{$post.Content}}</div>
     {{if $user}}
-        {{if and (eq $user.Id .Post.UserID) (not .Deleted)}}
-            <p><a href="/post/{{.Post.ID}}/edit">Edit</a></p>
-            <form method="POST" action="/post/{{.Post.ID}}/delete" onsubmit="return confirm('Delete this post?')">
+        {{if eq $user.Id $post.UserID (not $post.Deleted)}}
+            <p><a href="/post/{{$post.ID}}/edit">Edit</a></p>
+            <form method="POST" action="/post/{{$post.ID}}/delete" onsubmit="return confirm('Delete this post and all its comments?')">
               <button type="submit">Delete</button>
             </form>
         {{end}}
     {{end}}
 </article>
+
+{{if $user}}
+<form method="POST" hx-post="/post/{{$post.ID}}/comment/create" hx-target="#comments-list" hx-swap="beforeend" hx-on::after-request="this.reset()">
+  <p>
+    <input name="userComment" placeholder="Write a comment" required>
+  </p>
+  <button type="submit">Create</button>
+</form>
+{{else}}
+  <p><a href="/user/login" style="color: red;">Log in</a> or <a href="/user/register" style="color: red;">register</a> to leave a comment.</p>
 {{end}}
 
+
 <section>
-  <h2>Comments ({{.PageContent.Post.CommentCount}})</h2>
-  <p>Comments not in this branch yet.</p>
+  <h2 id="comment-count-header">Comments ({{.PageContent.Post.CommentCount}})</h2>
+  <div id="comments-list">
+    {{range .PageContent.Comments}}
+      {{template "comment_card" .}} 
+    {{end}}
+  </div>
 </section>
+
 {{end}}

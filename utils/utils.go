@@ -55,6 +55,7 @@ func serverErrorHandler(w http.ResponseWriter) {
 	})
 
 }
+
 func renderExecuted(w http.ResponseWriter, t *template.Template, statusCode int, payload any) {
 	var buf bytes.Buffer
 
@@ -63,6 +64,24 @@ func renderExecuted(w http.ResponseWriter, t *template.Template, statusCode int,
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	w.WriteHeader(statusCode)
+	buf.WriteTo(w)
+}
+
+func RenderPartial(w http.ResponseWriter, statusCode int, templateName string, payload any) {
+	t, tmpErr := Tpl.Clone()
+	if tmpErr != nil {
+		http.Error(w, tmpErr.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	var buf bytes.Buffer
+	if err := t.ExecuteTemplate(&buf, templateName, payload); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.WriteHeader(statusCode)
 	buf.WriteTo(w)
 }

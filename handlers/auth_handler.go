@@ -30,7 +30,7 @@ func (h *UseHandler) SignInUser(w http.ResponseWriter, r *http.Request) {
 
 	session, siginErr := h.service.AuthenticateUserService(cx, userData)
 	if siginErr != nil {
-		pageData := models.PageData{
+		pageData := models.PageData[models.UserLogin]{
 			User:    nil,
 			IsOwner: true,
 			PageContent: models.UserLogin{

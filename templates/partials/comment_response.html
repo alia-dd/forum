@@ -1,0 +1,20 @@
+{{define "comment_response"}}
+    {{template "comment_card" .NewComment}}
+    <h2 id="comment-count-header" hx-swap-oob="true">Comments ({{.NewCount}})</h2>
+{{end}}
+
+{{define "comment_card"}}
+<div class="comment-item" id="comment-{{.ID}}">
+    <p>
+        <strong>{{.AuthorName}}</strong> — 
+        <small>{{.CreatedAt}}</small>
+    </p>
+    <p>{{.Content}}</p>
+    
+    <div class="comment-meta">
+        <span>Likes: {{.LikeCount}}</span>
+        <span>Dislikes: {{.DislikeCount}}</span>
+        <span>Replies: {{.ReplyCount}}</span>
+    </div>
+</div>
+{{end}}
