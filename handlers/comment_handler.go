@@ -132,7 +132,11 @@ func (h *CommentHandler) GetComment(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/user/login", http.StatusSeeOther)
 		return
 	}
-	commentID, _ := parseID(r, "commentID")
+	commentID, err := parseID(r, "commentID")
+	if err != nil {
+		handleError(w, r, err)
+		return
+	}
 
 	comment, err := h.comRep.GetCommentByID(r.Context(), commentID)
 	if err != nil {
@@ -142,4 +146,44 @@ func (h *CommentHandler) GetComment(w http.ResponseWriter, r *http.Request) {
 	comment.IsOwner = (user.Id == comment.UserID)
 
 	utils.RenderPartial(w, http.StatusOK, "comment_card", comment)
+}
+
+func (h *CommentHandler) DeleteComment(w http.ResponseWriter, r *http.Request) {
+	user, ok := r.Context().Value("user_session").(*models.UserInfo)
+	if !ok {
+		http.Redirect(w, r, "/user/login", http.StatusSeeOther)
+		return
+	}
+
+	commentID, err := parseID(r, "commentID")
+	if err != nil {
+		handleError(w, r, err)
+		return
+	}
+
+	postID, err := parseID(r, "postID")
+	if err != nil {
+		handleError(w, r, err)
+		return
+	}
+
+	err = h.comRep.DeleteComment(r.Context(), commentID, user.Id)
+	if err != nil {
+		handleError(w, r, err)
+		return
+	}
+
+	newCount, err := h.comRep.CountByPost(r.Context(), postID)
+	if err != nil {
+		handleError(w, r, err)
+		return
+	}
+
+	responsePayload := struct {
+		NewCount   int
+	}{
+		NewCount:   newCount,
+	}
+
+	utils.RenderPartial(w, http.StatusOK, "comment_delete_response", responsePayload)
 }

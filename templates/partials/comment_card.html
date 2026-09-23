@@ -1,43 +1,59 @@
 {{define "comment_card"}}
 <div class="comment-item" id="comment-{{.ID}}">
-    <p>
-        <strong>{{.AuthorName}}</strong> — 
-        <small>
-            {{.CreatedAt}}
+    {{if .Deleted}}
+        <p>
+            <strong>Anonymous</strong> — 
             {{if .UpdatedAt}}
-                <span>(Edited)</span>
+                <small>{{.CreatedAt}}</small> —
+                <span>(edited)</span> —
                 <small>{{.UpdatedAt}}</small>
+            {{else}}
+                <small>{{.CreatedAt}}</small>
             {{end}}
-        </small>
-    </p>
-    <p>{{.Content}}</p>
-    
-    <div class="comment-meta">
-        <div>
-            <span>Likes: {{.LikeCount}}</span>
-            <span>Dislikes: {{.DislikeCount}}</span>
-            <button>Reply</button>
-        </div>
-        <div>
-            <span>Replies: {{.ReplyCount}}</span>
-        </div>
+        </p>
+
+        <p><em>[This comment has been deleted]</em></p>
+    {{else}}
+        <p>
+            <strong>{{.AuthorName}}</strong> — 
+            {{if .UpdatedAt}}
+                <small>{{.CreatedAt}}</small> —
+                <span>(edited)</span> —
+                <small>{{.UpdatedAt}}</small>
+            {{else}}
+                <small>{{.CreatedAt}}</small>
+            {{end}}
+        </p>
+
+        <p>{{.Content}}</p>
         
-        {{if .IsOwner}}
-        <div>
-            <button hx-get="/post/{{.ParentPostID}}/comment/{{.ID}}/edit" 
-                    hx-target="#comment-{{.ID}}" 
-                    hx-swap="outerHTML">
-                Edit
-            </button>
-            <button hx-delete="/post/{{.ParentPostID}}/comment/{{.ID}}/delete"
-                    hx-target="#comment-{{.ID}}"
-                    hx-swap="outerHTML"
-                    hx-confirm="Delete this comment?">
-                Delete
-            </button>
+        <div class="comment-meta">
+            <div>
+                <span>Likes: {{.LikeCount}}</span>
+                <span>Dislikes: {{.DislikeCount}}</span>
+                <button>Reply</button>
+            </div>
+            <div>
+                <span>Replies: {{.ReplyCount}}</span>
+            </div>
+            
+            {{if .IsOwner}}
+            <div>
+                <button hx-get="/post/{{.ParentPostID}}/comment/{{.ID}}/edit" 
+                        hx-target="#comment-{{.ID}}" 
+                        hx-swap="outerHTML">
+                    Edit
+                </button>
+                <button hx-delete="/post/{{.ParentPostID}}/comment/{{.ID}}/delete"
+                        hx-target="#comment-{{.ID}}"
+                        hx-swap="outerHTML"
+                        hx-confirm="Delete this comment?">
+                    Delete
+                </button>
+            </div>
+            {{end}}
         </div>
-        {{end}}
-    </div>
+    {{end}}
 </div>
 {{end}}
 

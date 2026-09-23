@@ -19,6 +19,7 @@ type CommentRepository interface {
 	// // GetRepliesByComment(ctx context.Context, commentID, int, userID *int) (*models.CommentView, error)
 	UpdateCommentContent(ctx context.Context, commentID, userID int, content string) error
 	CountByPost(ctx context.Context, postID int) (int, error)
+	DeleteComment(ctx context.Context, id, authorID int) error
 }
 
 func NewCommentRepository(db *sql.DB) CommentRepository {
@@ -86,6 +87,7 @@ func (r *commentRepositoryImpl) GetCommentsByPost(ctx context.Context, postID in
 			c.content,
 			c.created_at,
 			c.updated_at,
+			c.deleted_at,
 			u.username,
 			(
 				SELECT COUNT(*)
@@ -140,6 +142,7 @@ func (r *commentRepositoryImpl) GetCommentsByPost(ctx context.Context, postID in
 
 	for rows.Next() {
 		var cv models.CommentView
+		var deletedAt sql.NullTime
 
 		err := rows.Scan(
 			&cv.Comment.ID,
@@ -149,6 +152,7 @@ func (r *commentRepositoryImpl) GetCommentsByPost(ctx context.Context, postID in
 			&cv.Comment.Content,
 			&cv.Comment.CreatedAt,
 			&cv.Comment.UpdatedAt,
+			&deletedAt,
 			&cv.AuthorName,
 			&cv.LikeCount,
 			&cv.DislikeCount,
@@ -158,6 +162,8 @@ func (r *commentRepositoryImpl) GetCommentsByPost(ctx context.Context, postID in
 		if err != nil {
 			return nil, customerrors.MapSQLError(err)
 		}
+
+		cv.Deleted = deletedAt.Valid
 
 		if userID != nil && *userID == cv.Comment.UserID {
 			cv.IsOwner = true
@@ -206,4 +212,45 @@ func (r *commentRepositoryImpl) CountByPost(ctx context.Context, postID int) (in
 	}
 
 	return count, nil
+}
+
+func (r *commentRepositoryImpl) DeleteComment(ctx context.Context, id, authorID int) error {
+	var hasReplies bool
+	var err error
+	err = r.db.QueryRowContext(ctx, `
+		SELECT EXISTS(
+			SELECT 1 FROM comment
+			WHERE parent_comment_id = ?)
+		`, id).Scan(&hasReplies)
+	if err != nil {
+		return customerrors.MapSQLError(err)
+	}
+
+	var res sql.Result
+	if !hasReplies {
+		res, err = r.db.ExecContext(ctx, `
+			DELETE FROM comment
+			WHERE id = ? AND user_id = ?
+			`, id, authorID)
+	} else {
+		res, err = r.db.ExecContext(ctx, `
+			UPDATE comment
+			SET content = '', deleted_at = CURRENT_TIMESTAMP
+			WHERE id = ? AND user_id = ?
+			`, id, authorID)
+	}
+	if err != nil {
+		return customerrors.MapSQLError(err)
+	}
+
+	rowCount, err := res.RowsAffected()
+	if err != nil {
+		return customerrors.MapSQLError(err)
+	}
+
+	if rowCount == 0 {
+		return customerrors.ErrNotFound
+	}
+
+	return nil
 }

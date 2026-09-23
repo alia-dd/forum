@@ -246,7 +246,7 @@ func parseID(r *http.Request, key string) (int, error) {
 	idStr := r.PathValue(key)
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		return 0, customerrors.ErrInternalError
+		return 0, customerrors.ErrBadRequest
 	}
 	return id, nil
 }
