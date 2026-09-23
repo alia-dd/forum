@@ -52,7 +52,7 @@ func (h *CommentHandler) CreateComment(w http.ResponseWriter, r *http.Request) {
 	}
 
 	input := models.CommentInput{
-		UserID:          user.Id,
+		UserID:          user.ID,
 		ParentPostID:    postID,
 		ParentCommentID: parentCommentID,
 		Content:         content,
@@ -64,12 +64,12 @@ func (h *CommentHandler) CreateComment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	newComment, err := h.comRep.GetCommentByID(r.Context(), comID)
+	newComment, err := h.comRep.GetCommentByID(r.Context(), comID, &user.ID)
 	if err != nil {
 		handleError(w, r, err)
 		return
 	}
-	newComment.IsOwner = (user.Id == newComment.UserID)
+	newComment.IsOwner = (user.ID == newComment.UserID)
 
 	newCount, err := h.comRep.CountByPost(r.Context(), postID)
 	if err != nil {
@@ -89,9 +89,19 @@ func (h *CommentHandler) CreateComment(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *CommentHandler) GetCommentEditForm(w http.ResponseWriter, r *http.Request) {
-	commentID, _ := parseID(r, "commentID")
+	user, ok := r.Context().Value("user_session").(*models.UserInfo)
+	if !ok {
+		http.Redirect(w, r, "/user/login", http.StatusSeeOther)
+		return
+	}
 
-	comment, err := h.comRep.GetCommentByID(r.Context(), commentID)
+	commentID, err := parseID(r, "commentID")
+	if err != nil {
+		handleError(w, r, err)
+		return
+	}
+
+	comment, err := h.comRep.GetCommentByID(r.Context(), commentID, &user.ID)
 	if err != nil {
 		handleError(w, r, err)
 		return
@@ -110,18 +120,18 @@ func (h *CommentHandler) UpdateComment(w http.ResponseWriter, r *http.Request) {
 	commentID, _ := parseID(r, "commentID")
 	newContent := r.FormValue("content")
 
-	err := h.comRep.UpdateCommentContent(r.Context(), commentID, user.Id, newContent)
+	err := h.comRep.UpdateCommentContent(r.Context(), commentID, user.ID, newContent)
 	if err != nil {
 		handleError(w, r, err)
 		return
 	}
 
-	comment, err := h.comRep.GetCommentByID(r.Context(), commentID)
+	comment, err := h.comRep.GetCommentByID(r.Context(), commentID, &user.ID)
 	if err != nil {
 		handleError(w, r, err)
 		return
 	}
-	comment.IsOwner = (user.Id == comment.UserID)
+	comment.IsOwner = (user.ID == comment.UserID)
 
 	utils.RenderPartial(w, http.StatusOK, "comment_card", comment)
 }
@@ -138,12 +148,12 @@ func (h *CommentHandler) GetComment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	comment, err := h.comRep.GetCommentByID(r.Context(), commentID)
+	comment, err := h.comRep.GetCommentByID(r.Context(), commentID, &user.ID)
 	if err != nil {
 		handleError(w, r, err)
 		return
 	}
-	comment.IsOwner = (user.Id == comment.UserID)
+	comment.IsOwner = (user.ID == comment.UserID)
 
 	utils.RenderPartial(w, http.StatusOK, "comment_card", comment)
 }
@@ -167,7 +177,7 @@ func (h *CommentHandler) DeleteComment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.comRep.DeleteComment(r.Context(), commentID, user.Id)
+	err = h.comRep.DeleteComment(r.Context(), commentID, user.ID)
 	if err != nil {
 		handleError(w, r, err)
 		return
@@ -186,4 +196,90 @@ func (h *CommentHandler) DeleteComment(w http.ResponseWriter, r *http.Request) {
 	}
 
 	utils.RenderPartial(w, http.StatusOK, "comment_delete_response", responsePayload)
+}
+
+func (h *CommentHandler) GetCommentReplies(w http.ResponseWriter, r *http.Request) {
+	var userID *int
+	user, ok := r.Context().Value("user_session").(*models.UserInfo)
+	if ok {
+		userID = &user.ID
+	}
+
+    commentID, err := parseID(r, "commentID")
+	if err != nil {
+		handleError(w, r, err)
+		return
+	}
+
+	replies, err := h.comRep.GetRepliesByCommentID(r.Context(), commentID, userID)
+	if err != nil {
+		handleError(w, r, err)
+		return
+	}
+
+	utils.RenderPartial(w, http.StatusOK, "comment_replies", replies)
+}
+
+func (h *CommentHandler) GetReplyForm(w http.ResponseWriter, r *http.Request) {
+    postID, err := parseID(r, "postID")
+	if err != nil {
+		handleError(w, r, err)
+		return
+	}
+
+    commentID, err := parseID(r, "commentID")
+	if err != nil {
+		handleError(w, r, err)
+		return
+	}
+
+    data := map[string]any{
+        "ParentPostID": postID,
+        "ParentID":     commentID,
+    }
+
+    utils.RenderPartial(w, http.StatusOK, "comment_reply", data)
+}
+
+func (h *CommentHandler) CreateReply(w http.ResponseWriter, r *http.Request) {
+	user, ok := r.Context().Value("user_session").(*models.UserInfo)
+	if !ok {
+		http.Redirect(w, r, "/user/login", http.StatusSeeOther)
+		return
+	}
+
+    postID, err := parseID(r, "postID")
+	if err != nil {
+		handleError(w, r, err)
+		return
+	}
+
+    parentCommentID, err := parseID(r, "commentID")
+	if err != nil {
+		handleError(w, r, err)
+		return
+	}
+
+    content := r.FormValue("content")
+
+	input := models.CommentInput{
+		UserID:          user.ID,
+		ParentPostID:    postID,
+		ParentCommentID: &parentCommentID,
+		Content:         content,
+	}
+
+    replyID, err := h.comRep.CreateComment(r.Context(), input)
+    if err != nil {
+		handleError(w, r, err)
+		return
+	}
+
+    replyView, err := h.comRep.GetCommentByID(r.Context(), replyID, &user.ID)
+    if err != nil {
+		handleError(w, r, err)
+		return
+	}
+
+    utils.RenderPartial(w, http.StatusOK, "comment_card", replyView)
 }

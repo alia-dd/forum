@@ -72,7 +72,7 @@ func (h *PostHandler) GetPostByID(w http.ResponseWriter, r *http.Request) {
 	user, _ := r.Context().Value("user_session").(*models.UserInfo) // guests allowed
 	var userID *int
 	if user != nil {
-		userID = &user.Id
+		userID = &user.ID
 	}
 	id, err := strconv.Atoi(r.PathValue("id"))
 
@@ -164,7 +164,7 @@ func (h *PostHandler) CreatePost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	postInput := models.PostInput{
-		UserID:         user.Id,
+		UserID:         user.ID,
 		Title:          form.Title,
 		Content:        form.Content,
 		MainCategoryID: form.MainCategoryID,
@@ -203,7 +203,7 @@ func (h *PostHandler) EditPostForm(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if user.Id != post.Post.UserID {
+	if user.ID != post.Post.UserID {
 		handleError(w, r, customerrors.ErrForbidden)
 		return
 	}
@@ -287,7 +287,7 @@ func (h *PostHandler) UpdatePost(w http.ResponseWriter, r *http.Request) {
 		CategoryIDs:    form.CategoryIDs,
 	}
 
-	err = h.postRep.UpdatePost(r.Context(), postUpdate, user.Id)
+	err = h.postRep.UpdatePost(r.Context(), postUpdate, user.ID)
 	if err != nil {
 		handleError(w, r, err)
 		return
@@ -310,7 +310,7 @@ func (h *PostHandler) DeletePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.postRep.DeletePost(r.Context(), id, user.Id)
+	err = h.postRep.DeletePost(r.Context(), id, user.ID)
 	if err != nil {
 		handleError(w, r, err)
 		return

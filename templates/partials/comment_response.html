@@ -6,3 +6,11 @@
 {{define "comment_delete_response"}}
     <h2 id="comment-count-header" hx-swap-oob="true">Comments ({{.NewCount}})</h2>
 {{end}}
+
+{{define "comment_replies"}}
+<div>
+    {{range .}}
+        {{template "comment_card" .}}
+    {{end}}
+</div>
+{{end}}

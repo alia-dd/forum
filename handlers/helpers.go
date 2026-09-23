@@ -86,7 +86,7 @@ func (h *PostHandler) parsePostFilter(ctx context.Context, r *http.Request) (mod
 	liked := q.Get("liked")
 	if liked == "true" {
 		if user, ok := ctx.Value("user_session").(*models.UserInfo); ok {
-			id := user.Id
+			id := user.ID
 			pf.LikedByID = &id
 		}
 	}
@@ -101,7 +101,7 @@ func (h *PostHandler) getAuthorID(ctx context.Context, author string) (int, erro
 		if !ok {
 			return 0, customerrors.ErrBadRequest
 		}
-		return user.Id, nil
+		return user.ID, nil
 	}
 
 	authorID, err := strconv.Atoi(author)

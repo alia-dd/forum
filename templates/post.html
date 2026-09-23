@@ -18,7 +18,7 @@
     <div>{{$post.Content}}</div>
   {{end}}
     {{if $user}}
-        {{if and (eq $user.Id $post.UserID) (not $post.Deleted)}}
+        {{if and (eq $user.ID $post.UserID) (not $post.Deleted)}}
             <p><a href="/post/{{$post.ID}}/edit">Edit</a></p>
             <form method="POST" action="/post/{{$post.ID}}/delete" onsubmit="return confirm('Delete this post and all its comments?')">
               <button type="submit">Delete</button>

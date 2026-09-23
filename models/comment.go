@@ -23,6 +23,7 @@ type CommentView struct {
 	ReplyCount   int
 	UserVote     *int
 	IsOwner      bool
+	IsLogged     bool
 	Deleted      bool
 }
 

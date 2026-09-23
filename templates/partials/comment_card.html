@@ -31,10 +31,13 @@
             <div>
                 <span>Likes: {{.LikeCount}}</span>
                 <span>Dislikes: {{.DislikeCount}}</span>
-                <button>Reply</button>
-            </div>
-            <div>
-                <span>Replies: {{.ReplyCount}}</span>
+                {{if .IsLogged}}
+                <button hx-get="/post/{{.ParentPostID}}/comment/{{.ID}}/reply" 
+                        hx-target="#reply-form-container-{{.ID}}" 
+                        hx-swap="innerHTML">
+                    Reply
+                </button>
+                {{end}}
             </div>
             
             {{if .IsOwner}}
@@ -52,6 +55,28 @@
                 </button>
             </div>
             {{end}}
+
+            {{if gt .ReplyCount 0}}
+            <button hx-get="/post/{{.ParentPostID}}/comment/{{.ID}}/replies" 
+                    hx-target="#replies-{{.ID}}" 
+                    hx-swap="innerHTML"
+                    hx-on:click="
+                    const container = document.getElementById('replies-{{.ID}}');
+                    if (container.children.length > 0) {
+                    container.style.display = container.style.display === 'none' ? 'block' : 'none';
+                    event.preventDefault();
+                    }">
+                View {{.ReplyCount}} replies
+            </button>
+            {{end}}
+
+            <div id="reply-form-container-{{.ID}}"></div>
+
+            <div class="replies-container" id="replies-{{.ID}}">
+                {{range .Replies}}
+                    {{template "comment_card" .}}
+                {{end}}
+            </div>
         </div>
     {{end}}
 </div>
@@ -83,4 +108,19 @@
         </div>
     </form>
 </div>
+{{end}}
+
+{{define "comment_reply"}}
+<form hx-post="/post/{{.ParentPostID}}/comment/{{.ParentID}}/reply" 
+      hx-target="#replies-{{.ParentID}}" 
+      hx-swap="beforeend"
+      class="reply-form"
+      hx-on::after-request="this.remove()">
+    <textarea name="content" placeholder="Write a reply..." required rows="2"></textarea>
+
+    <div>
+        <button type="submit">Post Reply</button>
+        <button type="button" hx-on:click="this.closest('form').remove()">Cancel</button>
+    </div>
+</form>
 {{end}}

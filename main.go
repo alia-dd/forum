@@ -160,7 +160,13 @@ func main() {
 	mux.HandleFunc("GET /post/{postID}/comment/{commentID}", middleware.Recoverer(middleware.Restrict(sessionRepo, userRepo, commentHandler.GetComment)))
 	// POST /post/{postID}/comment/{commentID}/delete - for deleting comment
 	mux.HandleFunc("DELETE /post/{postID}/comment/{commentID}/delete", middleware.Recoverer(middleware.Restrict(sessionRepo, userRepo, commentHandler.DeleteComment)))
+	// GET /post/{postID}/comment/{commentID}/reply - for getting the reply form
+	mux.HandleFunc("GET /post/{postID}/comment/{commentID}/reply", middleware.Recoverer(middleware.Restrict(sessionRepo, userRepo, commentHandler.GetReplyForm)))
+	// POST /post/{postID}/comment/{commentID}/reply - for creating the reply (comment)
+	mux.HandleFunc("POST /post/{postID}/comment/{commentID}/reply", middleware.Recoverer(middleware.Restrict(sessionRepo, userRepo, commentHandler.CreateReply)))
 	//above need auth
+
+	mux.HandleFunc("GET /post/{postID}/comment/{commentID}/replies", middleware.Recoverer(middleware.AllowGuest(sessionRepo, userRepo, commentHandler.GetCommentReplies)))
 
 	mux.HandleFunc("GET /search", middleware.Recoverer(middleware.AllowGuest(sessionRepo, userRepo, searchHandler.Search)))
 
