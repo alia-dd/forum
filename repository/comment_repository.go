@@ -17,7 +17,7 @@ type CommentRepository interface {
 	GetCommentsByPost(ctx context.Context, postID int, userID *int) ([]*models.CommentView, error)
 	GetCommentByID(ctx context.Context, comID int) (*models.CommentView, error)
 	// // GetRepliesByComment(ctx context.Context, commentID, int, userID *int) (*models.CommentView, error)
-	// UpdateComment(ctx context.Context, update models.CommentUpdate, authorID int) error
+	UpdateCommentContent(ctx context.Context, commentID, userID int, content string) error
 	CountByPost(ctx context.Context, postID int) (int, error)
 }
 
@@ -159,6 +159,12 @@ func (r *commentRepositoryImpl) GetCommentsByPost(ctx context.Context, postID in
 			return nil, customerrors.MapSQLError(err)
 		}
 
+		if userID != nil && *userID == cv.Comment.UserID {
+			cv.IsOwner = true
+		} else {
+			cv.IsOwner = false
+		}
+
 		cv.Replies = []models.CommentView{}
 		comments = append(comments, &cv)
 	}
@@ -170,29 +176,25 @@ func (r *commentRepositoryImpl) GetCommentsByPost(ctx context.Context, postID in
 	return comments, nil
 }
 
-// func (r *commentRepositoryImpl) GetRepliesByComment(ctx context.Context, commentID, int, userID *int) (*models.CommentView, error) {
+func (r *commentRepositoryImpl) UpdateCommentContent(ctx context.Context, commentID, userID int, content string) error {
+	res, err := r.db.ExecContext(ctx, `
+		UPDATE comment
+		SET content = ?, updated_at = CURRENT_TIMESTAMP
+		WHERE id = ? AND user_id = ?
+		`, content, commentID, userID)
+	if err != nil {
+		return customerrors.MapSQLError(err)
+	}
 
-// }
-
-// func (r *commentRepositoryImpl) UpdateComment(ctx context.Context, update models.CommentUpdate, authorID int) error {
-// 	res, err := r.db.ExecContext(ctx, `
-// 		UPDATE comment
-// 		SET content = ?, updated_at = CURRENT_TIMESTAMP
-// 		WHERE id = ? AND user_id = ?
-// 		`, update.Content, update.ID, authorID)
-// 	if err != nil {
-// 		return customerrors.MapSQLError(err)
-// 	}
-
-// 	rowCount, err := res.RowsAffected()
-// 	if err != nil {
-// 		return customerrors.MapSQLError(err)
-// 	}
-// 	if rowCount == 0 {
-// 		return customerrors.ErrNotFound
-// 	}
-// 	return nil
-// }
+	rowCount, err := res.RowsAffected()
+	if err != nil {
+		return customerrors.MapSQLError(err)
+	}
+	if rowCount == 0 {
+		return customerrors.ErrNotFound
+	}
+	return nil
+}
 
 func (r *commentRepositoryImpl) CountByPost(ctx context.Context, postID int) (int, error) {
 	query := `SELECT COUNT(*) FROM comment WHERE parent_post_id = ?`

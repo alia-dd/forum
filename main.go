@@ -152,10 +152,12 @@ func main() {
 
 	// POST /post/{id}/comment/create - for commenting
 	mux.HandleFunc("POST /post/{id}/comment/create", middleware.Recoverer(middleware.Restrict(sessionRepo, userRepo, commentHandler.CreateComment)))
-	// GET /post/{id} - for commenting
-	// mux.HandleFunc("GET /post/{id}/comment", middleware.Recoverer(middleware.Restrict(sessionRepo, userRepo, commentHandler.EditComment)))
-	// GET /post/{id} - for commenting
-	// mux.HandleFunc("GET /post/{id}/comment", middleware.Recoverer(middleware.Restrict(sessionRepo, userRepo, commentHandler.UpdateComment)))
+	// GET /post/{postID}/comment/{commentID}/edit - for editing comment
+	mux.HandleFunc("GET /post/{postID}/comment/{commentID}/edit", middleware.Recoverer(middleware.Restrict(sessionRepo, userRepo, commentHandler.GetCommentEditForm)))
+	// PUT /post/{postID}/comment/{commentID} - for updating comment
+	mux.HandleFunc("PUT /post/{postID}/comment/{commentID}", middleware.Recoverer(middleware.Restrict(sessionRepo, userRepo, commentHandler.UpdateComment)))
+	// GET /post/{postID}/comment/{commentID} - for getting comment
+	mux.HandleFunc("GET /post/{postID}/comment/{commentID}", middleware.Recoverer(middleware.Restrict(sessionRepo, userRepo, commentHandler.GetComment)))
 	// POST /post/{id} - for commenting
 	// mux.HandleFunc("POST /post/{id}/comment/delete", middleware.Recoverer(middleware.Restrict(sessionRepo, userRepo, commentHandler.DeleteComment)))
 	//above need auth

@@ -1,0 +1,70 @@
+{{define "comment_card"}}
+<div class="comment-item" id="comment-{{.ID}}">
+    <p>
+        <strong>{{.AuthorName}}</strong> — 
+        <small>
+            {{.CreatedAt}}
+            {{if .UpdatedAt}}
+                <span>(Edited)</span>
+                <small>{{.UpdatedAt}}</small>
+            {{end}}
+        </small>
+    </p>
+    <p>{{.Content}}</p>
+    
+    <div class="comment-meta">
+        <div>
+            <span>Likes: {{.LikeCount}}</span>
+            <span>Dislikes: {{.DislikeCount}}</span>
+            <button>Reply</button>
+        </div>
+        <div>
+            <span>Replies: {{.ReplyCount}}</span>
+        </div>
+        
+        {{if .IsOwner}}
+        <div>
+            <button hx-get="/post/{{.ParentPostID}}/comment/{{.ID}}/edit" 
+                    hx-target="#comment-{{.ID}}" 
+                    hx-swap="outerHTML">
+                Edit
+            </button>
+            <button hx-delete="/post/{{.ParentPostID}}/comment/{{.ID}}/delete"
+                    hx-target="#comment-{{.ID}}"
+                    hx-swap="outerHTML"
+                    hx-confirm="Delete this comment?">
+                Delete
+            </button>
+        </div>
+        {{end}}
+    </div>
+</div>
+{{end}}
+
+{{define "comment_card_edit"}}
+<div class="comment-item" id="comment-{{.ID}}">
+    <form hx-put="/post/{{.ParentPostID}}/comment/{{.ID}}" 
+          hx-target="#comment-{{.ID}}" 
+          hx-swap="outerHTML">
+        
+        <p>
+            <strong>{{.AuthorName}}</strong> — <small>Editing...</small>
+        </p>
+        
+        <textarea name="content" required rows="3">{{.Content}}</textarea>
+        
+        <div class="comment-meta">
+            <div>
+                <button type="submit">Save</button>
+                
+                <button type="button" 
+                        hx-get="/post/{{.ParentPostID}}/comment/{{.ID}}" 
+                        hx-target="#comment-{{.ID}}" 
+                        hx-swap="outerHTML">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+{{end}}

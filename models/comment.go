@@ -22,6 +22,7 @@ type CommentView struct {
 	Replies      []CommentView
 	ReplyCount   int
 	UserVote     *int
+	IsOwner      bool
 }
 
 type CommentInput struct {

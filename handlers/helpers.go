@@ -241,3 +241,12 @@ func (f *CommentForm) Validate() bool {
 	}
 	return len(f.Errors) == 0
 }
+
+func parseID(r *http.Request, key string) (int, error) {
+	idStr := r.PathValue(key)
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		return 0, customerrors.ErrInternalError
+	}
+	return id, nil
+}
