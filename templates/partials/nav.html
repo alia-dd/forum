@@ -7,13 +7,13 @@
 
   <form method="GET" action="/search">
     <select name="scope">
-      <option value="all">All</option>
-      <option value="users">Users</option>
-      <option value="posts">Posts</option>
-      <option value="comments">Comments</option>
+      <option value="all" {{if eq .Scope "all"}}selected{{end}}>All</option>
+      <option value="users" {{if eq .Scope "users"}}selected{{end}}></option>>Users</option>
+      <option value="posts" {{if eq .Scope "posts"}}selected{{end}}></option>>Posts</option>
+      <option value="comments" {{if eq .Scope "comments"}}selected{{end}}></option>>Comments</option>
     </select>
 
-    <input type="search" name="q" placeholder="Search...">
+    <input type="search" name="q" value="{{.Query}}" placeholder="Search...">
     <button type="submit">Search</button>
   </form>
 

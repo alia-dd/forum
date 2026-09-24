@@ -169,7 +169,7 @@ func main() {
 		WriteTimeout: 15 * time.Second,
 		IdleTimeout:  120 * time.Second,
 	}
-	fmt.Println("Server starting on :8080")
+	fmt.Println("Server starting on http://localhost:8080")
 
 	log.Fatal(server.ListenAndServe())
 }

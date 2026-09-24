@@ -54,7 +54,9 @@ func (h *SearchHandler) Search(w http.ResponseWriter, r *http.Request) {
 	}
 
 	pageData := models.PageData[SearchResultPage]{
-		User: user,
+		User:        user,
+		Query:       q,
+		Scope:       scope,
 		PageContent: results,
 	}
 
