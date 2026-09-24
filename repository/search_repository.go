@@ -18,13 +18,19 @@ func NewSearchRepository(db *sql.DB) *SearchRepository {
 
 func (r *SearchRepository) SearchUsers(ctx context.Context, search string) ([]models.UserResult, error) {
 	searchArg := "%" + search + "%"
+	prefixArg := search + "%"
 
 	rows, err := r.db.QueryContext(ctx, `
 			SELECT id, username
 			FROM user
 			WHERE username LIKE ?
-			ORDER BY username DESC
-			`, searchArg)
+			ORDER BY
+				CASE
+					WHEN username LIKE ? THEN 0 
+					ELSE 1
+				END,
+				username
+			`, searchArg, prefixArg) // order results so that matches that begin with the searchArg are shown before those that contain it 'in' them
 	if err != nil {
 		return nil, customerrors.MapSQLError(err)
 	}
