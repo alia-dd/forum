@@ -8,9 +8,9 @@
   <form method="GET" action="/search">
     <select name="scope">
       <option value="all" {{if eq .Scope "all"}}selected{{end}}>All</option>
-      <option value="users" {{if eq .Scope "users"}}selected{{end}}></option>>Users</option>
-      <option value="posts" {{if eq .Scope "posts"}}selected{{end}}></option>>Posts</option>
-      <option value="comments" {{if eq .Scope "comments"}}selected{{end}}></option>>Comments</option>
+      <option value="users" {{if eq .Scope "users"}}selected{{end}}>Users</option>
+      <option value="posts" {{if eq .Scope "posts"}}selected{{end}}>Posts</option>
+      <option value="comments" {{if eq .Scope "comments"}}selected{{end}}>Comments</option>
     </select>
 
     <input type="search" name="q" value="{{.Query}}" placeholder="Search...">
