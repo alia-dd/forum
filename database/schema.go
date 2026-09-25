@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS user (
     name          TEXT,
     bio           TEXT,
     imagepath     TEXT,
+    role          INTEGER DEFAULT 0,
     password_hash TEXT NOT NULL,
     created_at    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP

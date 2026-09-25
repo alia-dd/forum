@@ -75,3 +75,32 @@ func Restrict(sessionRepo *repository.SessionRepository, userRepo *repository.Us
 
 	}
 }
+
+// wrapp this in request where the user must be an admin
+func Admin(sessionRepo *repository.SessionRepository, userRepo *repository.UserRepository, handler http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		cx := r.Context()
+		cookie, cookieErr := r.Cookie("session_token")
+		if cookieErr != nil {
+			http.Redirect(w, r, "/user/login", http.StatusSeeOther)
+			return
+		}
+		session, sessionErr := sessionRepo.GetSessionwithSessionId(cx, cookie.Value)
+		if sessionErr != nil {
+			http.Redirect(w, r, "/user/login", http.StatusSeeOther)
+			return
+		}
+		user, err := userRepo.FetchUserData(cx, session.UserID)
+		if err != nil || user.Role != "admin" {
+			/// may be handle this better later on not sure now,
+			// with our current error handling
+			// i dont know how show the user they are not allowed
+			// maybe i should redirect to homepage with the message that sound better
+			http.Redirect(w, r, "/user/login", http.StatusSeeOther)
+			return
+		}
+		ctx := context.WithValue(r.Context(), "user_session", &user)
+		handler(w, r.WithContext(ctx))
+
+	}
+}

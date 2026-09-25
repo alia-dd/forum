@@ -3,6 +3,9 @@ package database
 import (
 	"database/sql"
 	"fmt"
+
+	customerrors "gitea.kood.tech/jyrkikarhunen/forum/errors"
+	"golang.org/x/crypto/bcrypt"
 )
 
 // LLM nonsense(?)
@@ -28,6 +31,7 @@ func SeedData(db *sql.DB) error {
 		var res sql.Result
 		res, err = tx.Exec(query, args...)
 		if err != nil {
+			fmt.Println(err, query, args)
 			return 0
 		}
 		var id int64
@@ -37,32 +41,37 @@ func SeedData(db *sql.DB) error {
 
 	// --- users ---
 
+	hashedPass, hashErr := bcrypt.GenerateFromPassword([]byte("1234abcd?Really"), bcrypt.DefaultCost)
+	if hashErr != nil {
+		return customerrors.ErrInternalError
+	}
 	usersSeedData := []struct {
 		username string
 		name     string
 		email    string
 		password string
+		role     int
+		bio      string
 	}{
-		{"alice", "alice", "alice@example.com", "1234abcd"},
-		{"bob", "bob", "bob@example.com", "1234abcd"},
-		{"carol", "carol", "carol@example.com", "1234abcd"},
-		{"dave", "dave", "dave@example.com", "1234abcd"},
-		{"erin", "erin", "erin@example.com", "1234abcd"},
-		{"frank", "frank", "frank@example.com", "1234abcd"},
-		{"grace", "grace", "grace@example.com", "1234abcd"},
-		{"heidi", "heidi", "heidi@example.com", "1234abcd"},
+		{"alice", "alice", "alice@example.com", string(hashedPass), 700, ""},
+		{"bob", "bob", "bob@example.com", string(hashedPass), 0, ""},
+		{"carol", "carol", "carol@example.com", string(hashedPass), 0, ""},
+		{"dave", "dave", "dave@example.com", string(hashedPass), 0, ""},
+		{"erin", "erin", "erin@example.com", string(hashedPass), 0, ""},
+		{"frank", "frank", "frank@example.com", string(hashedPass), 0, ""},
+		{"grace", "grace", "grace@example.com", string(hashedPass), 0, ""},
+		{"heidi", "heidi", "heidi@example.com", string(hashedPass), 0, ""},
 	}
 	users := make(map[string]int)
 	for _, user := range usersSeedData {
-		users[user.name] = int(insert(`INSERT INTO user (username, name, email, password_hash) VALUES (?, ?, ?, ?)`, user.username,
+		users[user.name] = int(insert(`INSERT INTO user (username, name, email, password_hash, role, bio) VALUES (?, ?, ?, ?, ?,?)`, user.username,
 			user.name,
 			user.email,
-			user.password))
+			user.password,
+			user.role,
+			user.bio,
+		))
 	}
-
-	insert(`INSERT INTO session (uuid, user_id, expires_at)
-	        VALUES (?, ?, datetime('now', '+7 days'))`,
-		"dev-session-alice", users["alice"])
 
 	// --- categories ---
 	categorySeedData := []string{"Science Fiction", "Fantasy", "Classics", "Character Studies", "Mystery & Thriller", "Non-Fiction", "Poetry", "Author Interviews", "Book Recommendations"}

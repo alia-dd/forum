@@ -27,6 +27,11 @@
     <li><a href="/" class="nav__link" data-label="Home">Home</a></li>
     <li class="nav__divider"></li>
     {{if .User}}
+
+     {{if eq .User.Role "admin"}}
+        <li><a href="/admin" class="nav__link" data-label="Admin_Panel">Admin Panel</a></li>
+      {{end}}
+
     <li><a href="/user/profile" class="nav__link" data-label="Profile">Profile</a></li>
     <li>
       <form method="POST" action="/user/logout" class="nav__logout-form" >

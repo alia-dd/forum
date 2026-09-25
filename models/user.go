@@ -34,6 +34,7 @@ type UserInfo struct {
 	Image     string    `json:"imagePath,omitempty"`
 	Bio       string    `json:"bio,omitempty"`
 	Email     string    `json:"email,omitempty"`
+	Role      string    `json:"role,omitempty"`
 	Password  string    `json:"password,omitempty"`
 	CreatedAt time.Time `json:"createdat"`
 	UpdatedAt time.Time `json:"updatedat"`

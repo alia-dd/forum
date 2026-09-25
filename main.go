@@ -93,10 +93,14 @@ func main() {
 				return
 			}
 
+			fmt.Println("here")
 			(postHandler.GetPosts)(w, r)
 
 		}),
 	))
+
+	// admin panel
+	mux.HandleFunc("GET /admin", middleware.Recoverer(middleware.Admin(sessionRepo, userRepo, userHandler.GetAdminPanel)))
 
 	// Profile page is user specific and is safeguarded by the Restrict middleware
 	// if there is no active session, it redirects to the login page.
