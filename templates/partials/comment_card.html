@@ -29,8 +29,7 @@
         
         <div class="comment-meta">
             <div>
-                <span>Likes: {{.LikeCount}}</span>
-                <span>Dislikes: {{.DislikeCount}}</span>
+                {{template "react" .}}
                 {{if .IsLogged}}
                 <button hx-get="/post/{{.ParentPostID}}/comment/{{.ID}}/reply" 
                         hx-target="#reply-form-container-{{.ID}}" 

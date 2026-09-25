@@ -56,16 +56,16 @@ func main() {
 	sessionRepo := repository.NewSessionRepository(db)
 	userRepo := repository.NewUserRepository(db)
 
-	reactRepo := repository.NewReactionRepositry(db)
-
+	reactRepo := repository.NewReactionRepository(db)
 	postRepo := repository.NewPostRepository(db)
 	categoryRepo := repository.NewCategoryRepository(db)
 
 	commentRepo := repository.NewCommentRepository(db)
 
 	userService := service.NewUserService(userRepo, sessionRepo)
-	service.NewReactionHandler(reactRepo)
+	reactService := service.NewReactionService(reactRepo)
 
+	reactHandler := handlers.NewReactionHandler(reactService, postRepo, commentRepo)
 	userHandler := handlers.NewUserHandler(userService)
 	postHandler := handlers.NewPostHandler(postRepo, categoryRepo, commentRepo)
 	categoryHandler := handlers.NewCategoryHandler(categoryRepo)
@@ -83,15 +83,10 @@ func main() {
 	mux.HandleFunc("GET /", middleware.Recoverer(
 		middleware.AllowGuest(sessionRepo, userRepo, func(w http.ResponseWriter, r *http.Request) {
 			if r.URL.Path != "/" {
-				user, ok := r.Context().Value("user_session").(*models.UserInfo)
-				if !ok {
-					http.Redirect(w, r, "/user/login", http.StatusSeeOther)
-					return
-				}
+				user, _ := r.Context().Value("user_session").(*models.UserInfo)
 
 				pageData := models.PageData[models.ErrorStruct]{
 					User:        user,
-					IsOwner:     ok,
 					PageContent: models.ErrorStruct{Error: "404", ErrorMs: "Page Not Found"},
 				}
 				utils.RenderTemplate(w, http.StatusNotFound, "error", pageData)
@@ -122,8 +117,8 @@ func main() {
 
 	mux.HandleFunc("POST /user/logout", middleware.Recoverer(userHandler.SignOutUser))
 
-	// mux.HandleFunc("GET /api/user/check-username", middleware.Recoverer(userHandler.CheckIfAvailabe))
-	// mux.HandleFunc("GET /api/user/check-email", middleware.Recoverer(userHandler.CheckIfAvailabe))
+	// POST gets React struct that has targetType (post/comment)
+	mux.HandleFunc("POST /react", middleware.Recoverer(middleware.Restrict(sessionRepo, userRepo, reactHandler.Reaction)))
 
 	// GET /post/{id} - just an int
 	mux.HandleFunc("GET /post/{id}", middleware.Recoverer(middleware.AllowGuest(sessionRepo, userRepo, postHandler.GetPostByID)))

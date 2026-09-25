@@ -119,11 +119,7 @@ func (r *UserRepository) UpdateUserData(cx context.Context, user models.UserUpda
 	args = append(args, user.ID)
 	_, err := r.db.ExecContext(cx, query, args...)
 	if err != nil {
-		if strings.Contains(err.Error(), "UNIQUE constraint failed") {
-			return customerrors.ErrBadRequest
-		}
-
-		return customerrors.ErrInternalError
+		return customerrors.MapSQLError(err)
 	}
 
 	return nil
@@ -132,7 +128,7 @@ func (r *UserRepository) UpdateUserData(cx context.Context, user models.UserUpda
 func (r *UserRepository) DeleteUser(cx context.Context, userID int) error {
 	res, deleteErr := r.db.ExecContext(cx, DeleteUserQuery, userID)
 	if deleteErr != nil {
-		return customerrors.ErrInternalError
+		return customerrors.MapSQLError(deleteErr)
 	}
 	if rows, _ := res.RowsAffected(); rows == 0 {
 		return customerrors.ErrNotFound
@@ -145,19 +141,15 @@ func (r *UserRepository) GetPasswordHash(cx context.Context, userID int) (string
 	var hashPass string
 	fetchErr := r.db.QueryRowContext(cx, fetchPasswordHashQuery, userID).Scan(&hashPass)
 	if fetchErr != nil {
-		if fetchErr == sql.ErrNoRows {
-			return "", customerrors.ErrNotFound
-		}
-		return "", customerrors.ErrInternalError
+		return "", customerrors.MapSQLError(fetchErr)
 	}
-
 	return hashPass, nil
 }
 
 func (r *UserRepository) UpdatePassword(cx context.Context, userID int, newPass string) error {
-	_, fetchErr := r.db.ExecContext(cx, updatePasswordQuery, newPass, userID)
-	if fetchErr != nil {
-		return customerrors.ErrInternalError
+	_, updateErr := r.db.ExecContext(cx, updatePasswordQuery, newPass, userID)
+	if updateErr != nil {
+		return customerrors.MapSQLError(updateErr)
 	}
 	return nil
 }
@@ -168,7 +160,7 @@ func (r *UserRepository) CheckIfAvailable(cx context.Context, col string) (bool,
 	var exist bool
 	fetchErr := r.db.QueryRowContext(cx, qurrey, col, col).Scan(&exist)
 	if fetchErr != nil {
-		return false, fmt.Errorf("failed to fetch username from table: %w", fetchErr)
+		return false, customerrors.MapSQLError(fetchErr)
 	}
 	return exist, nil
 }
@@ -179,7 +171,7 @@ func (r *UserRepository) CheckIfAvailableExcludeUser(cx context.Context, col str
 	var exist bool
 	fetchErr := r.db.QueryRowContext(cx, checkAvailableExcludeUserQuery, col, col, userId).Scan(&exist)
 	if fetchErr != nil {
-		return false, fmt.Errorf("failed to fetch username from table: %w", fetchErr)
+		return false, customerrors.MapSQLError(fetchErr)
 	}
 	return exist, nil
 }

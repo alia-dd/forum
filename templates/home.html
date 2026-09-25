@@ -1,4 +1,5 @@
 {{define "content"}}
+{{$post := .PageContent.Posts}}
 <h1>Posts</h1>
 <p>{{if .User}}Signed in as <a href="/user/profile/{{.User.Username}}" class="username">{{.User.Username}}</a> — <a href="/post/new">New post</a>{{else}}<a href="/user/login">Sign in</a> to post{{end}}</p>
 
@@ -13,13 +14,15 @@
   {{if .User}} · <a href="/?author=me">My posts</a> · <a href="/?liked=true">Liked</a>{{end}}
 </form>
 
-{{range .PageContent.Posts}}
+{{range $post}}
   <article>
-    <h2><a href="/post/{{.Post.ID}}">{{.Post.Title}}</a></h2>
+    <h2><a href="/post/{{.ID}}">{{.Title}}</a></h2>
     {{if .Deleted}}
     <p>by Anonymous — likes {{.LikeCount}}, dislikes {{.DislikeCount}}, comments {{.CommentCount}}</p>
     {{else}}
-    <p>by<a href="/user/profile/{{.AuthorName}}" class="username"> {{.AuthorName}}</a> — likes {{.LikeCount}}, dislikes {{.DislikeCount}}, comments {{.CommentCount}}</p>
+   <p>by<a href="/user/profile/{{.AuthorName}}" class="username"> {{.AuthorName}}</a> 
+      {{ template "react" .}}
+  </p>
     {{end}}
     <p>{{range .Categories}}[{{.Name}}] {{end}}</p>
   </article>

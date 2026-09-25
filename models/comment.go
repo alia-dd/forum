@@ -21,10 +21,12 @@ type CommentView struct {
 	DislikeCount int
 	Replies      []CommentView
 	ReplyCount   int
-	UserVote     *int
 	IsOwner      bool
 	IsLogged     bool
 	Deleted      bool
+	UserReaction int // user post Reaction value
+	TargetType   string
+	TargetId     int
 }
 
 type CommentInput struct {

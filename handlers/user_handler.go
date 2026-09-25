@@ -91,13 +91,13 @@ func (h *UseHandler) PostRegisterUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.Redirect(w, r, "/user/login", http.StatusSeeOther)
+	utils.RedirectTologin(w, r)
 }
 
 func (h *UseHandler) GetEditUserProfile(w http.ResponseWriter, r *http.Request) {
 	user, ok := r.Context().Value("user_session").(*models.UserInfo)
 	if !ok {
-		http.Redirect(w, r, "/user/login", http.StatusSeeOther)
+		utils.RedirectTologin(w, r)
 		return
 	}
 	// replace mainpage with a dedicated profile struct later
@@ -134,7 +134,7 @@ func (h *UseHandler) UpdateUserProfile(w http.ResponseWriter, r *http.Request) {
 	cx := r.Context()
 	user, ok := r.Context().Value("user_session").(*models.UserInfo)
 	if !ok {
-		http.Redirect(w, r, "/user/login", http.StatusSeeOther)
+		utils.RedirectTologin(w, r)
 		return
 	}
 
@@ -216,7 +216,7 @@ func (h *UseHandler) UpdateUserProfile(w http.ResponseWriter, r *http.Request) {
 func (h *UseHandler) GetChangePassword(w http.ResponseWriter, r *http.Request) {
 	user, ok := r.Context().Value("user_session").(*models.UserInfo)
 	if !ok {
-		http.Redirect(w, r, "/user/login", http.StatusSeeOther)
+		utils.RedirectTologin(w, r)
 		return
 	}
 	// replace mainpage with a dedicated profile struct later
@@ -232,7 +232,7 @@ func (h *UseHandler) PostChangePassword(w http.ResponseWriter, r *http.Request) 
 	cx := r.Context()
 	user, ok := r.Context().Value("user_session").(*models.UserInfo)
 	if !ok {
-		http.Redirect(w, r, "/user/login", http.StatusSeeOther)
+		utils.RedirectTologin(w, r)
 		return
 	}
 	if parseErr := r.ParseForm(); parseErr != nil {
@@ -273,53 +273,5 @@ func (h *UseHandler) PostChangePassword(w http.ResponseWriter, r *http.Request) 
 		HttpOnly: true,
 		SameSite: http.SameSiteLaxMode,
 	})
-	http.Redirect(w, r, "/user/login", http.StatusSeeOther)
+	utils.RedirectTologin(w, r)
 }
-
-// i dont think this it needed any more
-// this does a server side extra check on the usename and email for duplicets and incorrect format
-// func (h *UseHandler) CheckIfAvailabe(w http.ResponseWriter, r *http.Request) {
-// 	cx := r.Context()
-// 	var (
-// 		exists   bool
-// 		checkErr error
-// 		message  string
-// 	)
-// 	switch r.URL.Path {
-// 	case "/check-username":
-// 		username := r.URL.Query().Get("username")
-// 		// if !models.IsValidName(username) {
-// 		// 	message = customerrors.ErrInvalidName.Error()
-// 		// 	break
-// 		// }
-// 		exists, checkErr = h.service.CheckIfAvailable(cx, username)
-// 		message = fmt.Sprintf("Username %s is not availabl", username)
-// 	case "/check-email":
-// 		email := r.URL.Query().Get("email")
-// 		// if !models.IsValidEmail(email) {
-// 		// 	message = customerrors.ErrInvalidData.Error()
-// 		// 	break
-// 		// }
-// 		exists, checkErr = h.service.CheckIfAvailable(cx, email)
-// 		message = customerrors.ErrDuplicateEmail.Error()
-// 	default:
-// 		handleError(w, customerrors.ErrInternalError)
-// 		return
-// 	}
-// 	if checkErr != nil {
-// 		http.Error(w, "Failed to Check Availability", http.StatusInternalServerError)
-// 		return
-// 	}
-
-// 	payload := struct {
-// 		Exists  bool   `json:"exists"`
-// 		Message string `json:"message"`
-// 	}{
-// 		Exists:  exists,
-// 		Message: message,
-// 	}
-
-// 	w.Header().Set("Content-Type", "application/json")
-// 	w.WriteHeader(http.StatusOK)
-// 	json.NewEncoder(w).Encode(payload)
-// }
