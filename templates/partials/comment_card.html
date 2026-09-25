@@ -1,0 +1,125 @@
+{{define "comment_card"}}
+<div class="comment-item" id="comment-{{.ID}}">
+    {{if .Deleted}}
+        <p>
+            <strong>Anonymous</strong> — 
+            {{if .UpdatedAt}}
+                <small>{{.CreatedAt}}</small> —
+                <span>(edited)</span> —
+                <small>{{.UpdatedAt}}</small>
+            {{else}}
+                <small>{{.CreatedAt}}</small>
+            {{end}}
+        </p>
+
+        <p><em>[This comment has been deleted]</em></p>
+    {{else}}
+        <p>
+            <strong>{{.AuthorName}}</strong> — 
+            {{if .UpdatedAt}}
+                <small>{{.CreatedAt}}</small> —
+                <span>(edited)</span> —
+                <small>{{.UpdatedAt}}</small>
+            {{else}}
+                <small>{{.CreatedAt}}</small>
+            {{end}}
+        </p>
+
+        <p>{{.Content}}</p>
+        
+        <div class="comment-meta">
+            <div>
+                {{template "react" .}}
+                {{if .IsLogged}}
+                <button hx-get="/post/{{.ParentPostID}}/comment/{{.ID}}/reply" 
+                        hx-target="#reply-form-container-{{.ID}}" 
+                        hx-swap="innerHTML">
+                    Reply
+                </button>
+                {{end}}
+            </div>
+            
+            {{if .IsOwner}}
+            <div>
+                <button hx-get="/post/{{.ParentPostID}}/comment/{{.ID}}/edit" 
+                        hx-target="#comment-{{.ID}}" 
+                        hx-swap="outerHTML">
+                    Edit
+                </button>
+                <button hx-delete="/post/{{.ParentPostID}}/comment/{{.ID}}/delete"
+                        hx-target="#comment-{{.ID}}"
+                        hx-swap="outerHTML"
+                        hx-confirm="Delete this comment?">
+                    Delete
+                </button>
+            </div>
+            {{end}}
+
+            {{if gt .ReplyCount 0}}
+            <button hx-get="/post/{{.ParentPostID}}/comment/{{.ID}}/replies" 
+                    hx-target="#replies-{{.ID}}" 
+                    hx-swap="innerHTML"
+                    hx-on:click="
+                    const container = document.getElementById('replies-{{.ID}}');
+                    if (container.children.length > 0) {
+                    container.style.display = container.style.display === 'none' ? 'block' : 'none';
+                    event.preventDefault();
+                    }">
+                View {{.ReplyCount}} replies
+            </button>
+            {{end}}
+
+            <div id="reply-form-container-{{.ID}}"></div>
+
+            <div class="replies-container" id="replies-{{.ID}}">
+                {{range .Replies}}
+                    {{template "comment_card" .}}
+                {{end}}
+            </div>
+        </div>
+    {{end}}
+</div>
+{{end}}
+
+{{define "comment_card_edit"}}
+<div class="comment-item" id="comment-{{.ID}}">
+    <form hx-put="/post/{{.ParentPostID}}/comment/{{.ID}}" 
+          hx-target="#comment-{{.ID}}" 
+          hx-swap="outerHTML">
+        
+        <p>
+            <strong>{{.AuthorName}}</strong> — <small>Editing...</small>
+        </p>
+        
+        <textarea name="content" required rows="3">{{.Content}}</textarea>
+        
+        <div class="comment-meta">
+            <div>
+                <button type="submit">Save</button>
+                
+                <button type="button" 
+                        hx-get="/post/{{.ParentPostID}}/comment/{{.ID}}" 
+                        hx-target="#comment-{{.ID}}" 
+                        hx-swap="outerHTML">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+{{end}}
+
+{{define "comment_reply"}}
+<form hx-post="/post/{{.ParentPostID}}/comment/{{.ParentID}}/reply" 
+      hx-target="#replies-{{.ParentID}}" 
+      hx-swap="beforeend"
+      class="reply-form"
+      hx-on::after-request="this.remove()">
+    <textarea name="content" placeholder="Write a reply..." required rows="2"></textarea>
+
+    <div>
+        <button type="submit">Post Reply</button>
+        <button type="button" hx-on:click="this.closest('form').remove()">Cancel</button>
+    </div>
+</form>
+{{end}}

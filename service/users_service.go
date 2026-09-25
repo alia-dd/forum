@@ -46,7 +46,7 @@ func (s *UserService) UpdateUserService(cx context.Context, u models.UserUpdate)
 		return validationsErr
 	}
 	if u.Username != nil {
-		notAvailable, availableErr := s.repo.CheckIfAvailableExcludeUser(cx, *u.Username, u.Id)
+		notAvailable, availableErr := s.repo.CheckIfAvailableExcludeUser(cx, *u.Username, u.ID)
 		if availableErr != nil {
 			return availableErr
 		}
@@ -56,7 +56,7 @@ func (s *UserService) UpdateUserService(cx context.Context, u models.UserUpdate)
 	}
 
 	if u.Email != nil {
-		notAvailable, availableErr := s.repo.CheckIfAvailableExcludeUser(cx, *u.Email, u.Id)
+		notAvailable, availableErr := s.repo.CheckIfAvailableExcludeUser(cx, *u.Email, u.ID)
 		if availableErr != nil {
 			return availableErr
 		}
@@ -99,7 +99,7 @@ func (s *UserService) AuthenticateUserService(cx context.Context, u models.UserL
 	if compareErr != nil {
 		return nil, customerrors.ErrInvalidLogin
 	}
-	session, sessionErr := s.sessionRepo.CreateSession(cx, user.Id)
+	session, sessionErr := s.sessionRepo.CreateSession(cx, user.ID)
 	if sessionErr != nil {
 		return nil, sessionErr
 	}

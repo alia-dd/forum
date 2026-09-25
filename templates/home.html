@@ -17,10 +17,13 @@
 {{range $post}}
   <article>
     <h2><a href="/post/{{.ID}}">{{.Title}}</a></h2>
+    {{if .Deleted}}
+    <p>by Anonymous — likes {{.LikeCount}}, dislikes {{.DislikeCount}}, comments {{.CommentCount}}</p>
+    {{else}}
    <p>by<a href="/user/profile/{{.AuthorName}}" class="username"> {{.AuthorName}}</a> 
       {{ template "react" .}}
-
   </p>
+    {{end}}
     <p>{{range .Categories}}[{{.Name}}] {{end}}</p>
   </article>
 {{else}}

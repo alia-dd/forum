@@ -147,13 +147,21 @@ func main() {
 
 	// POST /post/{id}/comment/create - for commenting
 	mux.HandleFunc("POST /post/{id}/comment/create", middleware.Recoverer(middleware.Restrict(sessionRepo, userRepo, commentHandler.CreateComment)))
-	// GET /post/{id} - for commenting
-	// mux.HandleFunc("GET /post/{id}/comment", middleware.Recoverer(middleware.Restrict(sessionRepo, userRepo, commentHandler.EditComment)))
-	// GET /post/{id} - for commenting
-	// mux.HandleFunc("GET /post/{id}/comment", middleware.Recoverer(middleware.Restrict(sessionRepo, userRepo, commentHandler.UpdateComment)))
-	// POST /post/{id} - for commenting
-	// mux.HandleFunc("POST /post/{id}/comment/delete", middleware.Recoverer(middleware.Restrict(sessionRepo, userRepo, commentHandler.DeleteComment)))
+	// GET /post/{postID}/comment/{commentID}/edit - for editing comment
+	mux.HandleFunc("GET /post/{postID}/comment/{commentID}/edit", middleware.Recoverer(middleware.Restrict(sessionRepo, userRepo, commentHandler.GetCommentEditForm)))
+	// PUT /post/{postID}/comment/{commentID} - for updating comment
+	mux.HandleFunc("PUT /post/{postID}/comment/{commentID}", middleware.Recoverer(middleware.Restrict(sessionRepo, userRepo, commentHandler.UpdateComment)))
+	// GET /post/{postID}/comment/{commentID} - for getting comment
+	mux.HandleFunc("GET /post/{postID}/comment/{commentID}", middleware.Recoverer(middleware.Restrict(sessionRepo, userRepo, commentHandler.GetComment)))
+	// POST /post/{postID}/comment/{commentID}/delete - for deleting comment
+	mux.HandleFunc("DELETE /post/{postID}/comment/{commentID}/delete", middleware.Recoverer(middleware.Restrict(sessionRepo, userRepo, commentHandler.DeleteComment)))
+	// GET /post/{postID}/comment/{commentID}/reply - for getting the reply form
+	mux.HandleFunc("GET /post/{postID}/comment/{commentID}/reply", middleware.Recoverer(middleware.Restrict(sessionRepo, userRepo, commentHandler.GetReplyForm)))
+	// POST /post/{postID}/comment/{commentID}/reply - for creating the reply (comment)
+	mux.HandleFunc("POST /post/{postID}/comment/{commentID}/reply", middleware.Recoverer(middleware.Restrict(sessionRepo, userRepo, commentHandler.CreateReply)))
 	//above need auth
+
+	mux.HandleFunc("GET /post/{postID}/comment/{commentID}/replies", middleware.Recoverer(middleware.AllowGuest(sessionRepo, userRepo, commentHandler.GetCommentReplies)))
 
 	mux.HandleFunc("GET /search", middleware.Recoverer(middleware.AllowGuest(sessionRepo, userRepo, searchHandler.Search)))
 

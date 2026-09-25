@@ -10,7 +10,7 @@ import (
 )
 
 type UserRegister struct {
-	Id              int       `json:"user_id"`
+	ID              int       `json:"user_id"`
 	Username        string    `json:"username"`
 	Email           string    `json:"email"`
 	Name            string    `json:"name"`
@@ -28,7 +28,7 @@ type UserLogin struct {
 }
 
 type UserInfo struct {
-	Id        int       `json:"id,omitempty"`
+	ID        int       `json:"id,omitempty"`
 	Username  string    `json:"username,omitempty"`
 	Name      string    `json:"name,omitempty"`
 	Image     string    `json:"imagePath,omitempty"`
@@ -40,7 +40,7 @@ type UserInfo struct {
 }
 
 type PublicUserInfo struct {
-	Id        int       `json:"id,omitempty"`
+	ID        int       `json:"id,omitempty"`
 	Username  string    `json:"username,omitempty"`
 	Name      string    `json:"name,omitempty"`
 	Image     string    `json:"imagePath,omitempty"`
@@ -49,7 +49,7 @@ type PublicUserInfo struct {
 }
 
 type UserUpdate struct {
-	Id       int     `json:"id"`
+	ID       int     `json:"id"`
 	Username *string `json:"username"`
 	Name     *string `json:"name"`
 	Email    *string `json:"email"`

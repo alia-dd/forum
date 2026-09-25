@@ -124,7 +124,7 @@ func (h *UseHandler) GetOtherUserProfile(w http.ResponseWriter, r *http.Request)
 
 	pageData := models.PageData[models.PublicUserInfo]{
 		User:        user,
-		IsOwner:     ok && user.Id == profileData.Id,
+		IsOwner:     ok && user.ID == profileData.ID,
 		PageContent: profileData,
 	}
 	utils.RenderTemplate(w, http.StatusOK, "profile", pageData)
@@ -176,7 +176,7 @@ func (h *UseHandler) UpdateUserProfile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	userData := models.UserUpdate{
-		Id:  user.Id,
+		ID:  user.ID,
 		Bio: &bio,
 	}
 	if username != "" {
@@ -195,7 +195,7 @@ func (h *UseHandler) UpdateUserProfile(w http.ResponseWriter, r *http.Request) {
 		// replace mainpage with a dedicated profile struct later
 		pageData := models.PageData[MainPage]{
 			User: &models.UserInfo{
-				Id:       user.Id,
+				ID:       user.ID,
 				Username: username,
 				Name:     name,
 				Email:    email,
@@ -255,7 +255,7 @@ func (h *UseHandler) PostChangePassword(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	if UpdateErr := h.service.ChangePasswordService(cx, user.Id, currentPass, newPass); UpdateErr != nil {
+	if UpdateErr := h.service.ChangePasswordService(cx, user.ID, currentPass, newPass); UpdateErr != nil {
 		// replace mainpage with a dedicated profile struct later
 		pageData := models.PageData[MainPage]{
 			User:    user,
