@@ -13,9 +13,7 @@
     <p>{{.Content}}</p>
     
     <div class="comment-meta">
-        <span>Likes: {{.LikeCount}}</span>
-        <span>Dislikes: {{.DislikeCount}}</span>
-        <button></button>
+        {{ template "react" .}}
     </div>
 
     <div>

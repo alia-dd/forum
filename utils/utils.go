@@ -85,3 +85,12 @@ func RenderPartial(w http.ResponseWriter, statusCode int, templateName string, p
 	w.WriteHeader(statusCode)
 	buf.WriteTo(w)
 }
+
+func RedirectTologin(w http.ResponseWriter, r *http.Request) {
+	if r.Header.Get("HX-Request") == "true" {
+		w.Header().Set("HX-Redirect", "/user/login")
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+	http.Redirect(w, r, "/user/login", http.StatusSeeOther)
+}

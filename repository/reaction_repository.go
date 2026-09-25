@@ -3,79 +3,104 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"strings"
 
 	customerrors "gitea.kood.tech/jyrkikarhunen/forum/errors"
 	"gitea.kood.tech/jyrkikarhunen/forum/models"
 )
 
 const (
-	fetchPostReactionQurrey    = ` SELECT  user_id, post_id, value  FROM post_like WHERE post_id = ?`
-	fetchCommentReactionQurrey = ` SELECT  user_id, post_id, value  FROM comment_like WHERE post_id = ?`
+	getUserPostReaction    = ` SELECT value FROM post_like WHERE user_id = ? AND post_id = ?`
+	createUserPostReaction = ` INSERT INTO post_like (user_id, post_id, value) VALUES(?,?,?)`
+	deleteUserPostReaction = ` DELETE FROM post_like WHERE user_id = ? AND post_id = ?`
+	updateUserPostReaction = ` UPDATE post_like SET value = ? WHERE user_id = ? AND post_id = ?`
+
+	getUserCommentReaction    = ` SELECT value FROM comment_like WHERE user_id = ? AND comment_id = ?`
+	createUserCommentReaction = ` INSERT INTO comment_like (user_id, comment_id, value) VALUES(?,?,?)`
+	deleteUserCommentReaction = ` DELETE FROM comment_like WHERE user_id = ? AND comment_id = ?`
+	updateUserCommentReaction = ` UPDATE comment_like SET value = ? WHERE user_id = ? AND comment_id = ?`
 )
 
 type ReactionRepository struct {
 	db *sql.DB
 }
 
-// what if i fetch the reaction and save it to a map by postid as key
-// then it would be easy to assign a reaction to post/comment
-// but that would couse a problem
-// if you chang it in post does it to fetch all rection but that might be in the billions
-
-// next idea the boring way get getReaction per post/comment
-// will that couse an edge case of some sort?
-
-// when page is loaded eg by goin to the forum or searching a post/comment/username
-// it will get each post/comment and add the reaction
-// if  the user add a reaction/ remves it,
-// it will check if the react i either 1 or -1 if not remove the row
-
-func NewReactionRepositry(db *sql.DB) *ReactionRepository {
+func NewReactionRepository(db *sql.DB) *ReactionRepository {
 	return &ReactionRepository{db: db}
 }
 
-func (r *ReactionRepository) GetPostReaction(cx context.Context, PostID int) ([]models.Reaction, error) {
-	var postReactions []models.Reaction
-	rows, fetchErr := r.db.QueryContext(cx, fetchPostReactionQurrey, PostID)
+func (r *ReactionRepository) GetPostReaction(cx context.Context, rec models.Reaction) (*int, error) {
+	var value int
+	fetchErr := r.db.QueryRowContext(cx, getUserPostReaction, rec.User_id, rec.Id).Scan(&value)
 	if fetchErr != nil {
-		// do i want to return server error that look a bit too much for reaction
-	}
-	for rows.Next() {
-		var postReaction models.Reaction
-		var value int
-		rows.Scan(&postReaction.UseId, &postReaction.ReactionId, &value)
-		if value > 0 {
-			postReaction.LikeCount = 1
-		} else if value < 0 {
-			postReaction.LikeCount = 1
+		if fetchErr == sql.ErrNoRows {
+			return nil, nil
 		}
-		postReactions = append(postReactions, postReaction)
-	}
-	if err := rows.Err(); err != nil {
 		return nil, customerrors.ErrInternalError
 	}
-	return postReactions, nil
-
+	return &value, nil
 }
-func (r *ReactionRepository) GetCommentReaction(cx context.Context, CommentID int) ([]models.Reaction, error) {
-	var commentReactions []models.Reaction
-	rows, fetchErr := r.db.QueryContext(cx, fetchCommentReactionQurrey, CommentID)
-	if fetchErr != nil {
-		// do i want to return server error that look a bit too much for reaction
-	}
-	for rows.Next() {
-		var commentReaction models.Reaction
-		var value int
-		rows.Scan(&commentReaction.UseId, &commentReaction.ReactionId, &value)
-		if value > 0 {
-			commentReaction.LikeCount = 1
-		} else if value < 0 {
-			commentReaction.DislikeCount = 1
+func (r *ReactionRepository) CreatePostReaction(cx context.Context, rec models.Reaction) error {
+	_, postErr := r.db.ExecContext(cx, createUserPostReaction, rec.User_id, rec.Id, rec.Value)
+	if postErr != nil {
+		if strings.Contains(postErr.Error(), "UNIQUE constraint failed") {
+			return customerrors.ErrDuplicateEntry
 		}
-		commentReactions = append(commentReactions, commentReaction)
+		return customerrors.ErrInternalError
 	}
-	if err := rows.Err(); err != nil {
+	return nil
+}
+func (r *ReactionRepository) UpdatePostReaction(cx context.Context, rec models.Reaction) error {
+	_, err := r.db.ExecContext(cx, updateUserPostReaction, rec.Value, rec.User_id, rec.Id)
+
+	if err != nil {
+		return customerrors.ErrInternalError
+	}
+	return nil
+}
+func (r *ReactionRepository) DeletePostReaction(cx context.Context, rec models.Reaction) error {
+	_, deleteErr := r.db.ExecContext(cx, deleteUserPostReaction, rec.User_id, rec.Id)
+	if deleteErr != nil {
+		return customerrors.ErrInternalError
+	}
+	return nil
+}
+
+// comment reaction repo
+func (r *ReactionRepository) GetCommentReaction(cx context.Context, rec models.Reaction) (*int, error) {
+	var value int
+	fetchErr := r.db.QueryRowContext(cx, getUserCommentReaction, rec.User_id, rec.Id).Scan(&value)
+	if fetchErr != nil {
+		if fetchErr == sql.ErrNoRows {
+			return nil, nil
+		}
 		return nil, customerrors.ErrInternalError
 	}
-	return commentReactions, nil
+	return &value, nil
+}
+func (r *ReactionRepository) CreateCommentReaction(cx context.Context, rec models.Reaction) error {
+	_, postErr := r.db.ExecContext(cx, createUserCommentReaction, rec.User_id, rec.Id, rec.Value)
+	if postErr != nil {
+		if strings.Contains(postErr.Error(), "UNIQUE constraint failed") {
+			return customerrors.ErrDuplicateEntry
+		}
+		return customerrors.ErrInternalError
+	}
+	return nil
+}
+func (r *ReactionRepository) UpdateCommentReaction(cx context.Context, rec models.Reaction) error {
+	_, err := r.db.ExecContext(cx, updateUserCommentReaction, rec.Value, rec.User_id, rec.Id)
+	if err != nil {
+		return customerrors.ErrInternalError
+	}
+
+	return nil
+}
+
+func (r *ReactionRepository) DeleteCommentReaction(cx context.Context, rec models.Reaction) error {
+	_, deleteErr := r.db.ExecContext(cx, deleteUserCommentReaction, rec.User_id, rec.Id)
+	if deleteErr != nil {
+		return customerrors.ErrInternalError
+	}
+	return nil
 }

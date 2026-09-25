@@ -3,7 +3,6 @@ package repository
 import (
 	"context"
 	"database/sql"
-	"strings"
 	"time"
 
 	customerrors "gitea.kood.tech/jyrkikarhunen/forum/errors"
@@ -40,10 +39,7 @@ func (r *SessionRepository) CreateSession(cx context.Context, userID int) (*mode
 	}
 	_, postErr := r.db.ExecContext(cx, createUserSession, session.SesssionId, session.UserID, session.ExpiresAt)
 	if postErr != nil {
-		if strings.Contains(postErr.Error(), "UNIQUE constraint failed") {
-			return nil, customerrors.ErrDuplicateEntry
-		}
-		return nil, customerrors.ErrInternalError
+		return nil, customerrors.MapSQLError(postErr)
 	}
 	return &session, nil
 }
@@ -70,7 +66,7 @@ func (r *SessionRepository) GetSessionwithSessionId(cx context.Context, sessionI
 func (r *SessionRepository) DeleteSession(cx context.Context, sessionId string) error {
 	resp, deleteErr := r.db.ExecContext(cx, deleteUserSession, sessionId)
 	if deleteErr != nil {
-		return customerrors.ErrInternalError
+		return customerrors.MapSQLError(deleteErr)
 	}
 	rows, _ := resp.RowsAffected()
 	if rows == 0 {
@@ -83,7 +79,7 @@ func (r *SessionRepository) DeleteSession(cx context.Context, sessionId string) 
 func (r *SessionRepository) DeleteSessionsByUserId(cx context.Context, userID int) error {
 	_, deleteErr := r.db.ExecContext(cx, deleteSessionsByUserId, userID)
 	if deleteErr != nil {
-		return customerrors.ErrInternalError
+		return customerrors.MapSQLError(deleteErr)
 	}
 	return nil
 }

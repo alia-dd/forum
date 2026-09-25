@@ -22,15 +22,18 @@ func NewPostHandler(postRep repository.PostRepository, catRep repository.Categor
 }
 
 func (h *PostHandler) GetPosts(w http.ResponseWriter, r *http.Request) {
-	user, _ := r.Context().Value("user_session").(*models.UserInfo) // guests allowed
-
+	user, ok := r.Context().Value("user_session").(*models.UserInfo) // guests allowed
+	userID := -1
+	if ok {
+		userID = user.Id
+	}
 	filter, err := h.parsePostFilter(r.Context(), r)
 	if err != nil {
 		handleError(w, r, customerrors.ErrBadRequest)
 		return
 	}
 
-	posts, err := h.postRep.GetPost(r.Context(), filter)
+	posts, err := h.postRep.GetPost(r.Context(), filter, userID)
 	if err != nil {
 		handleError(w, r, err)
 		return
@@ -53,9 +56,6 @@ func (h *PostHandler) GetPosts(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// fmt.Println("cats: ", allCats)
-	// fmt.Println("post: ", posts)
-
 	pageData := models.PageData[MainPage]{
 		User: user,
 		PageContent: MainPage{
@@ -64,15 +64,14 @@ func (h *PostHandler) GetPosts(w http.ResponseWriter, r *http.Request) {
 		},
 	}
 
-	// fmt.Println(pageData)
 	utils.RenderTemplate(w, http.StatusOK, "home", pageData)
 }
 
 func (h *PostHandler) GetPostByID(w http.ResponseWriter, r *http.Request) {
-	user, _ := r.Context().Value("user_session").(*models.UserInfo) // guests allowed
-	var userID *int
-	if user != nil {
-		userID = &user.Id
+	user, ok := r.Context().Value("user_session").(*models.UserInfo) // guests allowed
+	userID := -1
+	if ok {
+		userID = user.Id
 	}
 	id, err := strconv.Atoi(r.PathValue("id"))
 
@@ -81,7 +80,7 @@ func (h *PostHandler) GetPostByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	post, err := h.postRep.GetPostByID(r.Context(), id)
+	post, err := h.postRep.GetPostByID(r.Context(), id, userID)
 	if err != nil {
 		handleError(w, r, err)
 		return
@@ -94,7 +93,7 @@ func (h *PostHandler) GetPostByID(w http.ResponseWriter, r *http.Request) {
 	}
 	post.Categories = cats[id]
 
-	comments, err := h.comRep.GetCommentsByPost(r.Context(), id, userID)
+	comments, err := h.comRep.GetCommentsByPost(r.Context(), id, &userID)
 	if err != nil {
 		handleError(w, r, err)
 		return
@@ -115,7 +114,7 @@ func (h *PostHandler) GetPostByID(w http.ResponseWriter, r *http.Request) {
 func (h *PostHandler) NewPostForm(w http.ResponseWriter, r *http.Request) {
 	user, ok := r.Context().Value("user_session").(*models.UserInfo)
 	if !ok {
-		http.Redirect(w, r, "/user/login", http.StatusSeeOther)
+		utils.RedirectTologin(w, r)
 		return
 	}
 
@@ -138,7 +137,7 @@ func (h *PostHandler) NewPostForm(w http.ResponseWriter, r *http.Request) {
 func (h *PostHandler) CreatePost(w http.ResponseWriter, r *http.Request) {
 	user, ok := r.Context().Value("user_session").(*models.UserInfo)
 	if !ok {
-		http.Redirect(w, r, "/user/login", http.StatusSeeOther)
+		utils.RedirectTologin(w, r)
 		return
 	}
 	form, ok := h.parsePostForm(w, r)
@@ -182,7 +181,7 @@ func (h *PostHandler) CreatePost(w http.ResponseWriter, r *http.Request) {
 func (h *PostHandler) EditPostForm(w http.ResponseWriter, r *http.Request) {
 	user, ok := r.Context().Value("user_session").(*models.UserInfo)
 	if !ok {
-		http.Redirect(w, r, "/user/login", http.StatusSeeOther)
+		utils.RedirectTologin(w, r)
 		return
 	}
 
@@ -192,7 +191,7 @@ func (h *PostHandler) EditPostForm(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	post, err := h.postRep.GetPostByID(r.Context(), id)
+	post, err := h.postRep.GetPostByID(r.Context(), id, user.Id)
 	if err != nil {
 		handleError(w, r, err)
 		return
@@ -243,7 +242,7 @@ func (h *PostHandler) EditPostForm(w http.ResponseWriter, r *http.Request) {
 func (h *PostHandler) UpdatePost(w http.ResponseWriter, r *http.Request) {
 	user, ok := r.Context().Value("user_session").(*models.UserInfo)
 	if !ok {
-		http.Redirect(w, r, "/user/login", http.StatusSeeOther)
+		utils.RedirectTologin(w, r)
 		return
 	}
 
@@ -300,7 +299,7 @@ func (h *PostHandler) UpdatePost(w http.ResponseWriter, r *http.Request) {
 func (h *PostHandler) DeletePost(w http.ResponseWriter, r *http.Request) {
 	user, ok := r.Context().Value("user_session").(*models.UserInfo)
 	if !ok {
-		http.Redirect(w, r, "/user/login", http.StatusSeeOther)
+		utils.RedirectTologin(w, r)
 		return
 	}
 
