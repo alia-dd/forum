@@ -9,8 +9,8 @@ type MainPage struct {
 }
 
 type PostPage struct {
-	Post *models.PostView
-	//comments
+	Post     *models.PostView
+	Comments []*models.CommentView
 }
 
 type PostFormPage struct {
@@ -22,4 +22,12 @@ type PostFormPage struct {
 type CategoryFormPage struct {
 	CategoryID int
 	Form       CategoryForm
+}
+
+type SearchResultPage struct {
+	Query    string
+	Scope    string
+	Users    []models.UserResult
+	Posts    []models.PostResult
+	Comments []models.CommentResult
 }

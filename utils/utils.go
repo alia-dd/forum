@@ -55,6 +55,7 @@ func serverErrorHandler(w http.ResponseWriter) {
 	})
 
 }
+
 func renderExecuted(w http.ResponseWriter, t *template.Template, statusCode int, payload any) {
 	var buf bytes.Buffer
 

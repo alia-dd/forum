@@ -13,12 +13,13 @@ import (
 )
 
 type ReactionHandler struct {
-	service *service.ReactionService
-	postRep repository.PostRepository
+	service    *service.ReactionService
+	postRep    repository.PostRepository
+	commentRep repository.CommentRepository
 }
 
-func NewReactionHandler(service *service.ReactionService, postRep repository.PostRepository) *ReactionHandler {
-	return &ReactionHandler{service: service, postRep: postRep}
+func NewReactionHandler(service *service.ReactionService, postRep repository.PostRepository, commentRep repository.CommentRepository) *ReactionHandler {
+	return &ReactionHandler{service: service, postRep: postRep, commentRep: commentRep}
 }
 
 func (h *ReactionHandler) Reaction(w http.ResponseWriter, r *http.Request) {
@@ -47,25 +48,24 @@ func (h *ReactionHandler) Reaction(w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("%+v\n", view)
 
 	var pv *models.PostView
-	var err error
+	var cv *models.CommentView
 	switch targetType {
 	case "post":
 		if err := h.service.SetPostReact(cx, view); err != nil {
 			handleError(w, r, err)
 			return
 		}
-		pv, err = h.postRep.GetPostByID(cx, targetID, user.Id)
+		pv, _ = h.postRep.GetPostByID(cx, targetID, user.Id)
+		utils.RenderPartial(w, http.StatusAccepted, "react", pv)
 	case "comment":
 		if err := h.service.SetCommentReact(cx, view); err != nil {
 			handleError(w, r, err)
 			return
 		}
+		cv, _ = h.commentRep.GetCommentByID(cx, targetID, user.Id)
+		utils.RenderPartial(w, http.StatusAccepted, "react", cv)
 	default:
 		handleError(w, r, customerrors.ErrInternalError)
 		return
 	}
-	if err != nil {
-
-	}
-	utils.RenderPartial(w, http.StatusAccepted, "react", pv)
 }

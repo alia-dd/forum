@@ -74,7 +74,8 @@ func (r *postRepositoryImpl) GetPost(ctx context.Context, filter models.PostFilt
 			(SELECT COUNT(*) FROM post_like WHERE post_like.post_id = post.id AND post_like.value = 1)  AS like_count,
 			(SELECT COUNT(*) FROM post_like WHERE post_like.post_id = post.id AND post_like.value = -1) AS dislike_count,
 			(SELECT COUNT(*) FROM comment   WHERE comment.parent_post_id = post.id)                     AS comment_count,
-			IFNULL((SELECT value FROM post_like WHERE user_id = ? AND post_id = post.id), 0)              AS user_reaction
+			IFNULL((SELECT value FROM post_like WHERE user_id = ? AND post_like.post_id = post.id), 0)              AS user_reaction,
+			post.deleted_at IS NOT NULL AS deleted
 		FROM post
 		JOIN user ON user.id = post.user_id
 		`
@@ -147,6 +148,7 @@ func (r *postRepositoryImpl) GetPost(ctx context.Context, filter models.PostFilt
 			&pv.DislikeCount,
 			&pv.CommentCount,
 			&pv.UserReaction,
+			&pv.Deleted,
 		)
 
 		if err != nil {
@@ -171,7 +173,8 @@ func (r *postRepositoryImpl) GetPostByID(ctx context.Context, id int, user_id in
 			(SELECT COUNT(*) FROM post_like WHERE post_like.post_id = post.id AND post_like.value = 1)  AS like_count,
 			(SELECT COUNT(*) FROM post_like WHERE post_like.post_id = post.id AND post_like.value = -1) AS dislike_count,
 			(SELECT COUNT(*) FROM comment   WHERE comment.parent_post_id = post.id)                     AS comment_count,
-			IFNULL((SELECT value FROM post_like WHERE user_id = ? AND post_id = post.id), 0)              AS user_reaction
+			IFNULL((SELECT value FROM post_like WHERE user_id = ? AND post_like.post_id = post.id), 0)              AS user_reaction,
+			post.deleted_at IS NOT NULL AS deleted
 		FROM post
 		JOIN user ON user.id = post.user_id
 		WHERE post.id = ?
@@ -180,7 +183,7 @@ func (r *postRepositoryImpl) GetPostByID(ctx context.Context, id int, user_id in
 	var pv models.PostView
 	err := r.db.QueryRowContext(ctx, query, user_id, id).Scan(
 		&pv.Post.ID, &pv.Post.UserID, &pv.Post.Title, &pv.Post.Content, &pv.Post.CreatedAt, &pv.Post.UpdatedAt,
-		&pv.AuthorName, &pv.LikeCount, &pv.DislikeCount, &pv.CommentCount, &pv.UserReaction,
+		&pv.AuthorName, &pv.LikeCount, &pv.DislikeCount, &pv.CommentCount, &pv.UserReaction, &pv.Deleted,
 	)
 	if err != nil {
 		return nil, customerrors.MapSQLError(err)
@@ -200,7 +203,7 @@ func (r *postRepositoryImpl) UpdatePost(ctx context.Context, update models.PostU
 	res, err := tx.ExecContext(ctx, `
 		UPDATE post
 		SET title = ?, content = ?, updated_at = CURRENT_TIMESTAMP
-		WHERE id = ? AND user_id = ?
+		WHERE id = ? AND user_id = ? AND deleted_at IS NULL
 		`, update.Title, update.Content, update.ID, authorID)
 	if err != nil {
 		return customerrors.MapSQLError(err)
@@ -242,10 +245,30 @@ func (r *postRepositoryImpl) UpdatePost(ctx context.Context, update models.PostU
 }
 
 func (r *postRepositoryImpl) DeletePost(ctx context.Context, id, authorID int) error {
-	res, err := r.db.ExecContext(ctx, `
-		DELETE FROM post
-		WHERE id = ? AND user_id = ?
-		`, id, authorID)
+	var hasComments bool
+	var err error
+	err = r.db.QueryRowContext(ctx, `
+		SELECT EXISTS(
+			SELECT 1 FROM comment
+			WHERE parent_post_id = ?)
+		`, id).Scan(&hasComments)
+	if err != nil {
+		return customerrors.MapSQLError(err)
+	}
+
+	var res sql.Result
+	if !hasComments {
+		res, err = r.db.ExecContext(ctx, `
+			DELETE FROM post
+			WHERE id = ? AND user_id = ?
+			`, id, authorID)
+	} else {
+		res, err = r.db.ExecContext(ctx, `
+			UPDATE post
+			SET content = '', deleted_at = CURRENT_TIMESTAMP
+			WHERE id = ? AND user_id = ?
+			`, id, authorID)
+	}
 	if err != nil {
 		return customerrors.MapSQLError(err)
 	}

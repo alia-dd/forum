@@ -83,7 +83,7 @@ func handleError(w http.ResponseWriter, r *http.Request, err error) {
 
 	user, _ := r.Context().Value("user_session").(*models.UserInfo) //nil is fine, just to show top banner correctly
 
-	pageData := models.PageData{
+	pageData := models.PageData[models.ErrorStruct]{
 		User: user,
 		PageContent: models.ErrorStruct{
 			Error:   fmt.Sprint(status),

@@ -28,7 +28,7 @@ func (h *CategoryHandler) NewCategoryForm(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	pageData := models.PageData{
+	pageData := models.PageData[CategoryFormPage]{
 		User:        user,
 		PageContent: CategoryFormPage{},
 	}
@@ -52,7 +52,7 @@ func (h *CategoryHandler) CreateCategory(w http.ResponseWriter, r *http.Request)
 	}
 
 	if !form.Validate() {
-		utils.RenderTemplate(w, http.StatusOK, "category_form", models.PageData{
+		utils.RenderTemplate(w, http.StatusOK, "category_form", models.PageData[CategoryFormPage]{
 			User: user, PageContent: CategoryFormPage{Form: form},
 		})
 		return
@@ -62,7 +62,7 @@ func (h *CategoryHandler) CreateCategory(w http.ResponseWriter, r *http.Request)
 	if err != nil {
 		if errors.Is(err, customerrors.ErrDuplicateEntry) {
 			form.Errors["Name"] = "That category already exists"
-			utils.RenderTemplate(w, http.StatusOK, "category_form", models.PageData{
+			utils.RenderTemplate(w, http.StatusOK, "category_form", models.PageData[CategoryFormPage]{
 				User: user, PageContent: CategoryFormPage{Form: form},
 			})
 			return
@@ -93,7 +93,7 @@ func (h *CategoryHandler) EditCategoryForm(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	pageData := models.PageData{
+	pageData := models.PageData[CategoryFormPage]{
 		User: user,
 		PageContent: CategoryFormPage{
 			CategoryID: id,
@@ -131,7 +131,7 @@ func (h *CategoryHandler) UpdateCategory(w http.ResponseWriter, r *http.Request)
 	}
 
 	if !form.Validate() {
-		utils.RenderTemplate(w, http.StatusOK, "category_form", models.PageData{
+		utils.RenderTemplate(w, http.StatusOK, "category_form", models.PageData[CategoryFormPage]{
 			User: user, PageContent: CategoryFormPage{CategoryID: id, Form: form},
 		})
 		return
@@ -141,7 +141,7 @@ func (h *CategoryHandler) UpdateCategory(w http.ResponseWriter, r *http.Request)
 	if err != nil {
 		if errors.Is(err, customerrors.ErrDuplicateEntry) {
 			form.Errors["Name"] = "That category already exists"
-			utils.RenderTemplate(w, http.StatusOK, "category_form", models.PageData{
+			utils.RenderTemplate(w, http.StatusOK, "category_form", models.PageData[CategoryFormPage]{
 				User: user, PageContent: CategoryFormPage{CategoryID: id, Form: form},
 			})
 			return

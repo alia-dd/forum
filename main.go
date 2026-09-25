@@ -60,13 +60,19 @@ func main() {
 	postRepo := repository.NewPostRepository(db)
 	categoryRepo := repository.NewCategoryRepository(db)
 
+	commentRepo := repository.NewCommentRepository(db)
+
 	userService := service.NewUserService(userRepo, sessionRepo)
 	reactService := service.NewReactionService(reactRepo)
 
-	reactHandler := handlers.NewReactionHandler(reactService, postRepo)
+	reactHandler := handlers.NewReactionHandler(reactService, postRepo, commentRepo)
 	userHandler := handlers.NewUserHandler(userService)
-	postHandler := handlers.NewPostHandler(postRepo, categoryRepo)
+	postHandler := handlers.NewPostHandler(postRepo, categoryRepo, commentRepo)
 	categoryHandler := handlers.NewCategoryHandler(categoryRepo)
+	commentHandler := handlers.NewCommentHandler(commentRepo)
+
+	searchRepo := repository.NewSearchRepository(db)
+	searchHandler := handlers.NewSearchHandler(searchRepo)
 
 	mux.Handle("GET /static/",
 		http.StripPrefix("/static/",
@@ -77,16 +83,11 @@ func main() {
 	mux.HandleFunc("GET /", middleware.Recoverer(
 		middleware.AllowGuest(sessionRepo, userRepo, func(w http.ResponseWriter, r *http.Request) {
 			if r.URL.Path != "/" {
-				user, ok := r.Context().Value("user_session").(*models.UserInfo)
-				if !ok {
-					utils.RedirectTologin(w, r)
-					return
-				}
+				user, _ := r.Context().Value("user_session").(*models.UserInfo)
 
-				pageData := models.PageData{
+				pageData := models.PageData[models.ErrorStruct]{
 					User:        user,
-					IsOwner:     ok,
-					PageContent: &models.ErrorStruct{Error: "404", ErrorMs: "Page Not Found"},
+					PageContent: models.ErrorStruct{Error: "404", ErrorMs: "Page Not Found"},
 				}
 				utils.RenderTemplate(w, http.StatusNotFound, "error", pageData)
 				return
@@ -143,7 +144,18 @@ func main() {
 	mux.HandleFunc("POST /category/{id}/edit", middleware.Recoverer(middleware.Restrict(sessionRepo, userRepo, categoryHandler.UpdateCategory)))
 	// POST /category/{id}/delete - delete category (if it has no references elsewhere)
 	mux.HandleFunc("POST /category/{id}/delete", middleware.Recoverer(middleware.Restrict(sessionRepo, userRepo, categoryHandler.DeleteCategory)))
+
+	// POST /post/{id}/comment/create - for commenting
+	mux.HandleFunc("POST /post/{id}/comment/create", middleware.Recoverer(middleware.Restrict(sessionRepo, userRepo, commentHandler.CreateComment)))
+	// GET /post/{id} - for commenting
+	// mux.HandleFunc("GET /post/{id}/comment", middleware.Recoverer(middleware.Restrict(sessionRepo, userRepo, commentHandler.EditComment)))
+	// GET /post/{id} - for commenting
+	// mux.HandleFunc("GET /post/{id}/comment", middleware.Recoverer(middleware.Restrict(sessionRepo, userRepo, commentHandler.UpdateComment)))
+	// POST /post/{id} - for commenting
+	// mux.HandleFunc("POST /post/{id}/comment/delete", middleware.Recoverer(middleware.Restrict(sessionRepo, userRepo, commentHandler.DeleteComment)))
 	//above need auth
+
+	mux.HandleFunc("GET /search", middleware.Recoverer(middleware.AllowGuest(sessionRepo, userRepo, searchHandler.Search)))
 
 	server := &http.Server{
 		Addr:         ":8080",

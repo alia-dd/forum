@@ -1,0 +1,12 @@
+{{define "content"}}
+{{if .PageContent.Query}}
+  {{if .PageContent.Users}}<h2>Users</h2><ul>
+    {{range .PageContent.Users}}<li><a href="/user/profile/{{.Username}}">{{.Username}}</a></li>{{end}}</ul>{{end}}
+  {{if .PageContent.Posts}}<h2>Posts</h2><ul>
+    {{range .PageContent.Posts}}<li><a href="/post/{{.ID}}">{{.Title}}</a> - by {{.AuthorName}}</li>{{end}}</ul>{{end}}
+  {{if .PageContent.Comments}}<h2>Comments</h2><ul>
+    {{range .PageContent.Comments}}<li><a href="/post/{{.ParentPostID}}">{{.Content}}</a> - by {{.AuthorName}}</li>{{end}}</ul>{{end}}
+  {{if and (not .PageContent.Users) (not .PageContent.Posts) (not .PageContent.Comments)}}
+  <p>No results for "{{.PageContent.Query}}"</p>{{end}}
+{{end}}
+{{end}}

@@ -1,8 +1,8 @@
 {{define "react"}}
-<div id="react{{.TargetId}}" class="react">
+<div id="react-{{.TargetType}}-{{.TargetId}}" class="react">
 
   <form hx-post="/react"
-        hx-target="#react{{.TargetId}}"
+        hx-target="#react-{{.TargetType}}-{{.TargetId}}"
         hx-swap="outerHTML"
         class="recForm">
 
@@ -18,7 +18,7 @@
 </form>
 
   <form hx-post="/react"
-        hx-target="#react{{.TargetId}}"
+        hx-target="#react-{{.TargetType}}-{{.TargetId}}"
         hx-swap="outerHTML"
         class="recForm">
 

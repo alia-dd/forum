@@ -5,6 +5,18 @@
     BOOKFORUM
   </a>
 
+  <form method="GET" action="/search">
+    <select name="scope">
+      <option value="all">All</option>
+      <option value="users">Users</option>
+      <option value="posts">Posts</option>
+      <option value="comments">Comments</option>
+    </select>
+
+    <input type="search" name="q" placeholder="Search...">
+    <button type="submit">Search</button>
+  </form>
+
   <button class="nav__toggle" id="navToggle" aria-label="Toggle menu" aria-expanded="false">
     <span></span>
     <span></span>
