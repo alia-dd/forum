@@ -31,7 +31,7 @@ func NewReactionRepository(db *sql.DB) *ReactionRepository {
 
 func (r *ReactionRepository) GetPostReaction(cx context.Context, rec models.Reaction) (*int, error) {
 	var value int
-	fetchErr := r.db.QueryRowContext(cx, getUserPostReaction, rec.User_id, rec.Id).Scan(&value)
+	fetchErr := r.db.QueryRowContext(cx, getUserPostReaction, rec.User_id, rec.ID).Scan(&value)
 	if fetchErr != nil {
 		if fetchErr == sql.ErrNoRows {
 			return nil, nil
@@ -41,7 +41,7 @@ func (r *ReactionRepository) GetPostReaction(cx context.Context, rec models.Reac
 	return &value, nil
 }
 func (r *ReactionRepository) CreatePostReaction(cx context.Context, rec models.Reaction) error {
-	_, postErr := r.db.ExecContext(cx, createUserPostReaction, rec.User_id, rec.Id, rec.Value)
+	_, postErr := r.db.ExecContext(cx, createUserPostReaction, rec.User_id, rec.ID, rec.Value)
 	if postErr != nil {
 		if strings.Contains(postErr.Error(), "UNIQUE constraint failed") {
 			return customerrors.ErrDuplicateEntry
@@ -51,7 +51,7 @@ func (r *ReactionRepository) CreatePostReaction(cx context.Context, rec models.R
 	return nil
 }
 func (r *ReactionRepository) UpdatePostReaction(cx context.Context, rec models.Reaction) error {
-	_, err := r.db.ExecContext(cx, updateUserPostReaction, rec.Value, rec.User_id, rec.Id)
+	_, err := r.db.ExecContext(cx, updateUserPostReaction, rec.Value, rec.User_id, rec.ID)
 
 	if err != nil {
 		return customerrors.ErrInternalError
@@ -59,7 +59,7 @@ func (r *ReactionRepository) UpdatePostReaction(cx context.Context, rec models.R
 	return nil
 }
 func (r *ReactionRepository) DeletePostReaction(cx context.Context, rec models.Reaction) error {
-	_, deleteErr := r.db.ExecContext(cx, deleteUserPostReaction, rec.User_id, rec.Id)
+	_, deleteErr := r.db.ExecContext(cx, deleteUserPostReaction, rec.User_id, rec.ID)
 	if deleteErr != nil {
 		return customerrors.ErrInternalError
 	}
@@ -69,7 +69,7 @@ func (r *ReactionRepository) DeletePostReaction(cx context.Context, rec models.R
 // comment reaction repo
 func (r *ReactionRepository) GetCommentReaction(cx context.Context, rec models.Reaction) (*int, error) {
 	var value int
-	fetchErr := r.db.QueryRowContext(cx, getUserCommentReaction, rec.User_id, rec.Id).Scan(&value)
+	fetchErr := r.db.QueryRowContext(cx, getUserCommentReaction, rec.User_id, rec.ID).Scan(&value)
 	if fetchErr != nil {
 		if fetchErr == sql.ErrNoRows {
 			return nil, nil
@@ -78,8 +78,9 @@ func (r *ReactionRepository) GetCommentReaction(cx context.Context, rec models.R
 	}
 	return &value, nil
 }
+
 func (r *ReactionRepository) CreateCommentReaction(cx context.Context, rec models.Reaction) error {
-	_, postErr := r.db.ExecContext(cx, createUserCommentReaction, rec.User_id, rec.Id, rec.Value)
+	_, postErr := r.db.ExecContext(cx, createUserCommentReaction, rec.User_id, rec.ID, rec.Value)
 	if postErr != nil {
 		if strings.Contains(postErr.Error(), "UNIQUE constraint failed") {
 			return customerrors.ErrDuplicateEntry
@@ -88,8 +89,9 @@ func (r *ReactionRepository) CreateCommentReaction(cx context.Context, rec model
 	}
 	return nil
 }
+
 func (r *ReactionRepository) UpdateCommentReaction(cx context.Context, rec models.Reaction) error {
-	_, err := r.db.ExecContext(cx, updateUserCommentReaction, rec.Value, rec.User_id, rec.Id)
+	_, err := r.db.ExecContext(cx, updateUserCommentReaction, rec.Value, rec.User_id, rec.ID)
 	if err != nil {
 		return customerrors.ErrInternalError
 	}
@@ -98,7 +100,7 @@ func (r *ReactionRepository) UpdateCommentReaction(cx context.Context, rec model
 }
 
 func (r *ReactionRepository) DeleteCommentReaction(cx context.Context, rec models.Reaction) error {
-	_, deleteErr := r.db.ExecContext(cx, deleteUserCommentReaction, rec.User_id, rec.Id)
+	_, deleteErr := r.db.ExecContext(cx, deleteUserCommentReaction, rec.User_id, rec.ID)
 	if deleteErr != nil {
 		return customerrors.ErrInternalError
 	}

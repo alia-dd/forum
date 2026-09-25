@@ -25,8 +25,9 @@ func (h *PostHandler) GetPosts(w http.ResponseWriter, r *http.Request) {
 	user, ok := r.Context().Value("user_session").(*models.UserInfo) // guests allowed
 	userID := -1
 	if ok {
-		userID = user.Id
+		userID = user.ID
 	}
+
 	filter, err := h.parsePostFilter(r.Context(), r)
 	if err != nil {
 		handleError(w, r, customerrors.ErrBadRequest)
@@ -38,18 +39,22 @@ func (h *PostHandler) GetPosts(w http.ResponseWriter, r *http.Request) {
 		handleError(w, r, err)
 		return
 	}
+
 	ids := make([]int, len(posts))
 	for i, post := range posts {
 		ids[i] = post.Post.ID
 	}
+
 	cats, err := h.catRep.GetCatByPostIDs(r.Context(), ids)
 	if err != nil {
 		handleError(w, r, err)
 		return
 	}
+
 	for _, post := range posts {
 		post.Categories = cats[post.Post.ID]
 	}
+
 	allCats, err := h.catRep.GetAllCategories(r.Context())
 	if err != nil {
 		handleError(w, r, err)
@@ -68,11 +73,12 @@ func (h *PostHandler) GetPosts(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *PostHandler) GetPostByID(w http.ResponseWriter, r *http.Request) {
-	user, _ := r.Context().Value("user_session").(*models.UserInfo) // guests allowed
-	var userID *int
-	if user != nil {
-		userID = &user.ID
+	user, ok := r.Context().Value("user_session").(*models.UserInfo) // guests allowed
+	userID := -1
+	if ok {
+		userID = user.ID
 	}
+
 	id, err := strconv.Atoi(r.PathValue("id"))
 
 	if err != nil {
@@ -191,7 +197,7 @@ func (h *PostHandler) EditPostForm(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	post, err := h.postRep.GetPostByID(r.Context(), id, user.Id)
+	post, err := h.postRep.GetPostByID(r.Context(), id, user.ID)
 	if err != nil {
 		handleError(w, r, err)
 		return

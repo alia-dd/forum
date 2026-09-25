@@ -40,8 +40,8 @@ func (h *ReactionHandler) Reaction(w http.ResponseWriter, r *http.Request) {
 	}
 
 	view := models.Reaction{
-		Id:         targetID,
-		User_id:    user.Id,
+		ID:         targetID,
+		User_id:    user.ID,
 		Value:      value,
 		TargetType: targetType,
 	}
@@ -49,20 +49,21 @@ func (h *ReactionHandler) Reaction(w http.ResponseWriter, r *http.Request) {
 
 	var pv *models.PostView
 	var cv *models.CommentView
+	
 	switch targetType {
 	case "post":
 		if err := h.service.SetPostReact(cx, view); err != nil {
 			handleError(w, r, err)
 			return
 		}
-		pv, _ = h.postRep.GetPostByID(cx, targetID, user.Id)
+		pv, _ = h.postRep.GetPostByID(cx, targetID, user.ID)
 		utils.RenderPartial(w, http.StatusAccepted, "react", pv)
 	case "comment":
 		if err := h.service.SetCommentReact(cx, view); err != nil {
 			handleError(w, r, err)
 			return
 		}
-		cv, _ = h.commentRep.GetCommentByID(cx, targetID, user.Id)
+		cv, _ = h.commentRep.GetCommentByID(cx, targetID, &user.ID)
 		utils.RenderPartial(w, http.StatusAccepted, "react", cv)
 	default:
 		handleError(w, r, customerrors.ErrInternalError)

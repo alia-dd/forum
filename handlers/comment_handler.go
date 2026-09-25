@@ -64,7 +64,7 @@ func (h *CommentHandler) CreateComment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	newComment, err := h.comRep.GetCommentByID(r.Context(), comID, user.Id, &user.ID)
+	newComment, err := h.comRep.GetCommentByID(r.Context(), comID, &user.ID)
 	if err != nil {
 		handleError(w, r, err)
 		return

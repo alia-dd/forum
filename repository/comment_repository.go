@@ -59,7 +59,7 @@ func (r *commentRepositoryImpl) GetCommentByID(ctx context.Context, comID int, c
     `
 
 	comment := &models.CommentView{}
-	err := r.db.QueryRowContext(ctx, query, user_id, comID).Scan(
+	err := r.db.QueryRowContext(ctx, query, curUserID, comID).Scan(
 		&comment.ID,
 		&comment.ParentPostID,
 		&comment.ParentCommentID,
@@ -126,13 +126,12 @@ func (r *commentRepositoryImpl) GetCommentsByPost(ctx context.Context, postID in
 	args := []any{}
 
 	if curUserID != nil {
-		query += `, (
+		query += `, IFNULL((
 				SELECT cl.value
 				FROM comment_like cl
 				WHERE cl.comment_id = c.id
 				AND cl.user_id = ?
-			),0) AS user_reaction
-			`
+			), 0) AS user_reaction`
 		args = append(args, *curUserID)
 	} else {
 		query += `, 0 AS user_reaction`
@@ -190,7 +189,7 @@ func (r *commentRepositoryImpl) GetCommentsByPost(ctx context.Context, postID in
 				cv.IsOwner = true
 			}
 		}
-		
+
 		cv.TargetId = cv.ID
 		cv.TargetType = "comment"
 		cv.Replies = []models.CommentView{}
@@ -310,16 +309,15 @@ func (r *commentRepositoryImpl) GetRepliesByCommentID(ctx context.Context, paren
     args := []any{}
 
     if curUserID != nil {
-        query += `, (
+        query += `, IFNULL((
                 SELECT cl.value
                 FROM comment_like cl
                 WHERE cl.comment_id = c.id
                 AND cl.user_id = ?
-            ) AS user_vote
-            `
+            ), 0) AS user_reaction`
         args = append(args, *curUserID)
     } else {
-        query += `, NULL AS user_vote`
+        query += `, 0 AS user_reaction`
     }
 
     // Fetch comments belonging to this specific parent comment
@@ -356,7 +354,7 @@ func (r *commentRepositoryImpl) GetRepliesByCommentID(ctx context.Context, paren
             &cv.LikeCount,
             &cv.DislikeCount,
             &cv.ReplyCount,
-            &cv.UserVote,
+			&cv.UserReaction,
         )
         if err != nil {
             return nil, customerrors.MapSQLError(err)
