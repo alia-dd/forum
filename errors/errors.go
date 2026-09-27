@@ -17,7 +17,7 @@ var (
 	ErrDuplicateEntry       = errors.New("entry already exists")
 	ErrForeignKeyConstraint = errors.New("Foreign key error")
 	ErrDatabaseBusy         = errors.New("Database in use by another user or process")
-	ErrIDNotANumber         = errors.New("Id not a number")
+	ErrIDNotANumber         = errors.New("ID is not a number")
 	ErrInvalidData          = errors.New("Invalid Entery")
 	ErrInternalError        = errors.New("Internal Server Error")
 	ErrInvalidName          = errors.New("Username may only contain alphanumeric characters or single hyphens, and cannot begin or end with a hyphen.")

@@ -1,0 +1,44 @@
+{{define "react"}}
+<div id="react-{{.TargetType}}-{{.TargetId}}" class="react">
+
+  <form hx-post="/react"
+        hx-target="#react-{{.TargetType}}-{{.TargetId}}"
+        hx-swap="outerHTML"
+        class="recForm">
+
+    <input type="hidden" name="target_type" value="{{.TargetType}}">
+    <input type="hidden" name="target_id" value="{{.TargetId}}">
+    <input type="hidden" name="value" value="1">
+
+    <button type="submit" class="recBtn {{if eq .UserReaction 1}} active{{end}}">
+        <i class="ph ph-arrow-fat-up"></i>
+        <span>{{.LikeCount}}</span>
+    </button>
+  
+</form>
+
+  <form hx-post="/react"
+        hx-target="#react-{{.TargetType}}-{{.TargetId}}"
+        hx-swap="outerHTML"
+        class="recForm">
+
+    <input type="hidden" name="target_type" value="{{.TargetType}}">
+    <input type="hidden" name="target_id" value="{{.TargetId}}">
+    <input type="hidden" name="value" value="-1">
+
+    <button type="submit" class="recBtn {{if eq .UserReaction -1}} active{{end}}">
+        <i class="ph ph-arrow-fat-down"></i>
+        <span>{{.DislikeCount}}</span>
+    </button>
+   
+  </form>
+
+  {{if eq .TargetType "post"}}
+    <div class="comCount">
+      <i class="ph ph-chat-circle"></i>
+      <span>{{.CommentCount}}</span>
+    </div>
+  {{end}}
+
+</div>
+{{end}}

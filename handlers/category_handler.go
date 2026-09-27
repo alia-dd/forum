@@ -24,7 +24,7 @@ func (h *CategoryHandler) NewCategoryForm(w http.ResponseWriter, r *http.Request
 	//require admin?
 	user, ok := r.Context().Value("user_session").(*models.UserInfo)
 	if !ok {
-		http.Redirect(w, r, "/user/login", http.StatusSeeOther)
+		utils.RedirectTologin(w, r)
 		return
 	}
 
@@ -38,7 +38,7 @@ func (h *CategoryHandler) NewCategoryForm(w http.ResponseWriter, r *http.Request
 func (h *CategoryHandler) CreateCategory(w http.ResponseWriter, r *http.Request) {
 	user, ok := r.Context().Value("user_session").(*models.UserInfo)
 	if !ok {
-		http.Redirect(w, r, "/user/login", http.StatusSeeOther)
+		utils.RedirectTologin(w, r)
 		return
 	}
 
@@ -77,7 +77,7 @@ func (h *CategoryHandler) CreateCategory(w http.ResponseWriter, r *http.Request)
 func (h *CategoryHandler) EditCategoryForm(w http.ResponseWriter, r *http.Request) {
 	user, ok := r.Context().Value("user_session").(*models.UserInfo)
 	if !ok {
-		http.Redirect(w, r, "/user/login", http.StatusSeeOther)
+		utils.RedirectTologin(w, r)
 		return
 	}
 
@@ -111,7 +111,7 @@ func (h *CategoryHandler) EditCategoryForm(w http.ResponseWriter, r *http.Reques
 func (h *CategoryHandler) UpdateCategory(w http.ResponseWriter, r *http.Request) {
 	user, ok := r.Context().Value("user_session").(*models.UserInfo)
 	if !ok {
-		http.Redirect(w, r, "/user/login", http.StatusSeeOther)
+		utils.RedirectTologin(w, r)
 		return
 	}
 

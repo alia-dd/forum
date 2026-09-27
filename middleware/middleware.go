@@ -6,6 +6,7 @@ import (
 
 	customerrors "gitea.kood.tech/jyrkikarhunen/forum/errors"
 	"gitea.kood.tech/jyrkikarhunen/forum/repository"
+	"gitea.kood.tech/jyrkikarhunen/forum/utils"
 )
 
 func Recoverer(handler http.HandlerFunc) http.HandlerFunc {
@@ -55,17 +56,17 @@ func Restrict(sessionRepo *repository.SessionRepository, userRepo *repository.Us
 		// it retrieves that and uses hte cookie session uuid to get the useid
 		cookie, cookieErr := r.Cookie("session_token")
 		if cookieErr != nil {
-			http.Redirect(w, r, "/user/login", http.StatusSeeOther)
+			utils.RedirectTologin(w, r)
 			return
 		}
 		session, sessionErr := sessionRepo.GetSessionwithSessionId(cx, cookie.Value)
 		if sessionErr != nil {
-			http.Redirect(w, r, "/user/login", http.StatusSeeOther)
+			utils.RedirectTologin(w, r)
 			return
 		}
 		user, err := userRepo.FetchUserData(cx, session.UserID)
 		if err != nil {
-			http.Redirect(w, r, "/user/login", http.StatusSeeOther)
+			utils.RedirectTologin(w, r)
 			return
 		}
 
