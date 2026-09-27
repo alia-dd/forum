@@ -268,7 +268,8 @@ func createFTSQuery(term string) string {
 
 func quoteFTSTerm(word string) string {
 	return `"` + strings.ReplaceAll(word, `"`, `""`) + `"`
-  
+}
+
 func parseID(r *http.Request, key string) (int, error) {
 	idStr := r.PathValue(key)
 	id, err := strconv.Atoi(idStr)
