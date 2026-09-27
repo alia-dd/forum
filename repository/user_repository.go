@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"strings"
 
 	customerrors "gitea.kood.tech/jyrkikarhunen/forum/errors"
@@ -10,15 +11,20 @@ import (
 )
 
 const (
-	RegisterUserQuery              = ` INSERT INTO user (username, name, email, bio, imagepath, password_hash) VALUES(?,?,?,?,?,?)`
-	fetchUserInfoQurrey            = ` SELECT  id, username, name, email, ifnull(bio, ''), ifnull(imagepath, ''), password_hash, created_at, updated_at  FROM user WHERE (username = ? or email = ?)`
-	fetchUserInfoByIdQurrey        = ` SELECT id, username, name, email, ifnull(imagepath, ''), ifnull(imagepath, ''), role FROM user WHERE id = ?`
-	fetchUserInfoByUsernameQurey   = ` SELECT id, username, name, ifnull(bio, ''), ifnull(imagepath, '')  FROM user WHERE username = ?`
-	UpdateUserByIdQuery            = ` UPDATE user SET updated_at = CURRENT_TIMESTAMP, `
-	DeleteUserQuery                = ` DELETE user WHERE id = ?`
+	RegisterUserQuery            = ` INSERT INTO user (username, name, email, bio, imagepath, password_hash) VALUES(?,?,?,?,?,?)`
+	fetchUserInfoQurrey          = ` SELECT id, username, name, email, ifnull(bio, ''), ifnull(imagepath, ''), password_hash, created_at, updated_at  FROM user WHERE (username = ? or email = ?)`
+	fetchUserInfoByIdQurrey      = ` SELECT id, username, name, email, ifnull(imagepath, ''), ifnull(imagepath, ''), role FROM user WHERE id = ?`
+	fetchUserInfoByUsernameQurey = ` SELECT id, username, name, ifnull(bio, ''), ifnull(imagepath, '')  FROM user WHERE username = ?`
+
+	UpdateUserByIdQuery = ` UPDATE user SET updated_at = CURRENT_TIMESTAMP, `
+	DeleteUserQuery     = ` DELETE user WHERE id = ?`
+
 	fetchPasswordHashQuery         = ` SELECT password_hash FROM user WHERE id = ?`
 	updatePasswordQuery            = ` UPDATE user SET  updated_at = CURRENT_TIMESTAMP, password_hash = ? WHERE id = ?`
 	checkAvailableExcludeUserQuery = ` SELECT EXISTS(SELECT 1 FROM user WHERE (username = ? or email = ?) AND id != ?)`
+
+	// admin specific
+	fetchAllUsersQurrey = ` SELECT  id, username, email, role, ifnull(imagepath, ''), created_at, updated_at  FROM user`
 )
 
 type UserRepository struct {
@@ -169,4 +175,34 @@ func (r *UserRepository) CheckIfAvailableExcludeUser(cx context.Context, col str
 		return false, customerrors.MapSQLError(fetchErr)
 	}
 	return exist, nil
+}
+
+// admin specific query
+func (r *UserRepository) FetchUsers(cx context.Context) ([]models.AdminUserInfo, error) {
+	var users []models.AdminUserInfo
+
+	rows, fetchErr := r.db.QueryContext(cx, fetchAllUsersQurrey)
+	if fetchErr != nil {
+		fmt.Println("fetch", fetchErr)
+		return users, customerrors.MapSQLError(fetchErr)
+	}
+
+	for rows.Next() {
+		var user models.AdminUserInfo
+		err := rows.Scan(
+			&user.Id, &user.Username, &user.Email,
+			&user.Role, &user.Image, &user.CreatedAt, &user.UpdatedAt,
+		)
+
+		if err != nil {
+			fmt.Println("scan", fetchErr)
+			return nil, customerrors.MapSQLError(err)
+		}
+		users = append(users, user)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, customerrors.MapSQLError(err)
+	}
+
+	return users, nil
 }

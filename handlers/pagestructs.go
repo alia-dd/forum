@@ -6,6 +6,8 @@ import "gitea.kood.tech/jyrkikarhunen/forum/models"
 type MainPage struct {
 	Posts      []*models.PostView
 	Categories []models.Category
+	Users      []models.AdminUserInfo
+	Comments   []*models.Comment
 }
 
 type PostPage struct {

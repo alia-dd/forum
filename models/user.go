@@ -40,6 +40,16 @@ type UserInfo struct {
 	UpdatedAt time.Time `json:"updatedat"`
 }
 
+type AdminUserInfo struct {
+	Id        int       `json:"user_id"`
+	Username  string    `json:"username"`
+	Email     string    `json:"email"`
+	Role      int       `json:"role"`
+	Image     string    `json:"imagePath"`
+	CreatedAt time.Time `json:"createdat"`
+	UpdatedAt time.Time `json:"updatedat"`
+}
+
 type PublicUserInfo struct {
 	Id        int       `json:"id,omitempty"`
 	Username  string    `json:"username,omitempty"`

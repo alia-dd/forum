@@ -34,9 +34,13 @@ func (s *UserService) CreateUserService(cx context.Context, u models.UserRegiste
 	return s.repo.RegisterUser(cx, u)
 }
 
-// register new use
 func (s *UserService) GetUserService(cx context.Context, username string) (models.PublicUserInfo, error) {
 	return s.repo.FetchUserDataByUserName(cx, username)
+}
+
+// fetch all user
+func (s *UserService) GetAllUsersService(cx context.Context) ([]models.AdminUserInfo, error) {
+	return s.repo.FetchUsers(cx)
 }
 
 // patch user

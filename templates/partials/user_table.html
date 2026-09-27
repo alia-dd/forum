@@ -1,0 +1,50 @@
+{{define "user_table"}}
+{{$users := .PageContent.Users}}
+<table class="admin-table">
+  <thead>
+    <tr>
+      <th>User Name</th>
+      <th>Email</th>
+      <th>Admin</th>
+      <th>Blocked</th>
+      <th class="admin_Del">Delete</th>
+    </tr>
+  </thead>
+  <tbody>
+    {{range $users}}
+    <tr>
+      <td>
+        <div class="admin-table-user">
+            <img {{if .Image}} src="/static/assets/images/{{.Image}}" {{else}} src="/static/assets/images/avatar1.jpg" {{end}} alt="Avatar" class=" admin-table-avatar">
+            <span class="admin-table-username">{{.Username}}</span>
+        </div>
+      </td>
+      <td class="admin-table-email">{{.Email}}</td>
+      <td>
+        <label class="toggle">
+          <input type="checkbox" {{if eq .Role 700 }}checked{{end}}
+                 hx-post="/admin/users/{{.Id}}/role" hx-trigger="change" hx-swap="none">
+          <span class="toggle-track"></span>
+        </label>
+      </td>
+      <td>
+        <label class="toggle">
+          <input type="checkbox" {{if eq .Role 5 }}checked{{end}}
+                 hx-post="/admin/users/{{.Id}}/block" hx-trigger="change" hx-swap="none">
+          <span class="toggle-track"></span>
+        </label>
+      </td>
+      <td class="admin-table-actions">
+        <form method="POST" action="/admin/users/{{.Id}}/delete" style="display:inline">
+          <button type="submit" class="btn--icon" aria-label="Delete user">
+            <i class="ph ph-trash"></i>
+          </button>
+        </form>
+      </td>
+    </tr>
+    {{else}}
+    <tr><td colspan="5">No users yet.</td></tr>
+    {{end}}
+  </tbody>
+</table>
+{{end}}

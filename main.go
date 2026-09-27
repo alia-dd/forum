@@ -66,7 +66,7 @@ func main() {
 	reactService := service.NewReactionService(reactRepo)
 
 	reactHandler := handlers.NewReactionHandler(reactService, postRepo, commentRepo)
-	userHandler := handlers.NewUserHandler(userService)
+	userHandler := handlers.NewUserHandler(userService, postRepo, commentRepo)
 	postHandler := handlers.NewPostHandler(postRepo, categoryRepo, commentRepo)
 	categoryHandler := handlers.NewCategoryHandler(categoryRepo)
 	commentHandler := handlers.NewCommentHandler(commentRepo)
@@ -100,7 +100,8 @@ func main() {
 	))
 
 	// admin panel
-	mux.HandleFunc("GET /admin", middleware.Recoverer(middleware.Admin(sessionRepo, userRepo, userHandler.GetAdminPanel)))
+	mux.HandleFunc("GET /admin/users", middleware.Recoverer(middleware.Admin(sessionRepo, userRepo, userHandler.GetAdminUserTable)))
+	mux.HandleFunc("GET /admin/posts", middleware.Recoverer(middleware.Admin(sessionRepo, userRepo, userHandler.GetAdminPostTable)))
 
 	// Profile page is user specific and is safeguarded by the Restrict middleware
 	// if there is no active session, it redirects to the login page.

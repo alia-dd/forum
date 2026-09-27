@@ -1,0 +1,18 @@
+{{define "content"}}
+<section >
+      <div class="admin_layout">
+            {{template "panel_nav"}}
+            <div class="content_layout">
+                  {{if .PageContent.Users}}
+                        {{template "user_table" .}}
+                  {{end}}
+                  {{if .PageContent.Posts}}
+                        {{template "post_table" .}}
+                   {{end}}
+                  {{if .PageContent.Comments}}
+                        {{template "comment_table" .}}
+                   {{end}}
+            </div>
+      </div>
+</section>
+{{end}}
