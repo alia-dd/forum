@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"fmt"
 
 	customerrors "gitea.kood.tech/jyrkikarhunen/forum/errors"
 	"gitea.kood.tech/jyrkikarhunen/forum/models"
@@ -17,6 +18,7 @@ func NewSearchRepository(db *sql.DB) *SearchRepository {
 }
 
 func (r *SearchRepository) SearchUsers(ctx context.Context, search string) ([]models.UserResult, error) {
+	// relevance/newest sort does nothing here, minor UI issue?
 	searchArg := "%" + search + "%"
 	prefixArg := search + "%"
 
@@ -48,15 +50,27 @@ func (r *SearchRepository) SearchUsers(ctx context.Context, search string) ([]mo
 	return result, rows.Err()
 }
 
-func (r *SearchRepository) SearchPosts(ctx context.Context, term string) ([]models.PostResult, error) {
-	searchArg := "%" + term + "%"
+func (r *SearchRepository) SearchPosts(ctx context.Context, term string, sort string) ([]models.PostResult, error) {
+	var orderBy string
 
-	rows, err := r.db.QueryContext(ctx, `
+	switch sort {
+	case "time":
+		orderBy = "post.created_at DESC"
+	default:
+		orderBy = "bm25(post_fts, 10.0, 1.0), post.created_at DESC"
+	}
+
+	query := fmt.Sprintf(`
 		SELECT post.id, post.title, user.username
-		FROM post JOIN user ON user.id = post.user_id
-		WHERE post.title LIKE ? OR post.content LIKE ?
-		ORDER BY post.created_at DESC
-		`, searchArg, searchArg)
+		FROM post_fts
+		JOIN post ON post.id = post_fts.rowid
+		JOIN user ON user.id = post.user_id
+		WHERE post_fts MATCH ?
+		ORDER BY %s
+		`, orderBy)
+
+	// not checking for if post is deleted, since title should still be searchable even then
+	rows, err := r.db.QueryContext(ctx, query, term)
 	if err != nil {
 		return nil, customerrors.MapSQLError(err)
 	}
@@ -73,15 +87,27 @@ func (r *SearchRepository) SearchPosts(ctx context.Context, term string) ([]mode
 	return result, rows.Err()
 }
 
-func (r *SearchRepository) SearchComments(ctx context.Context, term string) ([]models.CommentResult, error) {
-	searchArg := "%" + term + "%"
+func (r *SearchRepository) SearchComments(ctx context.Context, term string, sort string) ([]models.CommentResult, error) {
+	var orderBy string
 
-	rows, err := r.db.QueryContext(ctx, `
+	switch sort {
+	case "time":
+		orderBy = "comment.created_at DESC"
+	default:
+		orderBy = "bm25(comment_fts), comment.created_at DESC"
+	}
+
+	query := fmt.Sprintf(`
 		SELECT comment.id, comment.content, comment.parent_post_id, user.username
-		FROM comment JOIN user ON user.id = comment.user_id
-		WHERE comment.content LIKE ? AND comment.deleted_at IS NULL
-		ORDER BY comment.created_at DESC
-		`, searchArg)
+		FROM comment_fts
+		JOIN comment ON comment.id = comment_fts.rowid
+		JOIN user ON user.id = comment.user_id
+		WHERE comment_fts MATCH ?
+		AND comment.deleted_at IS NULL
+		ORDER BY %s
+		`, orderBy)
+
+	rows, err := r.db.QueryContext(ctx, query, term)
 	if err != nil {
 		return nil, customerrors.MapSQLError(err)
 	}

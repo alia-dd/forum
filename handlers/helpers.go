@@ -241,3 +241,31 @@ func (f *CommentForm) Validate() bool {
 	}
 	return len(f.Errors) == 0
 }
+
+// search
+
+func validSearchLength(s string) bool {
+	searchTerm := strings.ReplaceAll(s, `"`, "")
+	return utf8.RuneCountInString(strings.TrimSpace(searchTerm)) >= 3
+}
+
+// support searching for exact matches if and only if the whole thing is wrapped in quotes
+// otherwise escape quotes to avoid FTS5 searches triggering 500 (really really annoying to separate those from generic SQL errors)
+func createFTSQuery(term string) string {
+	term = strings.TrimSpace(term)
+
+	if term[0] == '"' && term[len(term)-1] == '"' {
+		return quoteFTSTerm(term)
+	}
+
+	words := strings.Fields(term)
+	for i, word := range words {
+		words[i] = quoteFTSTerm(word)
+	}
+
+	return strings.Join(words, " ")
+}
+
+func quoteFTSTerm(word string) string {
+	return `"` + strings.ReplaceAll(word, `"`, `""`) + `"`
+}

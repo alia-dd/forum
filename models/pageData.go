@@ -5,6 +5,7 @@ type PageData[T any] struct {
 	IsOwner     bool
 	Query       string
 	Scope       string
+	Sort        string
 	PageContent T
 	Error       string
 }

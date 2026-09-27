@@ -13,7 +13,12 @@
       <option value="comments" {{if eq .Scope "comments"}}selected{{end}}>Comments</option>
     </select>
 
-    <input type="search" name="q" value="{{.Query}}" placeholder="Search...">
+    <select name="sort">
+      <option value="relevance" {{if eq .Sort "relevance"}}selected{{end}}>Relevance</option>
+      <option value="time" {{if eq .Sort "time"}}selected{{end}}>Newest</option>
+    </select>
+
+    <input type="search" name="q" value="{{.Query}}" placeholder="Search..." minlength="3" required>
     <button type="submit">Search</button>
   </form>
 
