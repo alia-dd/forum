@@ -1,6 +1,6 @@
 {{define "user_table"}}
 {{$users := .PageContent.Users}}
-<table class="admin-table">
+<table class="admin-table" >
   <thead>
     <tr>
       <th>User Name</th>
@@ -23,19 +23,24 @@
       <td>
         <label class="toggle">
           <input type="checkbox" {{if eq .Role 700 }}checked{{end}}
-                 hx-post="/admin/users/{{.Id}}/role" hx-trigger="change" hx-swap="none">
+                 hx-post="/admin/users/action" hx-vals='{"action":"role","id":{{.Id}}}'  hx-target="closest table" hx-swap="outerHTML">
           <span class="toggle-track"></span>
         </label>
       </td>
       <td>
         <label class="toggle">
           <input type="checkbox" {{if eq .Role 5 }}checked{{end}}
-                 hx-post="/admin/users/{{.Id}}/block" hx-trigger="change" hx-swap="none">
+                 hx-post="/admin/users/action"  hx-vals='{"action":"block","id":{{.Id}}}' hx-target="closest table" hx-swap="outerHTML">
           <span class="toggle-track"></span>
         </label>
       </td>
       <td class="admin-table-actions">
-        <form method="POST" action="/admin/users/{{.Id}}/delete" style="display:inline">
+        <form 
+          hx-post="/admin/users/action"  
+          hx-vals='{"action":"delete","id":{{.Id}}}'
+          hx-target="closest table" 
+          hx-swap="outerHTML" 
+          style="display:inline">
           <button type="submit" class="btn--icon" aria-label="Delete user">
             <i class="ph ph-trash"></i>
           </button>

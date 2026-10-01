@@ -16,8 +16,10 @@ const (
 	fetchUserInfoByIdQurrey      = ` SELECT id, username, name, email, ifnull(imagepath, ''), ifnull(imagepath, ''), role FROM user WHERE id = ?`
 	fetchUserInfoByUsernameQurey = ` SELECT id, username, name, ifnull(bio, ''), ifnull(imagepath, '')  FROM user WHERE username = ?`
 
+	UpdateUserRoleByIdQuery = ` UPDATE user SET updated_at = CURRENT_TIMESTAMP, role = ? WHERE id = ?`
+
 	UpdateUserByIdQuery = ` UPDATE user SET updated_at = CURRENT_TIMESTAMP, `
-	DeleteUserQuery     = ` DELETE user WHERE id = ?`
+	DeleteUserQuery     = ` DELETE FROM user WHERE id = ?`
 
 	fetchPasswordHashQuery         = ` SELECT password_hash FROM user WHERE id = ?`
 	updatePasswordQuery            = ` UPDATE user SET  updated_at = CURRENT_TIMESTAMP, password_hash = ? WHERE id = ?`
@@ -65,6 +67,8 @@ func (r *UserRepository) FetchUserData(cx context.Context, userId int) (models.U
 	switch role {
 	case 700:
 		user.Role = "admin"
+	case 5:
+		user.Role = "blocked"
 	default:
 		user.Role = "user"
 
@@ -119,6 +123,16 @@ func (r *UserRepository) UpdateUserData(cx context.Context, user models.UserUpda
 
 	args = append(args, user.Id)
 	_, err := r.db.ExecContext(cx, query, args...)
+	if err != nil {
+		return customerrors.MapSQLError(err)
+	}
+
+	return nil
+}
+
+func (r *UserRepository) UpdateUserRole(cx context.Context, user_id, role int) error {
+
+	_, err := r.db.ExecContext(cx, UpdateUserRoleByIdQuery, role, user_id)
 	if err != nil {
 		return customerrors.MapSQLError(err)
 	}
