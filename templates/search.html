@@ -6,7 +6,7 @@
     {{range .PageContent.Posts}}<li><a href="/post/{{.ID}}">{{.Title}}</a> - by {{.AuthorName}}</li>{{end}}</ul>{{end}}
   {{if .PageContent.Comments}}<h2>Comments</h2><ul>
     {{range .PageContent.Comments}}<li><a href="/post/{{.ParentPostID}}">{{.Content}}</a> - by {{.AuthorName}}</li>{{end}}</ul>{{end}}
-  {{if and (not .PageContent.Users) (not .PageContent.Posts) (not .PageContent.Comments)}}
+  {{if and (not .Error) (not .PageContent.Users) (not .PageContent.Posts) (not .PageContent.Comments)}}
   <p>No results for "{{.PageContent.Query}}"</p>{{end}}
 {{end}}
 {{end}}
