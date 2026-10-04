@@ -12,7 +12,7 @@ import (
 
 const (
 	RegisterUserQuery            = ` INSERT INTO user (username, name, email, bio, imagepath, password_hash) VALUES(?,?,?,?,?,?)`
-	fetchUserInfoQurrey          = ` SELECT id, username, name, email, ifnull(bio, ''), ifnull(imagepath, ''), password_hash, created_at, updated_at  FROM user WHERE (username = ? or email = ?)`
+	fetchUserInfoQurrey          = ` SELECT id, username, name, email, ifnull(bio, ''), ifnull(imagepath, ''), password_hash, created_at, updated_at, role FROM user WHERE (username = ? or email = ?)`
 	fetchUserInfoByIdQurrey      = ` SELECT id, username, name, email, ifnull(imagepath, ''), ifnull(imagepath, ''), role FROM user WHERE id = ?`
 	fetchUserInfoByUsernameQurey = ` SELECT id, username, name, ifnull(bio, ''), ifnull(imagepath, '')  FROM user WHERE username = ?`
 
@@ -50,9 +50,19 @@ func (r *UserRepository) RegisterUser(cx context.Context, u models.UserRegister)
 // this func is used for the login to authentica the profided use credentials
 func (r *UserRepository) AuthenticateUser(cx context.Context, col string) (models.UserInfo, error) {
 	var user models.UserInfo
-	fetchErr := r.db.QueryRowContext(cx, fetchUserInfoQurrey, col, col).Scan(&user.Id, &user.Username, &user.Name, &user.Email, &user.Bio, &user.Image, &user.Password, &user.CreatedAt, &user.UpdatedAt)
+	var role int
+	fetchErr := r.db.QueryRowContext(cx, fetchUserInfoQurrey, col, col).Scan(&user.Id, &user.Username, &user.Name, &user.Email, &user.Bio, &user.Image, &user.Password, &user.CreatedAt, &user.UpdatedAt, &role)
 	if fetchErr != nil {
 		return user, customerrors.MapSQLError(fetchErr)
+	}
+	switch role {
+	case 700:
+		user.Role = "admin"
+	case 5:
+		user.Role = "blocked"
+	default:
+		user.Role = "user"
+
 	}
 	return user, nil
 }

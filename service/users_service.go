@@ -136,6 +136,9 @@ func (s *UserService) AuthenticateUserService(cx context.Context, u models.UserL
 	if fetchErr != nil {
 		return nil, fetchErr
 	}
+	if user.Role == "blocked" {
+		return nil, customerrors.ErrForbidden
+	}
 	compareErr := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(u.Password))
 	if compareErr != nil {
 		return nil, customerrors.ErrInvalidLogin
