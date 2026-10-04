@@ -143,6 +143,7 @@ func (r *UserRepository) UpdateUserRole(cx context.Context, user_id, role int) e
 func (r *UserRepository) DeleteUser(cx context.Context, userID int) error {
 	res, deleteErr := r.db.ExecContext(cx, DeleteUserQuery, userID)
 	if deleteErr != nil {
+		fmt.Println(deleteErr)
 		return customerrors.MapSQLError(deleteErr)
 	}
 	if rows, _ := res.RowsAffected(); rows == 0 {

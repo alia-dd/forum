@@ -23,28 +23,36 @@
       <td>
         <label class="toggle">
           <input type="checkbox" {{if eq .Role 700 }}checked{{end}}
-                 hx-post="/admin/users/action" hx-vals='{"action":"role","id":{{.Id}}}'  hx-target="closest table" hx-swap="outerHTML">
+                onclick="event.preventDefault()"
+                hx-get="/admin/confirmation" 
+                hx-trigger="click"
+                hx-vals='{"action":"role","id":{{.Id}},"ActionType":"userAction"}'  
+                hx-target="#cfm_diologe" hx-swap="innerHTML">
           <span class="toggle-track"></span>
         </label>
       </td>
       <td>
         <label class="toggle">
           <input type="checkbox" {{if eq .Role 5 }}checked{{end}}
-                 hx-post="/admin/users/action"  hx-vals='{"action":"block","id":{{.Id}}}' hx-target="closest table" hx-swap="outerHTML">
+                onclick="event.preventDefault()"
+                hx-get="/admin/confirmation" 
+                hx-trigger="click"
+                hx-vals='{"action":"block","id":{{.Id}},"ActionType":"userAction"}' 
+                hx-target="#cfm_diologe" hx-swap="innerHTML">
           <span class="toggle-track"></span>
         </label>
       </td>
       <td class="admin-table-actions">
-        <form 
-          hx-post="/admin/users/action"  
-          hx-vals='{"action":"delete","id":{{.Id}}}'
-          hx-target="closest table" 
-          hx-swap="outerHTML" 
-          style="display:inline">
-          <button type="submit" class="btn--icon" aria-label="Delete user">
+        <button
+          onclick="event.preventDefault()"
+          hx-get="/admin/confirmation"
+          hx-trigger="click"
+          hx-vals='{"action":"delete","id":{{.Id}},"ActionType":"userAction"}'
+          hx-target="#cfm_diologe"
+          hx-swap="innerHTML" 
+          type="button" class="btn--icon" aria-label="Delete user">
             <i class="ph ph-trash"></i>
           </button>
-        </form>
       </td>
     </tr>
     {{else}}

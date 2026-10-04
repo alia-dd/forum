@@ -40,8 +40,13 @@
     </li>
     {{else}}
     <li><a href="/user/login" class="nav__link">Sign in</a></li>
-    <li><a href="/user/register" class="nav__link nav__link--cta">Sign up</a></li>
+    <li><a href="/user/register" class="nav__link nav__link">Sign up</a></li>
     {{end}}
   </ul>
 </nav>
+<script>
+  document.querySelectorAll('.nav__link').forEach(a => {
+    if (a.getAttribute('href') === location.pathname) a.classList.add('active')
+  })
+</script>
 {{end}}

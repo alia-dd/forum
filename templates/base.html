@@ -11,14 +11,17 @@
     <link rel="stylesheet" href="/static/css/reaction.css">
     <link rel="stylesheet" href="/static/css/panel_nav.css">
     <link rel="stylesheet" href="/static/css/userTable.css">
+    <link rel="stylesheet" href="/static/css/error.css">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+    <script>  htmx.config.responseHandling = [{ code: "204", swap: false }, { code: ".*", swap: true }];</script>
     <title>literary lions forum</title>
 </head>
 <body>
      {{template "nav" .}}
      <div id="page-error" >
-        {{if .Error}}<div  class="page-error">{{.Error}}</div>{{end}}
+        {{template "partail_error" .}}
+        <!-- {{if .Error}}<div  class="page-error">{{.Error}}</div>{{end}} -->
     </div>
     <main id="mainContent">
         {{block "content" .}}{{end}}

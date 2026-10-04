@@ -12,13 +12,14 @@ import (
 )
 
 type UseHandler struct {
-	service    *service.UserService
-	postRep    repository.PostRepository
-	commentRep repository.CommentRepository
+	service     *service.UserService
+	postRep     repository.PostRepository
+	commentRep  repository.CommentRepository
+	categoryRep repository.CategoryRepository
 }
 
-func NewUserHandler(service *service.UserService, postRep repository.PostRepository, commentRep repository.CommentRepository) *UseHandler {
-	return &UseHandler{service: service, postRep: postRep, commentRep: commentRep}
+func NewUserHandler(service *service.UserService, postRep repository.PostRepository, commentRep repository.CommentRepository, categoryRep repository.CategoryRepository) *UseHandler {
+	return &UseHandler{service: service, postRep: postRep, commentRep: commentRep, categoryRep: categoryRep}
 }
 
 func (h *UseHandler) GetRegisterUser(w http.ResponseWriter, r *http.Request) {

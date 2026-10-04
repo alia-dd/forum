@@ -7,6 +7,7 @@
   --burgundy:    #7a1414;
   --burgundy-dk: #5c0f0f;
   --border:      #d8cdb8;
+  --nav-h:54px;
   /* --font-head:   'Playfair Display', Georgia, serif;
   --font-body:   Georgia, 'Times New Roman', serif; */
   --font-head: 'Barlow Condensed', sans-serif;
@@ -16,8 +17,7 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
-  background: var(--bg);
-  color: var(--text);
+  color: var(--ink);
   font-family: var(--font-body);
   font-weight: 300;
   min-height: 100vh;
@@ -48,12 +48,12 @@ a { text-decoration: none; color: inherit; }
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  color: var(--text);
+  color: var(--ink);
   white-space: nowrap;
 }
 
 .nav__logo-icon {
-  color: var(--accent);
+  color: var(--burgundy);
   font-size: 1.1rem;
   line-height: 1;
 }
@@ -72,9 +72,9 @@ a { text-decoration: none; color: inherit; }
 }
 
 .nav__divider {
-  width: 1px;
-  height: 22px;
-  background: var(--border);
+  width: 2px;
+  height: 25px;
+  background: var(--burgundy-dk);
   margin: 0 0.5rem;
 }
 
@@ -84,7 +84,7 @@ a { text-decoration: none; color: inherit; }
   font-size: 0.95rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--muted);
+  color: var(--ink-muted);
   padding: 0.45rem 0.9rem;
   border-radius: 3px;
   display: flex;
@@ -101,14 +101,14 @@ a { text-decoration: none; color: inherit; }
   left: 0.9rem;
   right: 0.9rem;
   height: 2px;
-  background: var(--accent);
+  background: var(--burgundy);
   transform: scaleX(0);
   transition: transform 0.22s var(--ease);
   transform-origin: left;
 }
 
 .nav__link:hover {
-  color: var(--text);
+  color: var(--ink);
   background: rgba(255,255,255,0.04);
 }
 
@@ -117,7 +117,7 @@ a { text-decoration: none; color: inherit; }
 }
 
 .nav__link.active {
-  color: var(--accent);
+  color: var(--burgundy);
 }
 
 .nav__link.active::after {
@@ -125,13 +125,13 @@ a { text-decoration: none; color: inherit; }
 }
 
 .nav__link--cta {
-  background: var(--accent);
-  color: var(--bg);
+  background: var(--burgundy);
+  color: var(--paper);
 }
 
 .nav__link--cta:hover {
-  background: var(--accentdim);
-  color: var(--bg);
+  background: var(--burgundy-dk);
+  color: var(--paper);
 }
 
 .nav__link--cta::after {
@@ -163,7 +163,7 @@ a { text-decoration: none; color: inherit; }
 .nav__toggle span {
   display: block;
   height: 2px;
-  background: var(--accent);
+  background: var(--burgundy);
   border-radius: 2px;
   transition: transform 0.25s var(--ease), opacity 0.2s;
 }

@@ -1,8 +1,76 @@
 {{define "post_table"}}
-<p>post table here</p>
+{{$posts := .PageContent.Posts}}
+<table class="admin-table" >
+  <thead>
+    <tr>
+      <th>Post Id</th>
+      <th>Author Name</th>
+      <th>Title</th>
+      <th class="admin_Del">Delete</th>
+    </tr>
+  </thead>
+  <tbody>
+    {{range $posts}}
+    <tr>
+        <td class="admin-table-user">{{.Post.ID}}</td>
+        <td class="admin-table-email">{{.AuthorName}}</td>
+        <td class="admin-table-user">{{.Post.Title}}</td>
+      <td class="admin-table-actions">
+        <button
+          onclick="event.preventDefault()"
+          hx-get="/admin/confirmation"
+          hx-trigger="click"
+          hx-vals='{"action":"delete","id":{{.Post.ID}},"ActionType":"postAction"}'
+          hx-target="#cfm_diologe"
+          hx-swap="innerHTML" 
+          type="button" class="btn--icon" aria-label="Delete user">
+            <i class="ph ph-trash"></i>
+          </button>
+      </td>
+    </tr>
+    {{else}}
+    <tr><td colspan="5">No posts yet.</td></tr>
+    {{end}}
+  </tbody>
+</table>
 {{end}}
 
-{{define "comment_table"}}
-<p>comment table here</p>
 
+
+
+{{define "comment_table"}}
+{{$comments := .PageContent.Comments}}
+<table class="admin-table" >
+  <thead>
+    <tr>
+      <th>Comment Id</th>
+      <th>Author Name</th>
+      <th>Content</th>
+      <th class="admin_Del">Delete</th>
+    </tr>
+  </thead>
+  <tbody>
+    {{range $comments}}
+    <tr>
+        <td class="admin-table-user">{{.comments.ID}}</td>
+        <td class="admin-table-email">{{.AuthorName}}</td>
+        <td class="admin-table-user">{{.comments.Content}}</td>
+      <td class="admin-table-actions">
+        <button
+          onclick="event.preventDefault()"
+          hx-get="/admin/confirmation"
+          hx-trigger="click"
+          hx-vals='{"action":"delete","id":{{.Post.ID}},"ActionType":"postAction"}'
+          hx-target="#cfm_diologe"
+          hx-swap="innerHTML" 
+          type="button" class="btn--icon" aria-label="Delete user">
+            <i class="ph ph-trash"></i>
+          </button>
+      </td>
+    </tr>
+    {{else}}
+    <tr><td colspan="5">No comments yet.</td></tr>
+    {{end}}
+  </tbody>
+</table>
 {{end}}
