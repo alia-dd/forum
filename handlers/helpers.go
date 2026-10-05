@@ -86,7 +86,7 @@ func (h *PostHandler) parsePostFilter(ctx context.Context, r *http.Request) (mod
 	liked := q.Get("liked")
 	if liked == "true" {
 		if user, ok := ctx.Value("user_session").(*models.UserInfo); ok {
-			id := user.Id
+			id := user.ID
 			pf.LikedByID = &id
 		}
 	}
@@ -101,7 +101,7 @@ func (h *PostHandler) getAuthorID(ctx context.Context, author string) (int, erro
 		if !ok {
 			return 0, customerrors.ErrBadRequest
 		}
-		return user.Id, nil
+		return user.ID, nil
 	}
 
 	authorID, err := strconv.Atoi(author)
@@ -240,4 +240,41 @@ func (f *CommentForm) Validate() bool {
 		f.Errors["Name"] = "Content is too long"
 	}
 	return len(f.Errors) == 0
+}
+
+// search
+
+func validSearchLength(s string) bool {
+	searchTerm := strings.ReplaceAll(s, `"`, "")
+	return utf8.RuneCountInString(strings.TrimSpace(searchTerm)) >= 3
+}
+
+// support searching for exact matches if and only if the whole thing is wrapped in quotes
+// otherwise escape quotes to avoid FTS5 searches triggering 500 (really really annoying to separate those from generic SQL errors)
+func createFTSQuery(term string) string {
+	term = strings.TrimSpace(term)
+
+	if term[0] == '"' && term[len(term)-1] == '"' {
+		return quoteFTSTerm(term)
+	}
+
+	words := strings.Fields(term)
+	for i, word := range words {
+		words[i] = quoteFTSTerm(word)
+	}
+
+	return strings.Join(words, " ")
+}
+
+func quoteFTSTerm(word string) string {
+	return `"` + strings.ReplaceAll(word, `"`, `""`) + `"`
+}
+
+func parseID(r *http.Request, key string) (int, error) {
+	idStr := r.PathValue(key)
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		return 0, customerrors.ErrBadRequest
+	}
+	return id, nil
 }

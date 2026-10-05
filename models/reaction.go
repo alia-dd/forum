@@ -1,7 +1,7 @@
 package models
 
 type Reaction struct {
-	Id         int
+	ID         int
 	User_id    int
 	Value      int
 	TargetType string

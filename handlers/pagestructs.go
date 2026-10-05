@@ -31,6 +31,7 @@ type CategoryFormPage struct {
 type SearchResultPage struct {
 	Query    string
 	Scope    string
+	Sort     string
 	Users    []models.UserResult
 	Posts    []models.PostResult
 	Comments []models.CommentResult

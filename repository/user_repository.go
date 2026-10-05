@@ -51,7 +51,7 @@ func (r *UserRepository) RegisterUser(cx context.Context, u models.UserRegister)
 func (r *UserRepository) AuthenticateUser(cx context.Context, col string) (models.UserInfo, error) {
 	var user models.UserInfo
 	var role int
-	fetchErr := r.db.QueryRowContext(cx, fetchUserInfoQurrey, col, col).Scan(&user.Id, &user.Username, &user.Name, &user.Email, &user.Bio, &user.Image, &user.Password, &user.CreatedAt, &user.UpdatedAt, &role)
+	fetchErr := r.db.QueryRowContext(cx, fetchUserInfoQurrey, col, col).Scan(&user.ID, &user.Username, &user.Name, &user.Email, &user.Bio, &user.Image, &user.Password, &user.CreatedAt, &user.UpdatedAt, &role)
 	if fetchErr != nil {
 		return user, customerrors.MapSQLError(fetchErr)
 	}
@@ -70,7 +70,7 @@ func (r *UserRepository) AuthenticateUser(cx context.Context, col string) (model
 func (r *UserRepository) FetchUserData(cx context.Context, userId int) (models.UserInfo, error) {
 	var user models.UserInfo
 	var role int
-	fetchErr := r.db.QueryRowContext(cx, fetchUserInfoByIdQurrey, userId).Scan(&user.Id, &user.Username, &user.Name, &user.Email, &user.Bio, &user.Image, &role)
+	fetchErr := r.db.QueryRowContext(cx, fetchUserInfoByIdQurrey, userId).Scan(&user.ID, &user.Username, &user.Name, &user.Email, &user.Bio, &user.Image, &role)
 	if fetchErr != nil {
 		return user, customerrors.MapSQLError(fetchErr)
 	}
@@ -89,7 +89,7 @@ func (r *UserRepository) FetchUserData(cx context.Context, userId int) (models.U
 // this repo func is used by the profile fetch for another user using their username
 func (r *UserRepository) FetchUserDataByUserName(cx context.Context, username string) (models.PublicUserInfo, error) {
 	var user models.PublicUserInfo
-	fetchErr := r.db.QueryRowContext(cx, fetchUserInfoByUsernameQurey, username).Scan(&user.Id, &user.Username, &user.Name, &user.Bio, &user.Image)
+	fetchErr := r.db.QueryRowContext(cx, fetchUserInfoByUsernameQurey, username).Scan(&user.ID, &user.Username, &user.Name, &user.Bio, &user.Image)
 	if fetchErr != nil {
 		return user, customerrors.MapSQLError(fetchErr)
 	}
@@ -131,7 +131,7 @@ func (r *UserRepository) UpdateUserData(cx context.Context, user models.UserUpda
 
 	query := UpdateUserByIdQuery + strings.Join(extraQuery, ", ") + " WHERE id = ?"
 
-	args = append(args, user.Id)
+	args = append(args, user.ID)
 	_, err := r.db.ExecContext(cx, query, args...)
 	if err != nil {
 		return customerrors.MapSQLError(err)
