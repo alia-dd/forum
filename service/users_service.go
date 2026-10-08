@@ -7,7 +7,7 @@ import (
 	customerrors "gitea.kood.tech/jyrkikarhunen/forum/errors"
 	"gitea.kood.tech/jyrkikarhunen/forum/models"
 	"gitea.kood.tech/jyrkikarhunen/forum/repository"
-	"golang.org/x/crypto/bcrypt"
+	"gitea.kood.tech/jyrkikarhunen/forum/utils"
 )
 
 type UserService struct {
@@ -25,7 +25,7 @@ func (s *UserService) CreateUserService(cx context.Context, u models.UserRegiste
 	if validationsErr := u.Isvalid(); validationsErr != nil {
 		return validationsErr
 	}
-	hashedPass, hashErr := bcrypt.GenerateFromPassword([]byte(u.Password), bcrypt.DefaultCost)
+	hashedPass, hashErr := utils.GenerateHashPassword(u.Password)
 	if hashErr != nil {
 		return customerrors.ErrInternalError
 	}
@@ -113,11 +113,15 @@ func (s *UserService) ChangePasswordService(cx context.Context, userID int, curr
 	if fetchErr != nil {
 		return fetchErr
 	}
-	if compareErr := bcrypt.CompareHashAndPassword([]byte(currentPassHash), []byte(currentPass)); compareErr != nil {
-		fmt.Println("not a match")
-		return customerrors.ErrIncorrectPassword
+	match, err := utils.VerifyPassword(currentPassHash, currentPass)
+	if err != nil {
+		return customerrors.ErrInternalError
 	}
-	newPassHash, hashErr := bcrypt.GenerateFromPassword([]byte(newPass), bcrypt.DefaultCost)
+	if !match {
+		return customerrors.ErrIncorrectPassword //401
+	}
+
+	newPassHash, hashErr := utils.GenerateHashPassword(newPass)
 	if hashErr != nil {
 		return customerrors.ErrInternalError
 	}
@@ -139,9 +143,12 @@ func (s *UserService) AuthenticateUserService(cx context.Context, u models.UserL
 	if user.Role == "blocked" {
 		return nil, customerrors.ErrForbidden
 	}
-	compareErr := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(u.Password))
-	if compareErr != nil {
-		return nil, customerrors.ErrInvalidLogin
+	match, err := utils.VerifyPassword(user.Password, u.Password)
+	if err != nil {
+		return nil, customerrors.ErrInternalError
+	}
+	if !match {
+		return nil, customerrors.ErrInvalidLogin //401?
 	}
 	session, sessionErr := s.sessionRepo.CreateSession(cx, user.ID)
 	if sessionErr != nil {
