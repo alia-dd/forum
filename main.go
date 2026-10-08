@@ -71,8 +71,8 @@ func main() {
 	categoryHandler := handlers.NewCategoryHandler(categoryRepo)
 	commentHandler := handlers.NewCommentHandler(commentRepo)
 
-	searchRepo := repository.NewSearchRepository(db)
-	searchHandler := handlers.NewSearchHandler(searchRepo)
+	// searchRepo := repository.NewSearchRepository(db)
+	// searchHandler := handlers.NewSearchHandler(searchRepo)
 
 	mux.Handle("GET /static/",
 		http.StripPrefix("/static/",
@@ -104,7 +104,7 @@ func main() {
 
 	mux.HandleFunc("GET /admin/users", middleware.Recoverer(middleware.Admin(sessionRepo, userRepo, userHandler.GetAdminUserTable)))
 	mux.HandleFunc("GET /admin/posts", middleware.Recoverer(middleware.Admin(sessionRepo, userRepo, userHandler.GetAdminPostTable)))
-	mux.HandleFunc("GET /admin/comments", middleware.Recoverer(middleware.Admin(sessionRepo, userRepo, userHandler.GetAdminCommentTable)))
+	// mux.HandleFunc("GET /admin/comments", middleware.Recoverer(middleware.Admin(sessionRepo, userRepo, userHandler.GetAdminCommentTable)))
 	mux.HandleFunc("GET /admin/categories", middleware.Recoverer(middleware.Admin(sessionRepo, userRepo, userHandler.GetCategoryTable)))
 
 	mux.HandleFunc("POST /admin/users/action", middleware.Recoverer(middleware.Admin(sessionRepo, userRepo, userHandler.PostAdminUserAction)))
@@ -175,7 +175,7 @@ func main() {
 
 	mux.HandleFunc("GET /post/{postID}/comment/{commentID}/replies", middleware.Recoverer(middleware.AllowGuest(sessionRepo, userRepo, commentHandler.GetCommentReplies)))
 
-	mux.HandleFunc("GET /search", middleware.Recoverer(middleware.AllowGuest(sessionRepo, userRepo, searchHandler.Search)))
+	// mux.HandleFunc("GET /search", middleware.Recoverer(middleware.AllowGuest(sessionRepo, userRepo, searchHandler.Search)))
 
 	server := &http.Server{
 		Addr:         ":8080",

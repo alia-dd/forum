@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"strings"
 
 	customerrors "gitea.kood.tech/jyrkikarhunen/forum/errors"
@@ -253,6 +254,7 @@ func (r *postRepositoryImpl) DeletePost(ctx context.Context, id, authorID int) e
 			WHERE parent_post_id = ?)
 		`, id).Scan(&hasComments)
 	if err != nil {
+		fmt.Println("here1")
 		return customerrors.MapSQLError(err)
 	}
 
@@ -270,17 +272,20 @@ func (r *postRepositoryImpl) DeletePost(ctx context.Context, id, authorID int) e
 			`, id, authorID)
 	}
 	if err != nil {
+		fmt.Println("here2")
 		return customerrors.MapSQLError(err)
 	}
 
 	rowCount, err := res.RowsAffected()
 	if err != nil {
+		fmt.Println("here3")
 		return customerrors.MapSQLError(err)
 	}
 
 	if rowCount == 0 {
+		fmt.Println("here4")
 		return customerrors.ErrNotFound
 	}
-
+	fmt.Println("here4")
 	return nil
 }

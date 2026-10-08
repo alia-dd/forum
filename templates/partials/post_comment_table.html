@@ -11,7 +11,7 @@
   </thead>
   <tbody>
     {{range $posts}}
-    <tr>
+    <tr {{if .Deleted}}class="deleted" {{end}}>
         <td class="admin-table-user">{{.Post.ID}}</td>
         <td class="admin-table-email">{{.AuthorName}}</td>
         <td class="admin-table-user">{{.Post.Title}}</td>
@@ -20,7 +20,7 @@
           onclick="event.preventDefault()"
           hx-get="/admin/confirmation"
           hx-trigger="click"
-          hx-vals='{"action":"delete","id":{{.Post.ID}},"ActionType":"postAction"}'
+          hx-vals='{"action":"delete","id":{{.Post.ID}},"user_id":{{.Post.UserID}},"ActionType":"postAction"}'
           hx-target="#cfm_diologe"
           hx-swap="innerHTML" 
           type="button" class="btn--icon" aria-label="Delete user">
@@ -38,8 +38,9 @@
 
 
 
-{{define "comment_table"}}
+<!-- {{define "comment_table"}}
 {{$comments := .PageContent.Comments}}
+
 <table class="admin-table" >
   <thead>
     <tr>
@@ -73,4 +74,4 @@
     {{end}}
   </tbody>
 </table>
-{{end}}
+{{end}} -->
