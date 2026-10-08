@@ -1,22 +1,48 @@
 {{define "content"}}
-<section >
-      <div class="admin_layout">
-            {{template "panel_nav"}}
-             <div id="cfm_diologe"></div>
-            <div class="content_layout">
-                  {{if eq .PageContent.Section "User Table"}}
-                        {{template "user_table" .}}
-                  {{end}}
-                  {{if eq .PageContent.Section "Post Table"}}
-                        {{template "post_table" .}}
-                   {{end}}
-                  {{if eq .PageContent.Section "Comment Table"}}
-                        {{template "comment_table" .}}
-                   {{end}}
-                   {{if eq .PageContent.Section "Category Table"}}
-                        {{template "category_table" .}}
-                   {{end}}
-            </div>
-      </div>
+<section>
+    <div class="admin_layout">
+
+        {{template "panel_nav"}}
+
+        <div id="cfm_diologe"></div>
+
+        {{if or
+            (eq .PageContent.Section "User Table")
+            (eq .PageContent.Section "Post Table")
+            (eq .PageContent.Section "Comment Table")
+        }}
+      <form
+            method="GET"
+            action="{{.PageContent.SearchPath}}"
+            >
+            <input
+                  type="search"
+                  name="q"
+                  value="{{.PageContent.Query}}"
+                  placeholder="Search..."
+            >
+            <button type="submit">Search</button>
+      </form>
+        {{end}}
+
+        <div id="admin-content" class="content_layout">
+            {{if eq .PageContent.Section "User Table"}}
+                {{template "user_table" .}}
+            {{end}}
+
+            {{if eq .PageContent.Section "Post Table"}}
+                {{template "post_table" .}}
+            {{end}}
+
+            {{if eq .PageContent.Section "Comment Table"}}
+                {{template "comment_table" .}}
+            {{end}}
+
+            {{if eq .PageContent.Section "Category Table"}}
+                {{template "category_table" .}}
+            {{end}}
+        </div>
+
+    </div>
 </section>
 {{end}}

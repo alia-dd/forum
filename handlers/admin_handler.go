@@ -19,15 +19,20 @@ func (h *UseHandler) GetAdminUserTable(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	usersData, err := h.service.GetAllUsersService(cx)
+	q := r.URL.Query().Get("q")
+
+	usersData, err := h.searchRep.SearchAdminUsers(cx, q)
 	pageData := models.PageData[MainPage]{
 		User: user,
 		PageContent: MainPage{
-			Section: "User Table",
-			Users:   usersData,
+			Section:    "User Table",
+			SearchPath: "/admin/users",
+			Query:      q,
+			Users:      usersData,
 		},
 	}
 	if err != nil {
+		fmt.Println(err)
 		handleError(w, r, err)
 		return
 	}
@@ -112,15 +117,27 @@ func (h *UseHandler) GetAdminPostTable(w http.ResponseWriter, r *http.Request) {
 		handleError(w, r, customerrors.ErrForbidden)
 		return
 	}
-	posts, err := h.postRep.GetPost(cx, models.PostFilter{}, -1)
+	q := r.URL.Query().Get("q")
+
+	var posts []*models.PostView
+	var err error
+	if q != "" {
+		posts, err = h.searchRep.SearchAdminPosts(cx, createFTSQuery(q))
+	} else {
+		posts, err = h.postRep.GetPost(cx, models.PostFilter{}, -1)
+	}
+
 	pageData := models.PageData[MainPage]{
 		User: user,
 		PageContent: MainPage{
-			Section: "Post Table",
-			Posts:   posts,
+			Section:    "Post Table",
+			SearchPath: "/admin/posts",
+			Query:      q,
+			Posts:      posts,
 		},
 	}
 	if err != nil {
+		fmt.Println(err)
 		handleError(w, r, err)
 		return
 	}

@@ -123,3 +123,78 @@ func (r *SearchRepository) SearchComments(ctx context.Context, term string, sort
 	}
 	return result, rows.Err()
 }
+
+func (r *SearchRepository) SearchAdminUsers(ctx context.Context, search string) ([]models.AdminUserInfo, error) {
+	searchArg := "%" + search + "%"
+	prefixArg := search + "%"
+
+	rows, err := r.db.QueryContext(ctx, `
+			SELECT id, username, email, role, COALESCE(imagepath, '')
+			FROM user
+			WHERE username LIKE ?
+			ORDER BY
+				CASE
+					WHEN username LIKE ? THEN 0
+					ELSE 1
+				END,
+				username
+			`, searchArg, prefixArg)
+	if err != nil {
+		return nil, customerrors.MapSQLError(err)
+	}
+	defer rows.Close()
+
+	result := []models.AdminUserInfo{}
+	for rows.Next() {
+		var ur models.AdminUserInfo
+		err := rows.Scan(&ur.Id, &ur.Username, &ur.Email, &ur.Role, &ur.Image)
+		if err != nil {
+			return nil, customerrors.MapSQLError(err)
+		}
+		result = append(result, ur)
+	}
+	return result, rows.Err()
+}
+
+func (r *SearchRepository) SearchAdminPosts(ctx context.Context, term string) ([]*models.PostView, error) {
+	orderBy := "bm25(post_fts, 10.0, 1.0), post.created_at DESC"
+
+	query := fmt.Sprintf(`
+		SELECT post.id, post.user_id, post.title, post.content, post.created_at, post.updated_at, user.username,
+		(SELECT COUNT(*) FROM post_like WHERE post_like.post_id = post.id AND post_like.value = 1)  AS like_count,
+			(SELECT COUNT(*) FROM post_like WHERE post_like.post_id = post.id AND post_like.value = -1) AS dislike_count,
+			(SELECT COUNT(*) FROM comment   WHERE comment.parent_post_id = post.id)                     AS comment_count
+		FROM post_fts
+		JOIN post ON post.id = post_fts.rowid
+		JOIN user ON user.id = post.user_id
+		WHERE post_fts MATCH ?
+		ORDER BY %s
+		`, orderBy)
+
+	rows, err := r.db.QueryContext(ctx, query, term)
+	if err != nil {
+		return nil, customerrors.MapSQLError(err)
+	}
+	defer rows.Close()
+
+	result := []*models.PostView{}
+	for rows.Next() {
+		pv := &models.PostView{}
+		if err := rows.Scan(
+			&pv.Post.ID,
+			&pv.Post.UserID,
+			&pv.Post.Title,
+			&pv.Post.Content,
+			&pv.Post.CreatedAt,
+			&pv.Post.UpdatedAt,
+			&pv.AuthorName,
+			&pv.LikeCount,
+			&pv.DislikeCount,
+			&pv.CommentCount,
+		); err != nil {
+			return nil, customerrors.MapSQLError(err)
+		}
+		result = append(result, pv)
+	}
+	return result, rows.Err()
+}
