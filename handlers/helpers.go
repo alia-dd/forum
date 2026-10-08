@@ -253,6 +253,9 @@ func validSearchLength(s string) bool {
 // otherwise escape quotes to avoid FTS5 searches triggering 500 (really really annoying to separate those from generic SQL errors)
 func createFTSQuery(term string) string {
 	term = strings.TrimSpace(term)
+	if term == "" {
+		return ""
+	}
 
 	if term[0] == '"' && term[len(term)-1] == '"' {
 		return quoteFTSTerm(term, false)
