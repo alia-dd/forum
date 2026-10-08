@@ -9,10 +9,4 @@
   </p>
   <button type="submit">{{if $id}}Save{{else}}Create{{end}}</button>
 </form>
-
-{{if $id}}
-<form method="POST" action="/category/{{$id}}/delete">
-  <button type="submit">Delete</button>
-</form>
-{{end}}
 {{end}}

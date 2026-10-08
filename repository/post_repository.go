@@ -272,7 +272,7 @@ func (r *postRepositoryImpl) DeletePost(ctx context.Context, id, authorID int) e
 			`, id, authorID)
 	}
 	if err != nil {
-		fmt.Println("here2")
+		fmt.Println("here2", err)
 		return customerrors.MapSQLError(err)
 	}
 

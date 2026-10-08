@@ -24,17 +24,12 @@
         <td class="admin-table-email">
             <a href="/category/{{.ID}}/edit" class="btn--icon" aria-label="Edit category"><i class="ph ph-pencil-simple"></i></a>
         </td>
-        <!-- <td class="admin-table-actions">
-            <form method="POST" action="/category/{{.ID}}/delete" onsubmit="return confirm('Delete this category?')">
-            <button type="submit" class="btn--icon" aria-label="Delete category"><i class="ph ph-trash"></i></button>
-            </form>
-        </td> -->
         <td class="admin-table-actions">
             <button
               onclick="event.preventDefault()"
               hx-get="/admin/confirmation"
               hx-trigger="click"
-              hx-vals='{"action":"delete","id":{{.ID}},"user_id":"","ActionType":"categoryAction"}'
+              hx-vals='{"action":"delete","id":{{.ID}},"user_id":"0","ActionType":"categoryAction"}'
               hx-target="#cfm_diologe"
               hx-swap="innerHTML" 
               type="button" class="btn--icon" aria-label="Delete user">

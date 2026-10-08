@@ -45,7 +45,7 @@ func (h *UseHandler) GetConfirmUserAction(w http.ResponseWriter, r *http.Request
 	id, idErr := strconv.Atoi(r.URL.Query().Get("id"))
 	userId, _ := strconv.Atoi(r.URL.Query().Get("user_id"))
 	action := r.URL.Query().Get("action")
-	actionType := r.URL.Query().Get("ActionType")
+	actionType := r.FormValue("ActionType")
 	if idErr != nil || (action != "role" && action != "block" && action != "delete") {
 
 		fmt.Println("idErr", idErr)
@@ -59,34 +59,39 @@ func (h *UseHandler) GetConfirmUserAction(w http.ResponseWriter, r *http.Request
 			User_id    int
 			Action     string
 			ActionType string
-			Error      error
-		}{id, userId, action, actionType, nil})
+			Error      string
+		}{id, userId, action, actionType, ""})
+}
+func confirmFormError(w http.ResponseWriter, id, userId int, action, actionType, errormgs string) {
+
+	w.Header().Set("HX-Retarget", "#cfm_diologe")
+	w.Header().Set("HX-Reswap", "innerHTML")
+	utils.RenderPartial(w, http.StatusOK, "confirm_secret",
+		struct {
+			ID         int
+			User_id    int
+			Action     string
+			ActionType string
+			Error      string
+		}{id, userId, action, actionType, errormgs})
 }
 
 func (h *UseHandler) PostAdminUserAction(w http.ResponseWriter, r *http.Request) {
 	cx := r.Context()
-	fmt.Println(">1")
 	user, ok := r.Context().Value("user_session").(*models.UserInfo)
 	if !ok || user.Role != "admin" {
-		fmt.Println(">2")
 		handleError(w, r, customerrors.ErrForbidden)
 		return
 	}
 	cfm_secter := r.FormValue("cfm_secter")
 	userId, _ := strconv.Atoi(r.FormValue("user_id"))
 	action := r.FormValue("action")
-	actionType := r.URL.Query().Get("ActionType")
-	// check here
-	fmt.Println(">>", userId, action, cfm_secter)
+	actionType := r.FormValue("ActionType")
+
+	fmt.Println(">>", userId, action, cfm_secter, actionType)
 
 	if cfm_secter != "12345" {
-		utils.RenderPartial(w, http.StatusOK, "confirm_secret", struct {
-			ID         int
-			User_id    int
-			Action     string
-			ActionType string
-			Error      string
-		}{-1, userId, action, actionType, "Incorrect confermation secret"})
+		confirmFormError(w, 0, userId, action, actionType, "Incorrect confermation secret")
 		return
 	}
 
@@ -96,8 +101,7 @@ func (h *UseHandler) PostAdminUserAction(w http.ResponseWriter, r *http.Request)
 	pageData := models.PageData[MainPage]{
 		User: user,
 		PageContent: MainPage{
-			Section: "User Table",
-			Users:   usersData,
+			Users: usersData,
 		},
 	}
 	if err != nil {
@@ -147,18 +151,12 @@ func (h *UseHandler) PostAdminPostrAction(w http.ResponseWriter, r *http.Request
 	postId, _ := strconv.Atoi(r.FormValue("id"))
 	userId, _ := strconv.Atoi(r.FormValue("user_id"))
 	action := r.FormValue("action")
-	actionType := r.URL.Query().Get("ActionType")
+	actionType := r.FormValue("ActionType")
 	// check here
-	fmt.Println(postId, userId, action, cfm_secter)
+	fmt.Println(">>", userId, action, cfm_secter, actionType)
 
 	if cfm_secter != "12345" {
-		utils.RenderPartial(w, http.StatusOK, "confirm_secret", struct {
-			ID         int
-			User_id    int
-			Action     string
-			ActionType string
-			Error      string
-		}{-1, userId, action, actionType, "Incorrect confermation secret"})
+		confirmFormError(w, postId, userId, action, actionType, "Incorrect confermation secret")
 		return
 	}
 
@@ -168,8 +166,7 @@ func (h *UseHandler) PostAdminPostrAction(w http.ResponseWriter, r *http.Request
 	pageData := models.PageData[MainPage]{
 		User: user,
 		PageContent: MainPage{
-			Section: "Post Table",
-			Posts:   posts,
+			Posts: posts,
 		},
 	}
 	if err != nil {
