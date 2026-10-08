@@ -1,19 +1,40 @@
 {{define "content"}}
-<section >
-      <div class="admin_layout">
-            {{template "panel_nav"}}
-             <div id="cfm_diologe"></div>
-            <div class="content_layout" id="admin_content">
-                  {{if eq .PageContent.Section "User Table"}}
-                        {{template "user_table" .}}
+<section>
+    <div class="admin_layout">
+
+        {{template "panel_nav"}}
+
+        <div id="cfm_diologe"></div>
+        
+        <div class="content_layout">
+                  {{if or
+                        (eq .PageContent.Section "User Table")
+                        (eq .PageContent.Section "Post Table")
+                        (eq .PageContent.Section "Comment Table")
+                  }}
+                        <form method="GET" action="{{.PageContent.SearchPath}}" class="admin-search">
+                              <label class="admin-search_field">
+                                    <i class="ph ph-magnifying-glass admin-search_icon"></i>
+                                    <input type="search" name="q" value="{{.PageContent.Query}}"  placeholder="Search..." >
+                              </label>
+                              <button type="submit">Search</button>
+                        </form>
                   {{end}}
-                  {{if eq .PageContent.Section "Post Table"}}
+                  <div id="admin-content" class="content_layout">
+                              
+                        {{if eq .PageContent.Section "User Table"}}
+                        {{template "user_table" .}}
+                        {{end}}
+
+                        {{if eq .PageContent.Section "Post Table"}}
                         {{template "post_table" .}}
-                   {{end}}
-                   {{if eq .PageContent.Section "Category Table"}}
+                        {{end}}
+
+                        {{if eq .PageContent.Section "Category Table"}}
                         {{template "category_table" .}}
-                   {{end}}
+                        {{end}}
+                  </div>
             </div>
-      </div>
+    </div>
 </section>
 {{end}}

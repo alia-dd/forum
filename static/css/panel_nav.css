@@ -1,6 +1,6 @@
 .panel-nav {
     position: sticky;
-    top: 1.5rem;
+    top: 9rem;
     width: 12rem;
     height: 25rem;
     flex-shrink: 0;
@@ -49,6 +49,7 @@
     align-items: flex-start;
     gap: 1.5rem;
     padding: 1.5rem 2rem;
+    margin-top: 1rem;
 }
  
 .content_layout {

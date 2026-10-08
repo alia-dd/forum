@@ -253,21 +253,28 @@ func validSearchLength(s string) bool {
 // otherwise escape quotes to avoid FTS5 searches triggering 500 (really really annoying to separate those from generic SQL errors)
 func createFTSQuery(term string) string {
 	term = strings.TrimSpace(term)
+	if term == "" {
+		return ""
+	}
 
 	if term[0] == '"' && term[len(term)-1] == '"' {
-		return quoteFTSTerm(term)
+		return quoteFTSTerm(term, false)
 	}
 
 	words := strings.Fields(term)
 	for i, word := range words {
-		words[i] = quoteFTSTerm(word)
+		words[i] = quoteFTSTerm(word, true)
 	}
 
 	return strings.Join(words, " ")
 }
 
-func quoteFTSTerm(word string) string {
-	return `"` + strings.ReplaceAll(word, `"`, `""`) + `"`
+func quoteFTSTerm(word string, addWildcard bool) string {
+	ret := `"` + strings.ReplaceAll(word, `"`, `""`) + `"`
+	if addWildcard {
+		ret += "*"
+	}
+	return ret
 }
 
 func parseID(r *http.Request, key string) (int, error) {

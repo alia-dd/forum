@@ -4,7 +4,7 @@
         {{if eq .ActionType "userAction" }}  hx-post="/admin/users/action" {{end}}
         {{if eq .ActionType "postAction" }}  hx-post="/admin/post/action" {{end}}
         {{if eq .ActionType "categoryAction" }}  hx-post="/category/{{.ID}}/delete" {{end}}
-        hx-target="#admin_content"
+        hx-target="#admin-content"
         hx-swap="innerHTML" 
         autocomplete="off"
         style="display:inline">

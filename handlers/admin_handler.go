@@ -19,15 +19,20 @@ func (h *UseHandler) GetAdminUserTable(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	usersData, err := h.service.GetAllUsersService(cx)
+	q := r.URL.Query().Get("q")
+
+	usersData, err := h.searchRep.SearchAdminUsers(cx, q)
 	pageData := models.PageData[MainPage]{
 		User: user,
 		PageContent: MainPage{
-			Section: "User Table",
-			Users:   usersData,
+			Section:    "User Table",
+			SearchPath: "/admin/users",
+			Query:      q,
+			Users:      usersData,
 		},
 	}
 	if err != nil {
+		fmt.Println(err)
 		handleError(w, r, err)
 		return
 	}
@@ -40,16 +45,14 @@ func (h *UseHandler) GetConfirmUserAction(w http.ResponseWriter, r *http.Request
 		handleError(w, r, customerrors.ErrForbidden)
 		return
 	}
-	fmt.Println(r.URL.Query().Get("id"), r.URL.Query().Get("user_id"), r.URL.Query().Get("action"), r.URL.Query().Get("ActionType"))
 
 	id, idErr := strconv.Atoi(r.URL.Query().Get("id"))
-	userId, _ := strconv.Atoi(r.URL.Query().Get("user_id"))
+	userId, userErr := strconv.Atoi(r.URL.Query().Get("user_id"))
 	action := r.URL.Query().Get("action")
 	actionType := r.FormValue("ActionType")
-	if idErr != nil || (action != "role" && action != "block" && action != "delete") {
 
-		fmt.Println("idErr", idErr)
-		// fmt.Println("userIdErr", userIdErr)
+	if idErr != nil || userErr != nil || (action != "role" && action != "block" && action != "delete" && actionType != "userAction" && actionType != "postAction" && actionType != "categoryAction") {
+		fmt.Println(r.URL.Query().Get("id"), r.URL.Query().Get("user_id"), r.URL.Query().Get("action"), r.URL.Query().Get("ActionType"))
 		handleError(w, r, customerrors.ErrBadRequest)
 		return
 	}
@@ -77,12 +80,14 @@ func confirmFormError(w http.ResponseWriter, id, userId int, action, actionType,
 }
 
 func (h *UseHandler) PostAdminUserAction(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("in")
 	cx := r.Context()
 	user, ok := r.Context().Value("user_session").(*models.UserInfo)
 	if !ok || user.Role != "admin" {
 		handleError(w, r, customerrors.ErrForbidden)
 		return
 	}
+
 	cfm_secter := r.FormValue("cfm_secter")
 	userId, _ := strconv.Atoi(r.FormValue("user_id"))
 	action := r.FormValue("action")
@@ -113,6 +118,7 @@ func (h *UseHandler) PostAdminUserAction(w http.ResponseWriter, r *http.Request)
 		handleError(w, r, updateErr)
 		return
 	}
+	fmt.Println("here")
 	utils.RenderPartial(w, http.StatusOK, "user_table", pageData)
 	w.Write([]byte(`<div id="cfm_diologe" hx-swap-oob="true"></div>`))
 }
@@ -124,15 +130,27 @@ func (h *UseHandler) GetAdminPostTable(w http.ResponseWriter, r *http.Request) {
 		handleError(w, r, customerrors.ErrForbidden)
 		return
 	}
-	posts, err := h.postRep.GetPost(cx, models.PostFilter{}, -1)
+	q := r.URL.Query().Get("q")
+
+	var posts []*models.PostView
+	var err error
+	if q != "" {
+		posts, err = h.searchRep.SearchAdminPosts(cx, createFTSQuery(q))
+	} else {
+		posts, err = h.postRep.GetPost(cx, models.PostFilter{}, -1)
+	}
+
 	pageData := models.PageData[MainPage]{
 		User: user,
 		PageContent: MainPage{
-			Section: "Post Table",
-			Posts:   posts,
+			Section:    "Post Table",
+			SearchPath: "/admin/posts",
+			Query:      q,
+			Posts:      posts,
 		},
 	}
 	if err != nil {
+		fmt.Println(err)
 		handleError(w, r, err)
 		return
 	}
