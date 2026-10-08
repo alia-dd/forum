@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	customerrors "gitea.kood.tech/jyrkikarhunen/forum/errors"
-	"golang.org/x/crypto/bcrypt"
+	"gitea.kood.tech/jyrkikarhunen/forum/utils"
 )
 
 // LLM nonsense(?)
@@ -41,7 +41,7 @@ func SeedData(db *sql.DB) error {
 
 	// --- users ---
 
-	hashedPass, hashErr := bcrypt.GenerateFromPassword([]byte("1234abcd?Really"), bcrypt.DefaultCost)
+	hashedPass, hashErr := utils.GenerateHashPassword("1234abcd?Really")
 	if hashErr != nil {
 		return customerrors.ErrInternalError
 	}

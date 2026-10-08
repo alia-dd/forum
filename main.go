@@ -65,14 +65,14 @@ func main() {
 	userService := service.NewUserService(userRepo, sessionRepo)
 	reactService := service.NewReactionService(reactRepo)
 
+	searchRepo := repository.NewSearchRepository(db)
+	searchHandler := handlers.NewSearchHandler(searchRepo)
+
 	reactHandler := handlers.NewReactionHandler(reactService, postRepo, commentRepo)
-	userHandler := handlers.NewUserHandler(userService, postRepo, commentRepo, categoryRepo)
+	userHandler := handlers.NewUserHandler(userService, postRepo, commentRepo, categoryRepo, *searchRepo)
 	postHandler := handlers.NewPostHandler(postRepo, categoryRepo, commentRepo)
 	categoryHandler := handlers.NewCategoryHandler(categoryRepo)
 	commentHandler := handlers.NewCommentHandler(commentRepo)
-
-	searchRepo := repository.NewSearchRepository(db)
-	searchHandler := handlers.NewSearchHandler(searchRepo)
 
 	mux.Handle("GET /static/",
 		http.StripPrefix("/static/",
