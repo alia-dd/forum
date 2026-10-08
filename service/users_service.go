@@ -34,9 +34,13 @@ func (s *UserService) CreateUserService(cx context.Context, u models.UserRegiste
 	return s.repo.RegisterUser(cx, u)
 }
 
-// register new use
 func (s *UserService) GetUserService(cx context.Context, username string) (models.PublicUserInfo, error) {
 	return s.repo.FetchUserDataByUserName(cx, username)
+}
+
+// fetch all user
+func (s *UserService) GetAllUsersService(cx context.Context) ([]models.AdminUserInfo, error) {
+	return s.repo.FetchUsers(cx)
 }
 
 // patch user
@@ -67,6 +71,43 @@ func (s *UserService) UpdateUserService(cx context.Context, u models.UserUpdate)
 	return s.repo.UpdateUserData(cx, u)
 }
 
+func (s *UserService) UpdateUserRoleService(cx context.Context, action string, user_id int) error {
+	var err error
+
+	switch action {
+	case "role":
+		role := 0
+		userData, fetchErr := s.repo.FetchUserData(cx, user_id)
+		if fetchErr != nil {
+			return fetchErr
+		}
+		if userData.Role == "admin" || userData.Role == "blocked" {
+			role = 0
+		} else {
+			role = 700
+		}
+		fmt.Println(role)
+		err = s.repo.UpdateUserRole(cx, user_id, role)
+	case "block":
+		role := 5
+		userData, fetchErr := s.repo.FetchUserData(cx, user_id)
+		if fetchErr != nil {
+			return fetchErr
+		}
+		if userData.Role == "blocked" {
+			role = 0
+		}
+		fmt.Println(role)
+		err = s.repo.UpdateUserRole(cx, user_id, role)
+	case "delete":
+		err = s.repo.DeleteUser(cx, user_id)
+		fmt.Println(err)
+	default:
+		return fmt.Errorf("unknown user action: %s", action)
+	}
+	return err
+}
+
 func (s *UserService) ChangePasswordService(cx context.Context, userID int, currentPass, newPass string) error {
 	currentPassHash, fetchErr := s.repo.GetPasswordHash(cx, userID)
 	if fetchErr != nil {
@@ -94,6 +135,9 @@ func (s *UserService) AuthenticateUserService(cx context.Context, u models.UserL
 	user, fetchErr := s.repo.AuthenticateUser(cx, u.Username)
 	if fetchErr != nil {
 		return nil, fetchErr
+	}
+	if user.Role == "blocked" {
+		return nil, customerrors.ErrForbidden
 	}
 	compareErr := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(u.Password))
 	if compareErr != nil {

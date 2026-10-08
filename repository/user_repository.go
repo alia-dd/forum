@@ -11,15 +11,22 @@ import (
 )
 
 const (
-	RegisterUserQuery              = ` INSERT INTO user (username, name, email, imagepath, bio, password_hash) VALUES(?,?,?,?,?,?)`
-	fetchUserInfoQurrey            = ` SELECT  id, username, name, email, bio, imagepath, password_hash, created_at, updated_at  FROM user WHERE (username = ? or email = ?)`
-	fetchUserInfoByIdQurrey        = ` SELECT id, username, name, email, bio, imagepath FROM user WHERE id = ?`
-	fetchUserInfoByUsernameQurey   = ` SELECT id, username, name, ifnull(bio, ''), ifnull(imagepath, '')  FROM user WHERE username = ?`
-	UpdateUserByIdQuery            = ` UPDATE user SET updated_at = CURRENT_TIMESTAMP, `
-	DeleteUserQuery                = ` DELETE user WHERE id = ?`
+	RegisterUserQuery            = ` INSERT INTO user (username, name, email, bio, imagepath, password_hash) VALUES(?,?,?,?,?,?)`
+	fetchUserInfoQurrey          = ` SELECT id, username, name, email, ifnull(bio, ''), ifnull(imagepath, ''), password_hash, created_at, updated_at, role FROM user WHERE (username = ? or email = ?)`
+	fetchUserInfoByIdQurrey      = ` SELECT id, username, name, email, ifnull(imagepath, ''), ifnull(imagepath, ''), role FROM user WHERE id = ?`
+	fetchUserInfoByUsernameQurey = ` SELECT id, username, name, ifnull(bio, ''), ifnull(imagepath, '')  FROM user WHERE username = ?`
+
+	UpdateUserRoleByIdQuery = ` UPDATE user SET updated_at = CURRENT_TIMESTAMP, role = ? WHERE id = ?`
+
+	UpdateUserByIdQuery = ` UPDATE user SET updated_at = CURRENT_TIMESTAMP, `
+	DeleteUserQuery     = ` DELETE FROM user WHERE id = ?`
+
 	fetchPasswordHashQuery         = ` SELECT password_hash FROM user WHERE id = ?`
 	updatePasswordQuery            = ` UPDATE user SET  updated_at = CURRENT_TIMESTAMP, password_hash = ? WHERE id = ?`
 	checkAvailableExcludeUserQuery = ` SELECT EXISTS(SELECT 1 FROM user WHERE (username = ? or email = ?) AND id != ?)`
+
+	// admin specific
+	fetchAllUsersQurrey = ` SELECT  id, username, email, role, ifnull(imagepath, ''), created_at, updated_at  FROM user`
 )
 
 type UserRepository struct {
@@ -33,10 +40,7 @@ func NewUserRepository(db *sql.DB) *UserRepository {
 func (r *UserRepository) RegisterUser(cx context.Context, u models.UserRegister) error {
 	_, postErr := r.db.ExecContext(cx, RegisterUserQuery, u.Username, u.Name, u.Email, u.Image, u.Bio, u.Password)
 	if postErr != nil {
-		if strings.Contains(postErr.Error(), "UNIQUE constraint failed") {
-			return customerrors.ErrDuplicateEntry
-		}
-		return fmt.Errorf("failed to insert user  into table: %w", postErr)
+		return customerrors.MapSQLError(postErr)
 	}
 
 	return nil
@@ -46,24 +50,38 @@ func (r *UserRepository) RegisterUser(cx context.Context, u models.UserRegister)
 // this func is used for the login to authentica the profided use credentials
 func (r *UserRepository) AuthenticateUser(cx context.Context, col string) (models.UserInfo, error) {
 	var user models.UserInfo
-	fetchErr := r.db.QueryRowContext(cx, fetchUserInfoQurrey, col, col).Scan(&user.ID, &user.Username, &user.Name, &user.Email, &user.Bio, &user.Image, &user.Password, &user.CreatedAt, &user.UpdatedAt)
+	var role int
+	fetchErr := r.db.QueryRowContext(cx, fetchUserInfoQurrey, col, col).Scan(&user.ID, &user.Username, &user.Name, &user.Email, &user.Bio, &user.Image, &user.Password, &user.CreatedAt, &user.UpdatedAt, &role)
 	if fetchErr != nil {
-		if fetchErr == sql.ErrNoRows {
-			return user, customerrors.ErrInvalidLogin
-		}
-		return user, customerrors.ErrInternalError
+		return user, customerrors.MapSQLError(fetchErr)
+	}
+	switch role {
+	case 700:
+		user.Role = "admin"
+	case 5:
+		user.Role = "blocked"
+	default:
+		user.Role = "user"
+
 	}
 	return user, nil
 }
 
 func (r *UserRepository) FetchUserData(cx context.Context, userId int) (models.UserInfo, error) {
 	var user models.UserInfo
-	fetchErr := r.db.QueryRowContext(cx, fetchUserInfoByIdQurrey, userId).Scan(&user.ID, &user.Username, &user.Name, &user.Email, &user.Bio, &user.Image)
+	var role int
+	fetchErr := r.db.QueryRowContext(cx, fetchUserInfoByIdQurrey, userId).Scan(&user.ID, &user.Username, &user.Name, &user.Email, &user.Bio, &user.Image, &role)
 	if fetchErr != nil {
-		if fetchErr == sql.ErrNoRows {
-			return user, customerrors.ErrNotFound
-		}
-		return user, customerrors.ErrInternalError
+		return user, customerrors.MapSQLError(fetchErr)
+	}
+	switch role {
+	case 700:
+		user.Role = "admin"
+	case 5:
+		user.Role = "blocked"
+	default:
+		user.Role = "user"
+
 	}
 	return user, nil
 }
@@ -73,10 +91,7 @@ func (r *UserRepository) FetchUserDataByUserName(cx context.Context, username st
 	var user models.PublicUserInfo
 	fetchErr := r.db.QueryRowContext(cx, fetchUserInfoByUsernameQurey, username).Scan(&user.ID, &user.Username, &user.Name, &user.Bio, &user.Image)
 	if fetchErr != nil {
-		if fetchErr == sql.ErrNoRows {
-			return user, customerrors.ErrNotFound
-		}
-		return user, customerrors.ErrInternalError
+		return user, customerrors.MapSQLError(fetchErr)
 	}
 	return user, nil
 }
@@ -125,9 +140,20 @@ func (r *UserRepository) UpdateUserData(cx context.Context, user models.UserUpda
 	return nil
 }
 
+func (r *UserRepository) UpdateUserRole(cx context.Context, user_id, role int) error {
+
+	_, err := r.db.ExecContext(cx, UpdateUserRoleByIdQuery, role, user_id)
+	if err != nil {
+		return customerrors.MapSQLError(err)
+	}
+
+	return nil
+}
+
 func (r *UserRepository) DeleteUser(cx context.Context, userID int) error {
 	res, deleteErr := r.db.ExecContext(cx, DeleteUserQuery, userID)
 	if deleteErr != nil {
+		fmt.Println(deleteErr)
 		return customerrors.MapSQLError(deleteErr)
 	}
 	if rows, _ := res.RowsAffected(); rows == 0 {
@@ -174,4 +200,34 @@ func (r *UserRepository) CheckIfAvailableExcludeUser(cx context.Context, col str
 		return false, customerrors.MapSQLError(fetchErr)
 	}
 	return exist, nil
+}
+
+// admin specific query
+func (r *UserRepository) FetchUsers(cx context.Context) ([]models.AdminUserInfo, error) {
+	var users []models.AdminUserInfo
+
+	rows, fetchErr := r.db.QueryContext(cx, fetchAllUsersQurrey)
+	if fetchErr != nil {
+		fmt.Println("fetch", fetchErr)
+		return users, customerrors.MapSQLError(fetchErr)
+	}
+
+	for rows.Next() {
+		var user models.AdminUserInfo
+		err := rows.Scan(
+			&user.Id, &user.Username, &user.Email,
+			&user.Role, &user.Image, &user.CreatedAt, &user.UpdatedAt,
+		)
+
+		if err != nil {
+			fmt.Println("scan", fetchErr)
+			return nil, customerrors.MapSQLError(err)
+		}
+		users = append(users, user)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, customerrors.MapSQLError(err)
+	}
+
+	return users, nil
 }

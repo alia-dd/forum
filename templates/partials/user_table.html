@@ -1,0 +1,63 @@
+{{define "user_table"}}
+{{$users := .PageContent.Users}}
+<table class="admin-table" >
+  <thead>
+    <tr>
+      <th>User Name</th>
+      <th>Email</th>
+      <th>Admin</th>
+      <th>Blocked</th>
+      <th class="admin_Del">Delete</th>
+    </tr>
+  </thead>
+  <tbody>
+    {{range $users}}
+    <tr>
+      <td>
+        <div class="admin-table-user">
+            <img {{if .Image}} src="/static/assets/images/{{.Image}}" {{else}} src="/static/assets/images/avatar1.jpg" {{end}} alt="Avatar" class=" admin-table-avatar">
+            <span class="admin-table-username">{{.Username}}</span>
+        </div>
+      </td>
+      <td class="admin-table-email">{{.Email}}</td>
+      <td>
+        <label class="toggle">
+          <input type="checkbox" {{if eq .Role 700 }}checked{{end}}
+                onclick="event.preventDefault()"
+                hx-get="/admin/confirmation" 
+                hx-trigger="click"
+                hx-vals='{"action":"role","id":{{.Id}},"ActionType":"userAction"}'  
+                hx-target="#cfm_diologe" hx-swap="innerHTML">
+          <span class="toggle-track"></span>
+        </label>
+      </td>
+      <td>
+        <label class="toggle">
+          <input type="checkbox" {{if eq .Role 5 }}checked{{end}}
+                onclick="event.preventDefault()"
+                hx-get="/admin/confirmation" 
+                hx-trigger="click"
+                hx-vals='{"action":"block","id":{{.Id}},"ActionType":"userAction"}' 
+                hx-target="#cfm_diologe" hx-swap="innerHTML">
+          <span class="toggle-track"></span>
+        </label>
+      </td>
+      <td class="admin-table-actions">
+        <button
+          onclick="event.preventDefault()"
+          hx-get="/admin/confirmation"
+          hx-trigger="click"
+          hx-vals='{"action":"delete","id":{{.Id}},"ActionType":"userAction"}'
+          hx-target="#cfm_diologe"
+          hx-swap="innerHTML" 
+          type="button" class="btn--icon" aria-label="Delete user">
+            <i class="ph ph-trash"></i>
+          </button>
+      </td>
+    </tr>
+    {{else}}
+    <tr><td colspan="5">No users yet.</td></tr>
+    {{end}}
+  </tbody>
+</table>
+{{end}}

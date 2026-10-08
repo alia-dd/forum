@@ -1,0 +1,26 @@
+#page-error {
+  position: sticky;
+  top: var(--nav-h);
+  z-index: 90;
+  width: 100%;
+}
+
+.errorPartail {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.5rem 2rem;           
+  background: #f8e3e3;
+  color: var(--burgundy-dk);
+  border-top:  1px solid var(--burgundy);
+  border-bottom: 1px solid var(--burgundy);
+  font-family: var(--font-body);
+  font-weight: 500;
+}
+
+.errorPartail .errormsg {
+  flex: 1;
+  font-size: 1rem;
+}
+

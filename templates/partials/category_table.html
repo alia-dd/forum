@@ -1,0 +1,32 @@
+{{define "category_table"}}
+{{$categories := .PageContent.Categories}}
+<table class="admin-table" >
+  <thead>
+    <tr>
+      <th>Category Id</th>
+      <th>Name</th>
+      <th>Edit</th>
+      <th class="admin_Del">Delete</th>
+    </tr>
+  </thead>
+  <tbody>
+    {{range $categories}}
+    <tr>
+        <td class="admin-table-user">{{.ID}}</td>
+        <td class="admin-table-email">{{.Name}}</td>
+        <td class="admin-table-email">
+            <a href="/category/{{.ID}}/edit" class="btn--icon" aria-label="Edit category"><i class="ph ph-pencil-simple"></i></a>
+        </td>
+        <td class="admin-table-actions">
+            <form method="POST" action="/category/{{.ID}}/delete" onsubmit="return confirm('Delete this category?')">
+            <button type="submit" class="btn--icon" aria-label="Delete category"><i class="ph ph-trash"></i></button>
+            </form>
+        </td>
+
+    </tr>
+    {{else}}
+    <tr><td colspan="5">No Categories yet.</td></tr>
+    {{end}}
+  </tbody>
+</table>
+{{end}}

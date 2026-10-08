@@ -6,16 +6,20 @@ import (
 
 	customerrors "gitea.kood.tech/jyrkikarhunen/forum/errors"
 	"gitea.kood.tech/jyrkikarhunen/forum/models"
+	"gitea.kood.tech/jyrkikarhunen/forum/repository"
 	"gitea.kood.tech/jyrkikarhunen/forum/service"
 	"gitea.kood.tech/jyrkikarhunen/forum/utils"
 )
 
 type UseHandler struct {
-	service *service.UserService
+	service     *service.UserService
+	postRep     repository.PostRepository
+	commentRep  repository.CommentRepository
+	categoryRep repository.CategoryRepository
 }
 
-func NewUserHandler(service *service.UserService) *UseHandler {
-	return &UseHandler{service: service}
+func NewUserHandler(service *service.UserService, postRep repository.PostRepository, commentRep repository.CommentRepository, categoryRep repository.CategoryRepository) *UseHandler {
+	return &UseHandler{service: service, postRep: postRep, commentRep: commentRep, categoryRep: categoryRep}
 }
 
 func (h *UseHandler) GetRegisterUser(w http.ResponseWriter, r *http.Request) {

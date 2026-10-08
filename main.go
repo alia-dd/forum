@@ -66,7 +66,7 @@ func main() {
 	reactService := service.NewReactionService(reactRepo)
 
 	reactHandler := handlers.NewReactionHandler(reactService, postRepo, commentRepo)
-	userHandler := handlers.NewUserHandler(userService)
+	userHandler := handlers.NewUserHandler(userService, postRepo, commentRepo, categoryRepo)
 	postHandler := handlers.NewPostHandler(postRepo, categoryRepo, commentRepo)
 	categoryHandler := handlers.NewCategoryHandler(categoryRepo)
 	commentHandler := handlers.NewCommentHandler(commentRepo)
@@ -93,10 +93,22 @@ func main() {
 				return
 			}
 
+			fmt.Println("here")
 			(postHandler.GetPosts)(w, r)
 
 		}),
 	))
+
+	// admin panel
+	mux.HandleFunc("GET /admin/confirmation", middleware.Recoverer(middleware.Admin(sessionRepo, userRepo, userHandler.GetConfirmUserAction)))
+
+	mux.HandleFunc("GET /admin/users", middleware.Recoverer(middleware.Admin(sessionRepo, userRepo, userHandler.GetAdminUserTable)))
+	mux.HandleFunc("GET /admin/posts", middleware.Recoverer(middleware.Admin(sessionRepo, userRepo, userHandler.GetAdminPostTable)))
+	mux.HandleFunc("GET /admin/comments", middleware.Recoverer(middleware.Admin(sessionRepo, userRepo, userHandler.GetAdminCommentTable)))
+	mux.HandleFunc("GET /admin/categories", middleware.Recoverer(middleware.Admin(sessionRepo, userRepo, userHandler.GetCategoryTable)))
+
+	mux.HandleFunc("POST /admin/users/action", middleware.Recoverer(middleware.Admin(sessionRepo, userRepo, userHandler.PostAdminUserAction)))
+	mux.HandleFunc("POST /admin/post/action", middleware.Recoverer(middleware.Admin(sessionRepo, userRepo, userHandler.PostAdminPostrAction)))
 
 	// Profile page is user specific and is safeguarded by the Restrict middleware
 	// if there is no active session, it redirects to the login page.
@@ -135,15 +147,15 @@ func main() {
 	mux.HandleFunc("POST /post/{id}/delete", middleware.Recoverer(middleware.Restrict(sessionRepo, userRepo, postHandler.DeletePost)))
 
 	// GET /category/new - loads template (once implemented) for creating new category
-	mux.HandleFunc("GET /category/new", middleware.Recoverer(middleware.Restrict(sessionRepo, userRepo, categoryHandler.NewCategoryForm)))
+	mux.HandleFunc("GET /category/new", middleware.Recoverer(middleware.Admin(sessionRepo, userRepo, categoryHandler.NewCategoryForm)))
 	// POST /category/new - create category. Form: name
-	mux.HandleFunc("POST /category/new", middleware.Recoverer(middleware.Restrict(sessionRepo, userRepo, categoryHandler.CreateCategory)))
+	mux.HandleFunc("POST /category/new", middleware.Recoverer(middleware.Admin(sessionRepo, userRepo, categoryHandler.CreateCategory)))
 	// GET /category/{id}/edit - loads template (once implemented) for editing existing category
-	mux.HandleFunc("GET /category/{id}/edit", middleware.Recoverer(middleware.Restrict(sessionRepo, userRepo, categoryHandler.EditCategoryForm)))
+	mux.HandleFunc("GET /category/{id}/edit", middleware.Recoverer(middleware.Admin(sessionRepo, userRepo, categoryHandler.EditCategoryForm)))
 	// POST /category/{id}/edit - rename category. Form: name
-	mux.HandleFunc("POST /category/{id}/edit", middleware.Recoverer(middleware.Restrict(sessionRepo, userRepo, categoryHandler.UpdateCategory)))
+	mux.HandleFunc("POST /category/{id}/edit", middleware.Recoverer(middleware.Admin(sessionRepo, userRepo, categoryHandler.UpdateCategory)))
 	// POST /category/{id}/delete - delete category (if it has no references elsewhere)
-	mux.HandleFunc("POST /category/{id}/delete", middleware.Recoverer(middleware.Restrict(sessionRepo, userRepo, categoryHandler.DeleteCategory)))
+	mux.HandleFunc("POST /category/{id}/delete", middleware.Recoverer(middleware.Admin(sessionRepo, userRepo, categoryHandler.DeleteCategory)))
 
 	// POST /post/{id}/comment/create - for commenting
 	mux.HandleFunc("POST /post/{id}/comment/create", middleware.Recoverer(middleware.Restrict(sessionRepo, userRepo, commentHandler.CreateComment)))
@@ -176,7 +188,3 @@ func main() {
 
 	log.Fatal(server.ListenAndServe())
 }
-
-// self note
-// delete session after logout
-// is the session relly working needs more test

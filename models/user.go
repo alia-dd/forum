@@ -34,7 +34,18 @@ type UserInfo struct {
 	Image     string    `json:"imagePath,omitempty"`
 	Bio       string    `json:"bio,omitempty"`
 	Email     string    `json:"email,omitempty"`
+	Role      string    `json:"role,omitempty"`
 	Password  string    `json:"password,omitempty"`
+	CreatedAt time.Time `json:"createdat"`
+	UpdatedAt time.Time `json:"updatedat"`
+}
+
+type AdminUserInfo struct {
+	Id        int       `json:"user_id"`
+	Username  string    `json:"username"`
+	Email     string    `json:"email"`
+	Role      int       `json:"role"`
+	Image     string    `json:"imagePath"`
 	CreatedAt time.Time `json:"createdat"`
 	UpdatedAt time.Time `json:"updatedat"`
 }

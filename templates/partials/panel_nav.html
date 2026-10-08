@@ -1,0 +1,26 @@
+
+Panel nav · HTML
+{{define "panel_nav"}}
+<aside class="panel-nav" aria-label="Admin sections">
+  <a href="/admin/users" class="panel-nav_link">
+    <i class="ph ph-users panel-nav_icon"></i>Users
+  </a>
+  <a href="/admin/posts" class="panel-nav_link ">
+    <i class="ph ph-article panel-nav_icon"></i>Posts
+  </a>
+  <a href="/admin/comments" class="panel-nav_link ">
+    <i class="ph ph-chat-circle panel-nav_icon"></i>Comments
+  </a>
+  <a href="/admin/categories" class="panel-nav_link ">
+    <i class="ph ph-squares-four panel-nav_icon"></i>Categories
+  </a>
+</aside>
+<script>
+  document.querySelectorAll('.panel-nav_link').forEach(a => {
+    if (a.getAttribute('href') === location.pathname) a.classList.add('active')
+  })
+</script>
+{{end}}
+ 
+
+

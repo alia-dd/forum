@@ -4,8 +4,12 @@ import "gitea.kood.tech/jyrkikarhunen/forum/models"
 
 //todo: add user info
 type MainPage struct {
+	Section    string
 	Posts      []*models.PostView
 	Categories []models.Category
+	Users      []models.AdminUserInfo
+	Comments   []*models.CommentView
+	Category   []models.Category
 }
 
 type PostPage struct {

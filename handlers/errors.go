@@ -81,8 +81,15 @@ func handleError(w http.ResponseWriter, r *http.Request, err error) {
 		status = http.StatusInternalServerError
 	}
 
-	user, _ := r.Context().Value("user_session").(*models.UserInfo) //nil is fine, just to show top banner correctly
+	// this fixes the problem with rendering a partial error when using htmx
+	if r.Header.Get("HX-Request") == "true" {
+		w.Header().Set("HX-Retarget", "#page-error")
+		w.Header().Set("HX-Reswap", "innerHTML")
+		utils.RenderPartial(w, status, "partail_error", struct{ Error string }{message})
+		return
+	}
 
+	user, _ := r.Context().Value("user_session").(*models.UserInfo) //nil is fine, just to show top banner correctly
 	pageData := models.PageData[models.ErrorStruct]{
 		User: user,
 		PageContent: models.ErrorStruct{

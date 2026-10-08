@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"fmt"
 
 	"gitea.kood.tech/jyrkikarhunen/forum/models"
 	"gitea.kood.tech/jyrkikarhunen/forum/repository"
@@ -19,7 +18,6 @@ func NewReactionService(repo *repository.ReactionRepository) *ReactionService {
 func (rec *ReactionService) SetPostReact(cx context.Context, react models.Reaction) error {
 
 	val, fetchErr := rec.repo.GetPostReaction(cx, react)
-	fmt.Println("herre", val, fetchErr)
 	if fetchErr != nil {
 		return fetchErr
 	}
