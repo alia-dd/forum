@@ -22,6 +22,7 @@ type CommentView struct {
 	Replies      []CommentView
 	ReplyCount   int
 	IsOwner      bool
+	UserRole     string
 	IsLogged     bool
 	Deleted      bool
 	UserReaction int // user post Reaction value

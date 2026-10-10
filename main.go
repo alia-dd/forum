@@ -92,8 +92,6 @@ func main() {
 				utils.RenderTemplate(w, http.StatusNotFound, "error", pageData)
 				return
 			}
-
-			fmt.Println("here")
 			(postHandler.GetPosts)(w, r)
 
 		}),

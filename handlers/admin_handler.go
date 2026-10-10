@@ -32,7 +32,6 @@ func (h *UseHandler) GetAdminUserTable(w http.ResponseWriter, r *http.Request) {
 		},
 	}
 	if err != nil {
-		fmt.Println(err)
 		handleError(w, r, err)
 		return
 	}
@@ -80,7 +79,6 @@ func confirmFormError(w http.ResponseWriter, id, userId int, action, actionType,
 }
 
 func (h *UseHandler) PostAdminUserAction(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("in")
 	cx := r.Context()
 	user, ok := r.Context().Value("user_session").(*models.UserInfo)
 	if !ok || user.Role != "admin" {
@@ -92,8 +90,6 @@ func (h *UseHandler) PostAdminUserAction(w http.ResponseWriter, r *http.Request)
 	userId, _ := strconv.Atoi(r.FormValue("user_id"))
 	action := r.FormValue("action")
 	actionType := r.FormValue("ActionType")
-
-	fmt.Println(">>", userId, action, cfm_secter, actionType)
 
 	if cfm_secter != "12345" {
 		confirmFormError(w, 0, userId, action, actionType, "Incorrect confermation secret")
@@ -118,7 +114,6 @@ func (h *UseHandler) PostAdminUserAction(w http.ResponseWriter, r *http.Request)
 		handleError(w, r, updateErr)
 		return
 	}
-	fmt.Println("here")
 	utils.RenderPartial(w, http.StatusOK, "user_table", pageData)
 	w.Write([]byte(`<div id="cfm_diologe" hx-swap-oob="true"></div>`))
 }
@@ -150,7 +145,6 @@ func (h *UseHandler) GetAdminPostTable(w http.ResponseWriter, r *http.Request) {
 		},
 	}
 	if err != nil {
-		fmt.Println(err)
 		handleError(w, r, err)
 		return
 	}
@@ -171,14 +165,16 @@ func (h *UseHandler) PostAdminPostrAction(w http.ResponseWriter, r *http.Request
 	action := r.FormValue("action")
 	actionType := r.FormValue("ActionType")
 	// check here
-	fmt.Println(">>", userId, action, cfm_secter, actionType)
 
 	if cfm_secter != "12345" {
 		confirmFormError(w, postId, userId, action, actionType, "Incorrect confermation secret")
 		return
 	}
-
-	deleteErr := h.postRep.DeletePost(cx, postId, userId)
+	role := ""
+	if ok {
+		role = user.Role
+	}
+	deleteErr := h.postRep.DeletePost(cx, postId, userId, role)
 
 	posts, err := h.postRep.GetPost(cx, models.PostFilter{}, -1)
 	pageData := models.PageData[MainPage]{

@@ -3,12 +3,7 @@
 <div id="logindiv" >
   <form method="POST" action="{{if $id}}/category/{{$id}}/edit{{else}}/category/new{{end}}">
     <div class="title">{{if $id}}Edit category{{else}}New category{{end}}</div>
-
     
-     {{with .PageContent.Form.Errors.Name}}
-      <div class="error">{{.}}</div>
-    {{end}}
-
     <div class="inputContainer">
       <label for="name">Name</label>
       <div>
