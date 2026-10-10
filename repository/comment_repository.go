@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"fmt"
 
 	customerrors "gitea.kood.tech/jyrkikarhunen/forum/errors"
 	"gitea.kood.tech/jyrkikarhunen/forum/models"
@@ -17,9 +18,9 @@ type CommentRepository interface {
 	GetCommentsByPost(ctx context.Context, postID int, userID *int) ([]*models.CommentView, error)
 	GetCommentByID(ctx context.Context, comID int, curUserID *int) (*models.CommentView, error)
 	// // GetRepliesByComment(ctx context.Context, commentID, int, userID *int) (*models.CommentView, error)
-	UpdateCommentContent(ctx context.Context, commentID, userID int, content string) error
+	UpdateCommentContent(ctx context.Context, commentID, userID int, userRole, content string) error
 	CountByPost(ctx context.Context, postID int) (int, error)
-	DeleteComment(ctx context.Context, id, authorID int) error
+	DeleteComment(ctx context.Context, id, authorID int, userRole string) error
 	GetRepliesByCommentID(ctx context.Context, parentCommentID int, userID *int) ([]*models.CommentView, error)
 }
 
@@ -203,13 +204,17 @@ func (r *commentRepositoryImpl) GetCommentsByPost(ctx context.Context, postID in
 	return comments, nil
 }
 
-func (r *commentRepositoryImpl) UpdateCommentContent(ctx context.Context, commentID, userID int, content string) error {
-	res, err := r.db.ExecContext(ctx, `
-		UPDATE comment
-		SET content = ?, updated_at = CURRENT_TIMESTAMP
-		WHERE id = ? AND user_id = ?
-		`, content, commentID, userID)
+func (r *commentRepositoryImpl) UpdateCommentContent(ctx context.Context, commentID, userID int, userRole, content string) error {
+	arg := []any{content, commentID}
+	query := `UPDATE comment SET content = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`
+	if userRole != "admin" {
+		query += ` AND user_id = ?`
+		arg = append(arg, userID)
+	}
+
+	res, err := r.db.ExecContext(ctx, query, arg...)
 	if err != nil {
+		fmt.Println(err, query, arg)
 		return customerrors.MapSQLError(err)
 	}
 
@@ -235,7 +240,7 @@ func (r *commentRepositoryImpl) CountByPost(ctx context.Context, postID int) (in
 	return count, nil
 }
 
-func (r *commentRepositoryImpl) DeleteComment(ctx context.Context, id, authorID int) error {
+func (r *commentRepositoryImpl) DeleteComment(ctx context.Context, id, authorID int, userRole string) error {
 	var hasReplies bool
 	var err error
 	err = r.db.QueryRowContext(ctx, `
@@ -247,12 +252,16 @@ func (r *commentRepositoryImpl) DeleteComment(ctx context.Context, id, authorID 
 		return customerrors.MapSQLError(err)
 	}
 
+	arg := []any{id}
+
 	var res sql.Result
-	if !hasReplies {
-		res, err = r.db.ExecContext(ctx, `
-			DELETE FROM comment
-			WHERE id = ? AND user_id = ?
-			`, id, authorID)
+	if !hasReplies || userRole == "admin" {
+		query := `DELETE FROM comment WHERE id = ?`
+		if userRole != "admin" {
+			query += ` AND user_id = ?`
+			arg = append(arg, authorID)
+		}
+		res, err = r.db.ExecContext(ctx, query, arg...)
 	} else {
 		res, err = r.db.ExecContext(ctx, `
 			UPDATE comment
@@ -277,7 +286,7 @@ func (r *commentRepositoryImpl) DeleteComment(ctx context.Context, id, authorID 
 }
 
 func (r *commentRepositoryImpl) GetRepliesByCommentID(ctx context.Context, parentCommentID int, curUserID *int) ([]*models.CommentView, error) {
-    query := `
+	query := `
         SELECT
             c.id,
             c.user_id,
@@ -306,63 +315,63 @@ func (r *commentRepositoryImpl) GetRepliesByCommentID(ctx context.Context, paren
                 WHERE reply.parent_comment_id = c.id
             ) AS reply_count
         `
-    args := []any{}
+	args := []any{}
 
-    if curUserID != nil {
-        query += `, IFNULL((
+	if curUserID != nil {
+		query += `, IFNULL((
                 SELECT cl.value
                 FROM comment_like cl
                 WHERE cl.comment_id = c.id
                 AND cl.user_id = ?
             ), 0) AS user_reaction`
-        args = append(args, *curUserID)
-    } else {
-        query += `, 0 AS user_reaction`
-    }
+		args = append(args, *curUserID)
+	} else {
+		query += `, 0 AS user_reaction`
+	}
 
-    // Fetch comments belonging to this specific parent comment
-    query += `
+	// Fetch comments belonging to this specific parent comment
+	query += `
         FROM comment c
         JOIN user u ON u.id = c.user_id
         WHERE c.parent_comment_id = ?
         ORDER BY c.created_at ASC
         `
-    args = append(args, parentCommentID)
+	args = append(args, parentCommentID)
 
-    rows, err := r.db.QueryContext(ctx, query, args...)
-    if err != nil {
-        return nil, customerrors.MapSQLError(err)
-    }
-    defer rows.Close()
+	rows, err := r.db.QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, customerrors.MapSQLError(err)
+	}
+	defer rows.Close()
 
-    comments := []*models.CommentView{}
+	comments := []*models.CommentView{}
 
-    for rows.Next() {
-        var cv models.CommentView
-        var deletedAt sql.NullTime
+	for rows.Next() {
+		var cv models.CommentView
+		var deletedAt sql.NullTime
 
-        err := rows.Scan(
-            &cv.Comment.ID,
-            &cv.Comment.UserID,
-            &cv.Comment.ParentPostID,
-            &cv.Comment.ParentCommentID,
-            &cv.Comment.Content,
-            &cv.Comment.CreatedAt,
-            &cv.Comment.UpdatedAt,
-            &deletedAt,
-            &cv.AuthorName,
-            &cv.LikeCount,
-            &cv.DislikeCount,
-            &cv.ReplyCount,
+		err := rows.Scan(
+			&cv.Comment.ID,
+			&cv.Comment.UserID,
+			&cv.Comment.ParentPostID,
+			&cv.Comment.ParentCommentID,
+			&cv.Comment.Content,
+			&cv.Comment.CreatedAt,
+			&cv.Comment.UpdatedAt,
+			&deletedAt,
+			&cv.AuthorName,
+			&cv.LikeCount,
+			&cv.DislikeCount,
+			&cv.ReplyCount,
 			&cv.UserReaction,
-        )
-        if err != nil {
-            return nil, customerrors.MapSQLError(err)
-        }
+		)
+		if err != nil {
+			return nil, customerrors.MapSQLError(err)
+		}
 
-        cv.Deleted = deletedAt.Valid
+		cv.Deleted = deletedAt.Valid
 
-        cv.IsOwner = false
+		cv.IsOwner = false
 		cv.IsLogged = false
 
 		if curUserID != nil {
@@ -372,13 +381,13 @@ func (r *commentRepositoryImpl) GetRepliesByCommentID(ctx context.Context, paren
 			}
 		}
 
-        cv.Replies = []models.CommentView{}
-        comments = append(comments, &cv)
-    }
+		cv.Replies = []models.CommentView{}
+		comments = append(comments, &cv)
+	}
 
-    if err := rows.Err(); err != nil {
-        return nil, customerrors.MapSQLError(err)
-    }
+	if err := rows.Err(); err != nil {
+		return nil, customerrors.MapSQLError(err)
+	}
 
-    return comments, nil
+	return comments, nil
 }

@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -71,7 +72,7 @@ func (h *CategoryHandler) CreateCategory(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	http.Redirect(w, r, "/", http.StatusSeeOther)
+	http.Redirect(w, r, "/admin/categories", http.StatusSeeOther)
 }
 
 func (h *CategoryHandler) EditCategoryForm(w http.ResponseWriter, r *http.Request) {
@@ -150,21 +151,45 @@ func (h *CategoryHandler) UpdateCategory(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	http.Redirect(w, r, "/", http.StatusSeeOther)
+	http.Redirect(w, r, "/admin/categories", http.StatusSeeOther)
 }
 
 func (h *CategoryHandler) DeleteCategory(w http.ResponseWriter, r *http.Request) {
-	//admin validation
+	user, ok := r.Context().Value("user_session").(*models.UserInfo)
+	if !ok || user.Role != "admin" {
+		handleError(w, r, customerrors.ErrForbidden)
+		return
+	}
 	id, err := strconv.Atoi(r.PathValue("id"))
+	cfm_secter := r.FormValue("cfm_secter")
+	action := r.FormValue("action")
+	actionType := r.FormValue("ActionType")
+	fmt.Println(">", id)
 	if err != nil {
 		handleError(w, r, customerrors.ErrBadRequest)
 		return
 	}
-
+	if cfm_secter != "12345" {
+		confirmFormError(w, id, 0, action, actionType, "Incorrect confermation secret")
+		return
+	}
 	err = h.catRep.DeleteCategory(r.Context(), id)
 	if err != nil {
 		handleError(w, r, err)
 		return
 	}
-	http.Redirect(w, r, "/", http.StatusSeeOther)
+	categories, fetchErr := h.catRep.GetAllCategories(r.Context())
+	pageData := models.PageData[MainPage]{
+		User: user,
+		PageContent: MainPage{
+			Categories: categories,
+		},
+	}
+	if fetchErr != nil {
+		handleError(w, r, fetchErr)
+		return
+
+	}
+	utils.RenderPartial(w, http.StatusOK, "category_table", pageData)
+	w.Write([]byte(`<div id="cfm_diologe" hx-swap-oob="true"></div>`))
 }

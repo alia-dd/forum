@@ -26,7 +26,7 @@
                 onclick="event.preventDefault()"
                 hx-get="/admin/confirmation" 
                 hx-trigger="click"
-                hx-vals='{"action":"role","id":{{.Id}},"ActionType":"userAction"}'  
+                hx-vals='{"action":"role","id":"0","user_id":{{.Id}},"ActionType":"userAction"}'  
                 hx-target="#cfm_diologe" hx-swap="innerHTML">
           <span class="toggle-track"></span>
         </label>
@@ -37,7 +37,7 @@
                 onclick="event.preventDefault()"
                 hx-get="/admin/confirmation" 
                 hx-trigger="click"
-                hx-vals='{"action":"block","id":{{.Id}},"ActionType":"userAction"}' 
+                hx-vals='{"action":"block","id":"0","user_id":{{.Id}},"ActionType":"userAction"}' 
                 hx-target="#cfm_diologe" hx-swap="innerHTML">
           <span class="toggle-track"></span>
         </label>
@@ -47,7 +47,7 @@
           onclick="event.preventDefault()"
           hx-get="/admin/confirmation"
           hx-trigger="click"
-          hx-vals='{"action":"delete","id":{{.Id}},"ActionType":"userAction"}'
+          hx-vals='{"action":"delete","id":"0","user_id":{{.Id}},"ActionType":"userAction"}'
           hx-target="#cfm_diologe"
           hx-swap="innerHTML" 
           type="button" class="btn--icon" aria-label="Delete user">

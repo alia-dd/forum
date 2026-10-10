@@ -83,8 +83,6 @@ CREATE TABLE IF NOT EXISTS comment_like (
     FOREIGN KEY (comment_id) REFERENCES comment(id) ON DELETE CASCADE
 );
 
-
-
 CREATE VIRTUAL TABLE IF NOT EXISTS post_fts USING fts5(
     title,
     content,
@@ -97,8 +95,6 @@ CREATE VIRTUAL TABLE IF NOT EXISTS comment_fts USING fts5(
     content='comment',
     content_rowid='id'
 );
-
-
 
 CREATE TRIGGER IF NOT EXISTS post_ai AFTER INSERT ON post BEGIN
     INSERT INTO post_fts(rowid, title, content)
@@ -113,11 +109,10 @@ END;
 CREATE TRIGGER IF NOT EXISTS post_au AFTER UPDATE ON post BEGIN
     INSERT INTO post_fts(post_fts, rowid, title, content)
     VALUES ('delete', old.id, old.title, old.content);
-    
+
     INSERT INTO post_fts(rowid, title, content)
     VALUES (new.id, new.title, new.content);
 END;
-
 
 CREATE TRIGGER IF NOT EXISTS comment_ai AFTER INSERT ON comment BEGIN
     INSERT INTO comment_fts(rowid, content)
@@ -132,10 +127,12 @@ END;
 CREATE TRIGGER IF NOT EXISTS comment_au AFTER UPDATE ON comment BEGIN
     INSERT INTO comment_fts(comment_fts, rowid, content)
     VALUES ('delete', old.id, old.content);
-    
+
     INSERT INTO comment_fts(rowid, content)
     VALUES (new.id, new.content);
-END;`
+END;
+
+`
 
 	return db.Exec(sql)
 }
