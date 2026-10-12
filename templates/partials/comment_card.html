@@ -39,7 +39,7 @@
                 {{end}}
             </div>
             
-            {{if .IsOwner}}
+             {{if or .IsOwner (eq .UserRole "admin")}}
             <div>
                 <button hx-get="/post/{{.ParentPostID}}/comment/{{.ID}}/edit" 
                         hx-target="#comment-{{.ID}}" 
