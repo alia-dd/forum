@@ -1,14 +1,18 @@
 {{define "confirm_secret"}}
 <dialog class="ConfermationForm" onclose="this.remove()" >
     <form
-        {{if eq .EndPoint "userAction" }}  hx-post="/admin/users/action" {{end}}
-        {{if eq .EndPoint "postAction" }}  hx-post="/admin/post/action" {{end}}
-        hx-target="table.admin-table"
-        hx-swap="outerHTML" 
+        {{if eq .ActionType "userAction" }}  hx-post="/admin/users/action" {{end}}
+        {{if eq .ActionType "postAction" }}  hx-post="/admin/post/action" {{end}}
+        {{if eq .ActionType "categoryAction" }}  hx-post="/category/{{.ID}}/delete" {{end}}
+        hx-target="#admin-content"
+        hx-swap="innerHTML" 
         autocomplete="off"
         style="display:inline">
         <input type="hidden" name="id" value="{{.ID}}">
+        <input type="hidden" name="user_id" value="{{.User_id}}">
         <input type="hidden" name="action" value="{{.Action}}">
+        <input type="hidden" name="ActionType" value="{{.ActionType}}">
+
 
         
         <h3 class="cfm_title">Confirm {{.Action}}</h3>

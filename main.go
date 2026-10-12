@@ -92,8 +92,6 @@ func main() {
 				utils.RenderTemplate(w, http.StatusNotFound, "error", pageData)
 				return
 			}
-
-			fmt.Println("here")
 			(postHandler.GetPosts)(w, r)
 
 		}),
@@ -104,7 +102,7 @@ func main() {
 
 	mux.HandleFunc("GET /admin/users", middleware.Recoverer(middleware.Admin(sessionRepo, userRepo, userHandler.GetAdminUserTable)))
 	mux.HandleFunc("GET /admin/posts", middleware.Recoverer(middleware.Admin(sessionRepo, userRepo, userHandler.GetAdminPostTable)))
-	mux.HandleFunc("GET /admin/comments", middleware.Recoverer(middleware.Admin(sessionRepo, userRepo, userHandler.GetAdminCommentTable)))
+	// mux.HandleFunc("GET /admin/comments", middleware.Recoverer(middleware.Admin(sessionRepo, userRepo, userHandler.GetAdminCommentTable)))
 	mux.HandleFunc("GET /admin/categories", middleware.Recoverer(middleware.Admin(sessionRepo, userRepo, userHandler.GetCategoryTable)))
 
 	mux.HandleFunc("POST /admin/users/action", middleware.Recoverer(middleware.Admin(sessionRepo, userRepo, userHandler.PostAdminUserAction)))

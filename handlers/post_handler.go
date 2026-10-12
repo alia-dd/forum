@@ -104,7 +104,13 @@ func (h *PostHandler) GetPostByID(w http.ResponseWriter, r *http.Request) {
 		handleError(w, r, err)
 		return
 	}
-
+	role := ""
+	if ok {
+		role = user.Role
+	}
+	for _, comment := range comments {
+		comment.UserRole = role
+	}
 	//get comments linked to post or its subcomments
 	pageData := models.PageData[PostPage]{
 		User: user,
@@ -208,7 +214,7 @@ func (h *PostHandler) EditPostForm(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if user.ID != post.Post.UserID {
+	if user.ID != post.Post.UserID && user.Role != "admin" {
 		handleError(w, r, customerrors.ErrForbidden)
 		return
 	}
@@ -291,8 +297,11 @@ func (h *PostHandler) UpdatePost(w http.ResponseWriter, r *http.Request) {
 		MainCategoryID: form.MainCategoryID,
 		CategoryIDs:    form.CategoryIDs,
 	}
-
-	err = h.postRep.UpdatePost(r.Context(), postUpdate, user.ID)
+	role := ""
+	if ok {
+		role = user.Role
+	}
+	err = h.postRep.UpdatePost(r.Context(), postUpdate, user.ID, role)
 	if err != nil {
 		handleError(w, r, err)
 		return
@@ -314,8 +323,12 @@ func (h *PostHandler) DeletePost(w http.ResponseWriter, r *http.Request) {
 		handleError(w, r, customerrors.ErrBadRequest)
 		return
 	}
+	role := ""
+	if ok {
+		role = user.Role
+	}
 
-	err = h.postRep.DeletePost(r.Context(), id, user.ID)
+	err = h.postRep.DeletePost(r.Context(), id, user.ID, role)
 	if err != nil {
 		handleError(w, r, err)
 		return
