@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -118,52 +119,59 @@ func (h *UseHandler) GetEditUserProfile(w http.ResponseWriter, r *http.Request) 
 func (h *UseHandler) showProfile(w http.ResponseWriter, r *http.Request, username string) {
 	cx := r.Context()
 	user, ok := r.Context().Value("user_session").(*models.UserInfo)
-
-	profileData, fetchErr := h.service.GetUserService(cx, user.Username)
-	if fetchErr != nil {
-		handleError(w, r, fetchErr)
-		return
-	}
-
+	fmt.Println("show prof")
 	tab := r.URL.Query().Get("tab")
 	if tab != "posts" && tab != "comments" {
 		tab = "all"
 	}
 
+	pageContent := models.ProfilePage{Tab: tab}
+	profileData, fetchErr := h.service.GetUserService(cx, username)
+	if fetchErr != nil {
+		handleError(w, r, fetchErr)
+		return
+	}
+	pageContent.Profile = profileData
+
+	if tab == "posts" || tab == "all" {
+		posts, fetchPostErr := h.postRep.GetPost(cx, models.PostFilter{AuthorID: &profileData.ID}, profileData.ID)
+		if fetchPostErr != nil {
+			handleError(w, r, fetchErr)
+			return
+		}
+
+		pageContent.Posts = posts
+	}
+
+	if tab == "comments" || tab == "all" {
+		comments, fetchPostErr := h.commentRep.GetCommentsByUser(cx, profileData.ID)
+		if fetchPostErr != nil {
+			handleError(w, r, fetchErr)
+			return
+		}
+		pageContent.Comments = comments
+	}
+
 	// what the heck im i doing here
 	pageData := models.PageData[models.ProfilePage]{
-		User:    user,
-		IsOwner: ok && user.ID == profileData.ID,
-		PageContent: models.ProfilePage{
-			Profile: profileData,
-		},
+		User:        user,
+		IsOwner:     ok && user.ID == profileData.ID,
+		PageContent: pageContent,
 	}
+	fmt.Println(pageData)
 	utils.RenderTemplate(w, http.StatusOK, "profile", pageData)
 
 }
 
 // shows profile data for other registred users
 func (h *UseHandler) GetOtherUserProfile(w http.ResponseWriter, r *http.Request) {
-	// cx := r.Context()
-	// user, ok := r.Context().Value("user_session").(*models.UserInfo)
 	username := r.PathValue("username")
-
-	// profileData, fetchErr := h.service.GetUserService(cx, username)
-	// if fetchErr != nil {
-	// 	handleError(w, r, fetchErr)
-	// 	return
-	// }
-
-	// pageData := models.PageData[models.PublicUserInfo]{
-	// 	User:        user,
-	// 	IsOwner:     ok && user.ID == profileData.ID,
-	// 	PageContent: profileData,
-	// }
-	// utils.RenderTemplate(w, http.StatusOK, "profile", pageData)
+	fmt.Println(">>", username)
 	h.showProfile(w, r, username)
 }
-func (h *UseHandler) GetOwnProfile(w http.ResponseWriter, r *http.Request) {
 
+func (h *UseHandler) GetOwnProfile(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("here mine")
 	user, ok := r.Context().Value("user_session").(*models.UserInfo)
 	if !ok {
 		utils.RedirectTologin(w, r)

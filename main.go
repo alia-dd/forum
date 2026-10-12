@@ -110,7 +110,7 @@ func main() {
 
 	// Profile page is user specific and is safeguarded by the Restrict middleware
 	// if there is no active session, it redirects to the login page.
-	mux.HandleFunc("GET /user/profile", middleware.Recoverer(middleware.Restrict(sessionRepo, userRepo, handlers.Profile)))
+	mux.HandleFunc("GET /user/profile", middleware.Recoverer(middleware.Restrict(sessionRepo, userRepo, userHandler.GetOwnProfile)))
 	mux.HandleFunc("GET /user/profile/{username}", middleware.Recoverer(middleware.AllowGuest(sessionRepo, userRepo, userHandler.GetOtherUserProfile)))
 
 	mux.HandleFunc("GET /user/profile/edit", middleware.Recoverer(middleware.Restrict(sessionRepo, userRepo, userHandler.GetEditUserProfile)))

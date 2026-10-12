@@ -91,7 +91,28 @@
 
 
 /* profile edit */
-/* #view,
+.profile_edit {
+max-width: 500px;
+margin: 2rem auto;
+padding: 2rem;
+color: var(--ink);
+font-family: var(--font-body);
+}
+
+.profile_edit .title {
+display: flex;
+font-family: var(--font-head);
+font-size: 1.6rem;
+font-weight: 700;
+color: var(--burgundy);
+flex-direction: column;
+align-self: flex-end; 
+margin-bottom: 1.75rem;
+letter-spacing: 0.02em;
+}
+
+
+#view,
 #edit {
   display: block;
 }
@@ -102,8 +123,8 @@
   align-items: center;
   gap: 10px;
   margin-bottom: 1rem;
-} */
-/* 
+}
+
 .label {
   min-width: 80px;
   font-weight: 600;
@@ -125,9 +146,9 @@
   outline: none;
   border-color: var(--burgundy);
 }
- */
 
-/* .btn {
+
+.btn {
   padding: 0.6rem 1rem;
   border: 1px solid var(--burgundy);
   border-radius: 4px;
@@ -141,14 +162,14 @@
 .btn:hover {
   background: var(--burgundy-dk);
 }
- */
 
-/* 
+
+
 .username {
   min-width: 80px;
   font-weight: 400;
   color: var(--burgundy);
-} */
+}
 
 
 

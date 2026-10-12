@@ -49,9 +49,8 @@ func serverErrorHandler(w http.ResponseWriter) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	renderExecuted(w, t, http.StatusOK, &models.ErrorStruct{
-		Error:   "500",
-		ErrorMs: "Internal Server Error",
+	renderExecuted(w, t, http.StatusOK, models.PageData[models.ErrorStruct]{
+		PageContent: models.ErrorStruct{Error: "500", ErrorMs: "Internal Server Error"},
 	})
 
 }

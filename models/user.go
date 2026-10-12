@@ -61,8 +61,8 @@ type PublicUserInfo struct {
 type ProfilePage struct {
 	Profile  PublicUserInfo
 	Tab      string
-	Posts    []PostView
-	Comments []CommentResult
+	Posts    []*PostView
+	Comments []*CommentResult
 }
 type UserUpdate struct {
 	ID       int     `json:"id"`

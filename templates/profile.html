@@ -1,13 +1,11 @@
 {{define "content"}}
-{{$user := .PageContent}}
+{{$user := .PageContent.Profile}}
 {{if .IsOwner}}{{$user = .User}}{{end}}
-
 <div id="profile" class="profile">
     <aside class="profile-info">
         <img {{if $user.Image}} src="/static/assets/images/{{$user.Image}}" {{else}} src="/static/assets/images/avatar1.jpg" {{end}} alt="Avatar" class="avatar">
-        <h1 class="profile-name">[{{$user.Name}}]</h1>
-        <p class="profile-username">@[{{$user.Username}}]</p>
-        
+        <h1 class="profile-name">{{$user.Name}}</h1>
+        <p class="profile-username">@{{$user.Username}}</p>
 
         {{if $user.Bio}}<p class="profile-bio">{{$user.Bio}}</p>{{end}}
 
@@ -22,12 +20,30 @@
 
     <section class="profile-content" style="display: flex; flex-direction: column;">
         {{template "profile_nav" .}}
-        <section style="display: block;">
-            content
+
+        <section>
+            {{if or (eq .PageContent.Tab "all") (eq .PageContent.Tab "posts")}}
+            {{$posts := .PageContent.Posts}}
+                {{range $posts}}
+                    {{if not .Deleted}}
+                    <div class="item">
+                        <h3><a href="/post/{{.ID}}">{{.Title}}</a></h3>
+                    </div>
+                    {{end}}
+                {{else}}<p>No posts yet.</p>{{end}}
+            {{end}}
+
+            {{if or (eq .PageContent.Tab "all") (eq .PageContent.Tab "comments")}}
+            {{$comments := .PageContent.Comments}}
+                {{range $comments}}
+                    <div class="item">
+                        <a href="/post/{{.ParentPostID}}#comment-{{.ID}}">{{.Content}}</a>
+                    </div>
+                {{else}} 
+                    {{if eq .PageContent.Tab "comments"}}<p>No comments yet.</p>{{end}}
+                {{end}}
+            {{end}}
         </section>
-       
     </section>
-
 </div>
-
 {{end}}
