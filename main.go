@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
 
@@ -26,7 +25,7 @@ func main() {
 	if deleteDB {
 		err := os.Remove("data/forum.db")
 		if err != nil {
-			fmt.Println(err)
+			log.Fatal(err)
 		}
 	}
 
@@ -39,7 +38,7 @@ func main() {
 	if seedDB {
 		err := database.SeedData(db)
 		if err != nil {
-			fmt.Println(err)
+			log.Fatal(err)
 		}
 	}
 
