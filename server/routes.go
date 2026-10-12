@@ -35,7 +35,7 @@ func registerRoutes(mux *http.ServeMux, d routeDependencies) {
 	handleAdmin(mux, "GET /admin/confirmation", d, d.userHandler.GetConfirmUserAction)
 	handleAdmin(mux, "GET /admin/users", d, d.userHandler.GetAdminUserTable)
 	handleAdmin(mux, "GET /admin/posts", d, d.userHandler.GetAdminPostTable)
-	handleAdmin(mux, "GET /admin/comments", d, d.userHandler.GetAdminCommentTable)
+	//handleAdmin(mux, "GET /admin/comments", d, d.userHandler.GetAdminCommentTable)
 	handleAdmin(mux, "GET /admin/categories", d, d.userHandler.GetCategoryTable)
 
 	handleAdmin(mux, "POST /admin/users/action", d, d.userHandler.PostAdminUserAction)
