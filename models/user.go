@@ -58,7 +58,12 @@ type PublicUserInfo struct {
 	Bio       string    `json:"bio,omitempty"`
 	CreatedAt time.Time `json:"createdat"`
 }
-
+type ProfilePage struct {
+	Profile  PublicUserInfo
+	Tab      string
+	Posts    []PostView
+	Comments []CommentResult
+}
 type UserUpdate struct {
 	ID       int     `json:"id"`
 	Username *string `json:"username"`
@@ -89,7 +94,7 @@ func (u *UserUpdate) Isvalid() error {
 		fmt.Println(u.Email)
 		return customerrors.ErrInvalidData
 	}
-	if u.Bio != nil && len(*u.Bio) > 200 {
+	if u.Bio != nil && len(*u.Bio) > 500 {
 		return customerrors.ErrInvalidData
 	}
 	return nil

@@ -66,7 +66,7 @@ func main() {
 	reactService := service.NewReactionService(reactRepo)
 
 	searchRepo := repository.NewSearchRepository(db)
-	searchHandler := handlers.NewSearchHandler(searchRepo)
+	// searchHandler := handlers.NewSearchHandler(searchRepo)
 
 	reactHandler := handlers.NewReactionHandler(reactService, postRepo, commentRepo)
 	userHandler := handlers.NewUserHandler(userService, postRepo, commentRepo, categoryRepo, *searchRepo)
@@ -173,7 +173,7 @@ func main() {
 
 	mux.HandleFunc("GET /post/{postID}/comment/{commentID}/replies", middleware.Recoverer(middleware.AllowGuest(sessionRepo, userRepo, commentHandler.GetCommentReplies)))
 
-	mux.HandleFunc("GET /search", middleware.Recoverer(middleware.AllowGuest(sessionRepo, userRepo, searchHandler.Search)))
+	// mux.HandleFunc("GET /search", middleware.Recoverer(middleware.AllowGuest(sessionRepo, userRepo, searchHandler.Search)))
 
 	server := &http.Server{
 		Addr:         ":8080",

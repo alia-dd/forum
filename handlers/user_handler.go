@@ -115,24 +115,61 @@ func (h *UseHandler) GetEditUserProfile(w http.ResponseWriter, r *http.Request) 
 	utils.RenderTemplate(w, http.StatusOK, "profileEdit", pageData)
 }
 
-// shows profile data for other registred users
-func (h *UseHandler) GetOtherUserProfile(w http.ResponseWriter, r *http.Request) {
+func (h *UseHandler) showProfile(w http.ResponseWriter, r *http.Request, username string) {
 	cx := r.Context()
 	user, ok := r.Context().Value("user_session").(*models.UserInfo)
-	username := r.PathValue("username")
 
-	profileData, fetchErr := h.service.GetUserService(cx, username)
+	profileData, fetchErr := h.service.GetUserService(cx, user.Username)
 	if fetchErr != nil {
 		handleError(w, r, fetchErr)
 		return
 	}
 
-	pageData := models.PageData[models.PublicUserInfo]{
-		User:        user,
-		IsOwner:     ok && user.ID == profileData.ID,
-		PageContent: profileData,
+	tab := r.URL.Query().Get("tab")
+	if tab != "posts" && tab != "comments" {
+		tab = "all"
+	}
+
+	// what the heck im i doing here
+	pageData := models.PageData[models.ProfilePage]{
+		User:    user,
+		IsOwner: ok && user.ID == profileData.ID,
+		PageContent: models.ProfilePage{
+			Profile: profileData,
+		},
 	}
 	utils.RenderTemplate(w, http.StatusOK, "profile", pageData)
+
+}
+
+// shows profile data for other registred users
+func (h *UseHandler) GetOtherUserProfile(w http.ResponseWriter, r *http.Request) {
+	// cx := r.Context()
+	// user, ok := r.Context().Value("user_session").(*models.UserInfo)
+	username := r.PathValue("username")
+
+	// profileData, fetchErr := h.service.GetUserService(cx, username)
+	// if fetchErr != nil {
+	// 	handleError(w, r, fetchErr)
+	// 	return
+	// }
+
+	// pageData := models.PageData[models.PublicUserInfo]{
+	// 	User:        user,
+	// 	IsOwner:     ok && user.ID == profileData.ID,
+	// 	PageContent: profileData,
+	// }
+	// utils.RenderTemplate(w, http.StatusOK, "profile", pageData)
+	h.showProfile(w, r, username)
+}
+func (h *UseHandler) GetOwnProfile(w http.ResponseWriter, r *http.Request) {
+
+	user, ok := r.Context().Value("user_session").(*models.UserInfo)
+	if !ok {
+		utils.RedirectTologin(w, r)
+		return
+	}
+	h.showProfile(w, r, user.Username)
 }
 
 func (h *UseHandler) UpdateUserProfile(w http.ResponseWriter, r *http.Request) {

@@ -27,7 +27,7 @@ func Profile(w http.ResponseWriter, r *http.Request) {
 		utils.RedirectTologin(w, r)
 		return
 	}
-	fmt.Println(user)
+	// fmt.Println(">>", user.Bio)
 
 	// replace mainpage with a dedicated profile struct later
 	pageData := models.PageData[MainPage]{

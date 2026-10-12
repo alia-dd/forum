@@ -1,5 +1,4 @@
 
-Panel nav · HTML
 {{define "panel_nav"}}
 <aside class="panel-nav" aria-label="Admin sections">
   <a href="/admin/users" class="panel-nav_link">
@@ -8,15 +7,26 @@ Panel nav · HTML
   <a href="/admin/posts" class="panel-nav_link ">
     <i class="ph ph-article panel-nav_icon"></i>Posts
   </a>
-  <!-- <a href="/admin/comments" class="panel-nav_link ">
-    <i class="ph ph-chat-circle panel-nav_icon"></i>Comments
-  </a> -->
   <a href="/admin/categories" class="panel-nav_link ">
     <i class="ph ph-squares-four panel-nav_icon"></i>Categories
   </a>
 </aside>
 <script>
   document.querySelectorAll('.panel-nav_link').forEach(a => {
+    if (a.getAttribute('href') === location.pathname) a.classList.add('active')
+  })
+</script>
+{{end}}
+
+
+{{define "profile_nav"}}
+<aside class="profile-panel-nav" aria-label="Profile nav sections">
+  <a href="?tab=all" class="profile-nav_link">All</a>
+  <a href="?tab=posts" class="profile-nav_link ">Posts</a>  
+  <a href="?tab=comments" class="profile-nav_link ">Comments</a>
+</aside>
+<script>
+  document.querySelectorAll('.profile-nav_link').forEach(a => {
     if (a.getAttribute('href') === location.pathname) a.classList.add('active')
   })
 </script>

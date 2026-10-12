@@ -47,6 +47,7 @@ func (s *UserService) GetAllUsersService(cx context.Context) ([]models.AdminUser
 func (s *UserService) UpdateUserService(cx context.Context, u models.UserUpdate) error {
 
 	if validationsErr := u.Isvalid(); validationsErr != nil {
+		fmt.Println("validation errpr", validationsErr)
 		return validationsErr
 	}
 	if u.Username != nil {

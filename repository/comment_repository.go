@@ -391,3 +391,30 @@ func (r *commentRepositoryImpl) GetRepliesByCommentID(ctx context.Context, paren
 
 	return comments, nil
 }
+
+func (r *commentRepositoryImpl) GetCommentsByUser(ctx context.Context, userID int) ([]models.CommentResult, error) {
+	rows, err := r.db.QueryContext(ctx, `
+		SELECT c.id, c.content, c.parent_post_id, u.username
+		FROM comment c
+		JOIN user u ON u.id = c.user_id
+		WHERE c.user_id = ? AND c.deleted_at IS NULL
+		ORDER BY c.created_at DESC`, userID)
+	if err != nil {
+		return nil, customerrors.MapSQLError(err)
+	}
+	defer rows.Close()
+
+	comments := []models.CommentResult{}
+	for rows.Next() {
+		var c models.CommentResult
+		if err := rows.Scan(&c.ID, &c.Content, &c.ParentPostID, &c.AuthorName); err != nil {
+			return nil, customerrors.MapSQLError(err)
+		}
+		comments = append(comments, c)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, customerrors.MapSQLError(err)
+	}
+
+	return comments, nil
+}
