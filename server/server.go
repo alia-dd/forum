@@ -67,14 +67,14 @@ func handle(mux *http.ServeMux, pattern string, handler http.HandlerFunc) {
 	mux.HandleFunc(pattern, middleware.Recoverer(handler))
 }
 
-func handleRestricted(mux *http.ServeMux, pattern string, c routeDependencies, handler http.HandlerFunc) {
-	handle(mux, pattern, middleware.Restrict(c.sessionRepo, c.userRepo, handler))
+func handleRestricted(mux *http.ServeMux, pattern string, d routeDependencies, handler http.HandlerFunc) {
+	handle(mux, pattern, middleware.Restrict(d.sessionRepo, d.userRepo, handler))
 }
 
-func handleGuest(mux *http.ServeMux, pattern string, c routeDependencies, handler http.HandlerFunc) {
-	handle(mux, pattern, middleware.AllowGuest(c.sessionRepo, c.userRepo, handler))
+func handleGuest(mux *http.ServeMux, pattern string, d routeDependencies, handler http.HandlerFunc) {
+	handle(mux, pattern, middleware.AllowGuest(d.sessionRepo, d.userRepo, handler))
 }
 
-func handleAdmin(mux *http.ServeMux, pattern string, c routeDependencies, handler http.HandlerFunc) {
-	handle(mux, pattern, middleware.Admin(c.sessionRepo, c.userRepo, handler))
+func handleAdmin(mux *http.ServeMux, pattern string, d routeDependencies, handler http.HandlerFunc) {
+	handle(mux, pattern, middleware.Admin(d.sessionRepo, d.userRepo, handler))
 }
