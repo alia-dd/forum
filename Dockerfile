@@ -21,9 +21,7 @@ FROM debian:bookworm-slim
 
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    && rm -rf /var/lib/apt/lists/* \
-    && mkdir -p /app/data
+RUN mkdir -p /app/data
 
 COPY --from=builder /out/forum ./forum
 COPY --from=builder /src/templates ./templates/
