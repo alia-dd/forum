@@ -3,3 +3,5 @@
 .env
 *.db
 Makefile
+*.drawio
+*.svg
