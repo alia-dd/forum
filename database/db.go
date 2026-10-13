@@ -19,7 +19,7 @@ func OpenDB() (*sql.DB, error) {
 		db.Close()
 		return nil, fmt.Errorf("Failed to ping database: %w", errPing)
 	}
-	_, err = InitTable(db)
+	err = InitSchema(db)
 	if err != nil {
 		return nil, err
 	}
