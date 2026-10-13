@@ -59,10 +59,11 @@ type PublicUserInfo struct {
 	CreatedAt time.Time `json:"createdat"`
 }
 type ProfilePage struct {
-	Profile  PublicUserInfo
-	Tab      string
-	Posts    []*PostView
-	Comments []*CommentResult
+	Profile    PublicUserInfo
+	Tab        string
+	Posts      []*PostView
+	Comments   []*CommentView
+	LikedPosts []*PostView
 }
 type UserUpdate struct {
 	ID       int     `json:"id"`

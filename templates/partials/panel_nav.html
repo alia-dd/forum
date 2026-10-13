@@ -21,14 +21,16 @@
 
 {{define "profile_nav"}}
 <aside class="profile-panel-nav" aria-label="Profile nav sections">
-  <a href="?tab=all" class="profile-nav_link">All</a>
   <a href="?tab=posts" class="profile-nav_link ">Posts</a>  
   <a href="?tab=comments" class="profile-nav_link ">Comments</a>
+  <a href="?tab=likedPosts" class="profile-nav_link">Liked Posts</a>
 </aside>
 <script>
+  const tab = new URLSearchParams(location.search).get('tab') || 'posts'; // default tab
   document.querySelectorAll('.profile-nav_link').forEach(a => {
-    if (a.getAttribute('href') === location.pathname) a.classList.add('active')
-  })
+    const linkTab = new URLSearchParams(a.getAttribute('href').split('?')[1]).get('tab');
+    if (linkTab === tab) a.classList.add('active');
+  });
 </script>
 {{end}}
  

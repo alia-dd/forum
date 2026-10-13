@@ -62,7 +62,6 @@
 .profile-panel-nav {
     box-sizing: border-box;
     width: 100%;
-    max-width: 65rem;         
     display: flex;
     flex-wrap: wrap;
     gap: 1rem;
@@ -114,8 +113,18 @@
   }
  
   .panel-nav_link.active {
-    border-left-color: transparent;
-    border-bottom-color: var(--burgundy);
+        border-left-color: transparent;
+        border-bottom-color: var(--burgundy);
+  }
+  .profile-panel-nav {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        gap: 0;
+  }
+  .profile-nav_link {
+        white-space: nowrap;
+        padding: 0.55rem 0.8rem;
+        font-size: 0.85rem;
   }
 }
  

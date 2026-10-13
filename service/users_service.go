@@ -139,10 +139,10 @@ func (s *UserService) AuthenticateUserService(cx context.Context, u models.UserL
 
 	user, fetchErr := s.repo.AuthenticateUser(cx, u.Username)
 	if fetchErr != nil {
-		return nil, fetchErr
+		return nil, customerrors.ErrInvalidLogin
 	}
 	if user.Role == "blocked" {
-		return nil, customerrors.ErrForbidden
+		return nil, customerrors.ErrBlockedUser
 	}
 	match, err := utils.VerifyPassword(user.Password, u.Password)
 	if err != nil {

@@ -27,6 +27,7 @@ var (
 	ErrInUse                = errors.New("resource still in use")
 	ErrIncorrectPassword    = errors.New("Incorrect Password")
 	ErrInvalidLogin         = errors.New("Invalid username or password")
+	ErrBlockedUser          = errors.New("Your account has been blocked")
 )
 
 func MapSQLError(err error) error {

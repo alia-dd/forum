@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"fmt"
 	"net/http"
 	"strings"
 
@@ -119,10 +118,10 @@ func (h *UseHandler) GetEditUserProfile(w http.ResponseWriter, r *http.Request) 
 func (h *UseHandler) showProfile(w http.ResponseWriter, r *http.Request, username string) {
 	cx := r.Context()
 	user, ok := r.Context().Value("user_session").(*models.UserInfo)
-	fmt.Println("show prof")
+
 	tab := r.URL.Query().Get("tab")
-	if tab != "posts" && tab != "comments" {
-		tab = "all"
+	if tab != "posts" && tab != "comments" && tab != "likedPosts" {
+		tab = "posts"
 	}
 
 	pageContent := models.ProfilePage{Tab: tab}
@@ -131,34 +130,44 @@ func (h *UseHandler) showProfile(w http.ResponseWriter, r *http.Request, usernam
 		handleError(w, r, fetchErr)
 		return
 	}
+	userID := -1
+	if ok {
+		userID = user.ID
+	}
 	pageContent.Profile = profileData
 
-	if tab == "posts" || tab == "all" {
-		posts, fetchPostErr := h.postRep.GetPost(cx, models.PostFilter{AuthorID: &profileData.ID}, profileData.ID)
+	if tab == "posts" {
+		posts, fetchPostErr := h.postRep.GetPost(cx, models.PostFilter{AuthorID: &profileData.ID}, userID)
 		if fetchPostErr != nil {
-			handleError(w, r, fetchErr)
+			handleError(w, r, fetchPostErr)
 			return
 		}
 
 		pageContent.Posts = posts
 	}
 
-	if tab == "comments" || tab == "all" {
-		comments, fetchPostErr := h.commentRep.GetCommentsByUser(cx, profileData.ID)
-		if fetchPostErr != nil {
-			handleError(w, r, fetchErr)
+	if tab == "comments" {
+		comments, fetchCommErr := h.commentRep.GetCommentsByUser(cx, profileData.ID)
+		if fetchCommErr != nil {
+			handleError(w, r, fetchCommErr)
 			return
 		}
 		pageContent.Comments = comments
 	}
 
-	// what the heck im i doing here
+	if tab == "likedPosts" {
+		likedPosts, fetchPostLikedErr := h.postRep.GetPost(cx, models.PostFilter{LikedByID: &profileData.ID}, userID)
+		if fetchPostLikedErr != nil {
+			handleError(w, r, fetchPostLikedErr)
+			return
+		}
+		pageContent.LikedPosts = likedPosts
+	}
 	pageData := models.PageData[models.ProfilePage]{
 		User:        user,
 		IsOwner:     ok && user.ID == profileData.ID,
 		PageContent: pageContent,
 	}
-	fmt.Println(pageData)
 	utils.RenderTemplate(w, http.StatusOK, "profile", pageData)
 
 }
@@ -166,12 +175,10 @@ func (h *UseHandler) showProfile(w http.ResponseWriter, r *http.Request, usernam
 // shows profile data for other registred users
 func (h *UseHandler) GetOtherUserProfile(w http.ResponseWriter, r *http.Request) {
 	username := r.PathValue("username")
-	fmt.Println(">>", username)
 	h.showProfile(w, r, username)
 }
 
 func (h *UseHandler) GetOwnProfile(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("here mine")
 	user, ok := r.Context().Value("user_session").(*models.UserInfo)
 	if !ok {
 		utils.RedirectTologin(w, r)
