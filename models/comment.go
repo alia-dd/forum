@@ -41,3 +41,14 @@ type CommentUpdate struct {
 	ID      int
 	Content string
 }
+
+func (c Comment) CreatedAgo() string {
+	return timeAgo(c.CreatedAt)
+}
+
+func (c Comment) EditedAgo() string {
+	if c.UpdatedAt == nil {
+		return ""
+	}
+	return timeAgo(*c.UpdatedAt)
+}
