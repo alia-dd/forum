@@ -4,11 +4,11 @@
         <p>
             <strong>Anonymous</strong> — 
             {{if .UpdatedAt}}
-                <small>{{.CreatedAt}}</small> —
+                <small>{{.CreatedAgo}}</small> —
                 <span>(edited)</span> —
-                <small>{{.UpdatedAt}}</small>
+                <small>{{.UpdatedAgo}}</small>
             {{else}}
-                <small>{{.CreatedAt}}</small>
+                <small>{{.CreatedAgo}}</small>
             {{end}}
         </p>
 
@@ -17,11 +17,11 @@
         <p>
             <strong>{{.AuthorName}}</strong> — 
             {{if .UpdatedAt}}
-                <small>{{.CreatedAt}}</small> —
+                <small>{{.CreatedAgo}}</small> —
                 <span>(edited)</span> —
-                <small>{{.UpdatedAt}}</small>
+                <small>{{.UpdatedAgo}}</small>
             {{else}}
-                <small>{{.CreatedAt}}</small>
+                <small>{{.CreatedAgo}}</small>
             {{end}}
         </p>
 

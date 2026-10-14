@@ -2,6 +2,8 @@ package handlers
 
 import (
 	"net/http"
+	"os"
+	"path/filepath"
 	"strings"
 
 	customerrors "gitea.kood.tech/jyrkikarhunen/forum/errors"
@@ -207,10 +209,12 @@ func (h *UseHandler) UpdateUserProfile(w http.ResponseWriter, r *http.Request) {
 	email := strings.TrimSpace(r.FormValue("email"))
 	bio := strings.TrimSpace(r.FormValue("bio"))
 	var fileName string
+	var oldFileName string
 
 	file, header, fileErr := r.FormFile("imagepath")
 	if fileErr == nil && header.Size > 0 {
 		defer file.Close()
+		oldFileName = user.Image
 		savename, saveErr := SaveUploadedFile(file)
 		if saveErr != nil {
 			// replace mainpage with a dedicated profile struct later
@@ -266,6 +270,12 @@ func (h *UseHandler) UpdateUserProfile(w http.ResponseWriter, r *http.Request) {
 		utils.RenderTemplate(w, http.StatusBadRequest, "profileEdit", pageData)
 		return
 	}
+
+	// delete old profile picture unless it was one of the default ones - if it was changed successfully
+	if fileName != "" && oldFileName != "" && !strings.HasPrefix(oldFileName, "avatar") {
+		_ = os.Remove(filepath.Join("static/assets/images", oldFileName))
+	}
+
 	http.Redirect(w, r, "/user/profile", http.StatusSeeOther)
 }
 
