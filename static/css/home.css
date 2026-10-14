@@ -1,0 +1,14 @@
+#navOverlay {
+    display: none;
+    inset: var(--nav-h) 0 0;
+    background: rgba(0, 0, 0, 0.45);
+    z-index: 200;
+}
+
+#navOverlay.visible {
+    display: block;
+}
+
+.nav__links {
+    z-index: 101;
+}

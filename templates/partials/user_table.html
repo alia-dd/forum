@@ -1,6 +1,7 @@
 {{define "user_table"}}
 {{$users := .PageContent.Users}}
 {{$admin := .User}}
+<div class="table-rap">
 <table class="admin-table" >
   <thead>
     <tr>
@@ -63,4 +64,5 @@
     {{end}}
   </tbody>
 </table>
+</div>
 {{end}}

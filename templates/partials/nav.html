@@ -1,8 +1,8 @@
 {{define "nav"}}
 <nav class="nav">
   <a href="/" class="nav__logo">
-    <span class="nav__logo-icon">⬡</span>
-    BOOKFORUM
+    <span class="nav__logo-icon"><i class="ph ph-cat"></i></span>
+    <span class="nav__logo-title">Literary Lions</span>
   </a>
 
   <form method="GET" action="/search" class="nav__search">
@@ -55,6 +55,15 @@
   </ul>
 </nav>
 <script>
+  const toggle = document.getElementById('navToggle')
+  const links  = document.getElementById('navLinks')
+  const overlay = document.getElementById('navOverlay');
+
+  toggle.addEventListener('click', () => {
+    const open = links.classList.toggle('open');
+    toggle.setAttribute('aria-expanded', open);
+    overlay.classList.toggle('visible', open);
+  });
   document.querySelectorAll('.nav__link').forEach(a => {
     if (a.getAttribute('href') === location.pathname) a.classList.add('active')
   })
