@@ -75,6 +75,10 @@ func handleError(w http.ResponseWriter, r *http.Request, err error) {
 		// code = "INVALID_LOGIN"
 		message = customerrors.ErrInvalidLogin.Error()
 		status = http.StatusBadRequest
+	case errors.Is(err, customerrors.ErrBlockedUser):
+		// code = "INVALID_LOGIN"
+		message = customerrors.ErrBlockedUser.Error()
+		status = http.StatusForbidden
 	default:
 		//code = "INTERNAL_ERROR"
 		message = "An unexpected error occurred while processing the request"

@@ -33,7 +33,6 @@ func (h *PostHandler) GetPosts(w http.ResponseWriter, r *http.Request) {
 		handleError(w, r, customerrors.ErrBadRequest)
 		return
 	}
-
 	posts, err := h.postRep.GetPost(r.Context(), filter, userID)
 	if err != nil {
 		handleError(w, r, err)

@@ -1,44 +1,76 @@
 {{define "content"}}
-
-<div id="profile">
-{{$user := .PageContent}}
+{{$user := .PageContent.Profile}}
 {{if .IsOwner}}{{$user = .User}}{{end}}
-    <div class="row">
+<div id="profile" class="profile">
+    <aside class="profile-info">
         <img {{if $user.Image}} src="/static/assets/images/{{$user.Image}}" {{else}} src="/static/assets/images/avatar1.jpg" {{end}} alt="Avatar" class="avatar">
-        <span class="title">logged in as</span>
-    </div>
-    {{if .Error}} 
-        <div class="error"> {{.Error}} </div> 
-    {{end}}
-    <div id="view">
+        <h1 class="profile-name">{{$user.Name}}</h1>
+        <p class="profile-username">@{{$user.Username}}</p>
 
-        <div class="row">
-            <span class="label">username:</span>
-            <span>{{$user.Username}}</span>
-        </div>
+        {{if $user.Bio}}<p class="profile-bio">{{$user.Bio}}</p>{{end}}
 
-        <div class="row">
-            <span class="label">name:</span>
-            <span>{{$user.Name}}</span>
-        </div>
-        <div class="row">
-                <span class="label">Bio:</span>
-                <span>{{$user.Bio}}</span>
-        </div>
         {{if .IsOwner}}
-            <div class="row">
-                <span class="label">email:</span>
-                <span>{{$user.Email}}</span>
+            <p class="profile-email">{{$user.Email}}</p>
+            <div class="profile-action">
+                <a class="btn" href="/user/profile/edit">Edit Profile</a>
+                <a class="btn btn-chg" href="/user/profile/password">Change password</a>
             </div>
         {{end}}
-        {{if .IsOwner}}
-            <a class="btn" href="/user/profile/edit">Edit</a>
-            <a class="btn" href="/user/profile/password">Change password</a>
-            <!-- <button class="btn" type="button" > Edit </button> -->
-        {{end}}
+    </aside>
 
-    </div>
+    <section class="profile-content" style="display: flex; flex-direction: column;">
+        {{template "profile_nav" .}}
 
+        <section>
+            {{if  (eq .PageContent.Tab "posts")}}
+            {{$posts := .PageContent.Posts}}
+                {{range $posts}}
+                    {{if not .Deleted}}
+                        <article>
+                            <h2><a href="/post/{{.ID}}">{{.Title}}</a></h2>
+                            {{if .Deleted}}
+                            <p>by Anonymous — likes {{.LikeCount}}, dislikes {{.DislikeCount}}, comments {{.CommentCount}}</p>
+                            {{else}}
+                            <p>by<a href="/user/profile/{{.AuthorName}}" class="username"> {{.AuthorName}}</a> 
+                                {{ template "react" .}}
+                            </p>
+                            {{end}}
+                            <p>{{range .Categories}}[{{.Name}}] {{end}}</p>
+                        </article>
+                    {{end}}
+                {{else}}<p>No posts yet.</p>{{end}}
+            {{end}}
+
+            {{if and (eq .PageContent.Tab "likedPosts") .IsOwner}}
+            {{$LikesPosts := .PageContent.LikedPosts}}
+                {{range $LikesPosts}}
+                    {{if not .Deleted}}
+                        <article>
+                            <h2><a href="/post/{{.ID}}">{{.Title}}</a></h2>
+                            {{if .Deleted}}
+                            <p>by Anonymous — likes {{.LikeCount}}, dislikes {{.DislikeCount}}, comments {{.CommentCount}}</p>
+                            {{else}}
+                            <p>by<a href="/user/profile/{{.AuthorName}}" class="username"> {{.AuthorName}}</a> 
+                                {{ template "react" .}}
+                            </p>
+                            {{end}}
+                            <p>{{range .Categories}}[{{.Name}}] {{end}}</p>
+                        </article>
+                    {{end}}
+                {{else}}<p>No Liked posts yet.</p>{{end}}
+            {{end}}
+
+            {{if (eq .PageContent.Tab "comments")}}
+            {{$comments := .PageContent.Comments}}
+                {{range $comments}}
+                <a href="/post/{{.ParentPostID}}#comment-{{.ID}}">
+                     {{template "comment_card" .}} 
+                </a>
+                {{else}} 
+                    {{if eq .PageContent.Tab "comments"}}<p>No comments yet.</p>{{end}}
+                {{end}}
+            {{end}}
+        </section>
+    </section>
 </div>
-
 {{end}}

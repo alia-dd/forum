@@ -3,7 +3,6 @@ package server
 import (
 	"net/http"
 
-	"gitea.kood.tech/jyrkikarhunen/forum/handlers"
 	"gitea.kood.tech/jyrkikarhunen/forum/models"
 	"gitea.kood.tech/jyrkikarhunen/forum/utils"
 )
@@ -42,7 +41,7 @@ func registerRoutes(mux *http.ServeMux, d routeDependencies) {
 	handleAdmin(mux, "POST /admin/post/action", d, d.userHandler.PostAdminPostrAction)
 
 	// User profiles
-	handleRestricted(mux, "GET /user/profile", d, handlers.Profile)
+	handleRestricted(mux, "GET /user/profile", d, d.userHandler.GetOwnProfile)
 	handleGuest(mux, "GET /user/profile/{username}", d, d.userHandler.GetOtherUserProfile)
 
 	handleRestricted(mux, "GET /user/profile/edit", d, d.userHandler.GetEditUserProfile)

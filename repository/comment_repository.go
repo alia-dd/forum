@@ -17,6 +17,7 @@ type CommentRepository interface {
 	CreateComment(ctx context.Context, post models.CommentInput) (int, error)
 	GetCommentsByPost(ctx context.Context, postID int, userID *int) ([]*models.CommentView, error)
 	GetCommentByID(ctx context.Context, comID int, curUserID *int) (*models.CommentView, error)
+	GetCommentsByUser(ctx context.Context, userID int) ([]*models.CommentView, error)
 	// // GetRepliesByComment(ctx context.Context, commentID, int, userID *int) (*models.CommentView, error)
 	UpdateCommentContent(ctx context.Context, commentID, userID int, userRole, content string) error
 	CountByPost(ctx context.Context, postID int) (int, error)
@@ -385,6 +386,33 @@ func (r *commentRepositoryImpl) GetRepliesByCommentID(ctx context.Context, paren
 		comments = append(comments, &cv)
 	}
 
+	if err := rows.Err(); err != nil {
+		return nil, customerrors.MapSQLError(err)
+	}
+
+	return comments, nil
+}
+
+func (r *commentRepositoryImpl) GetCommentsByUser(ctx context.Context, userID int) ([]*models.CommentView, error) {
+	rows, err := r.db.QueryContext(ctx, `
+		SELECT c.id, c.content, c.parent_post_id, u.username,c.created_at
+		FROM comment c
+		JOIN user u ON u.id = c.user_id
+		WHERE c.user_id = ? AND c.deleted_at IS NULL
+		ORDER BY c.created_at DESC`, userID)
+	if err != nil {
+		return nil, customerrors.MapSQLError(err)
+	}
+	defer rows.Close()
+
+	comments := []*models.CommentView{}
+	for rows.Next() {
+		var c models.CommentView
+		if err := rows.Scan(&c.ID, &c.Content, &c.ParentPostID, &c.AuthorName,&c.CreatedAt); err != nil {
+			return nil, customerrors.MapSQLError(err)
+		}
+		comments = append(comments, &c)
+	}
 	if err := rows.Err(); err != nil {
 		return nil, customerrors.MapSQLError(err)
 	}

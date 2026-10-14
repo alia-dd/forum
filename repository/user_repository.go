@@ -13,7 +13,7 @@ import (
 const (
 	RegisterUserQuery            = ` INSERT INTO user (username, name, email, bio, imagepath, password_hash) VALUES(?,?,?,?,?,?)`
 	fetchUserInfoQurrey          = ` SELECT id, username, name, email, ifnull(bio, ''), ifnull(imagepath, ''), password_hash, created_at, updated_at, role FROM user WHERE (username = ? or email = ?)`
-	fetchUserInfoByIdQurrey      = ` SELECT id, username, name, email, ifnull(imagepath, ''), ifnull(imagepath, ''), role FROM user WHERE id = ?`
+	fetchUserInfoByIdQurrey      = ` SELECT id, username, name, email, ifnull(bio, ''), ifnull(imagepath, ''), role FROM user WHERE id = ?`
 	fetchUserInfoByUsernameQurey = ` SELECT id, username, name, ifnull(bio, ''), ifnull(imagepath, '')  FROM user WHERE username = ?`
 
 	UpdateUserRoleByIdQuery = ` UPDATE user SET updated_at = CURRENT_TIMESTAMP, role = ? WHERE id = ?`

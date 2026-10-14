@@ -115,24 +115,76 @@ func (h *UseHandler) GetEditUserProfile(w http.ResponseWriter, r *http.Request) 
 	utils.RenderTemplate(w, http.StatusOK, "profileEdit", pageData)
 }
 
-// shows profile data for other registred users
-func (h *UseHandler) GetOtherUserProfile(w http.ResponseWriter, r *http.Request) {
+func (h *UseHandler) showProfile(w http.ResponseWriter, r *http.Request, username string) {
 	cx := r.Context()
 	user, ok := r.Context().Value("user_session").(*models.UserInfo)
-	username := r.PathValue("username")
 
+	tab := r.URL.Query().Get("tab")
+	if tab != "posts" && tab != "comments" && tab != "likedPosts" {
+		tab = "posts"
+	}
+
+	pageContent := models.ProfilePage{Tab: tab}
 	profileData, fetchErr := h.service.GetUserService(cx, username)
 	if fetchErr != nil {
 		handleError(w, r, fetchErr)
 		return
 	}
+	userID := -1
+	if ok {
+		userID = user.ID
+	}
+	pageContent.Profile = profileData
 
-	pageData := models.PageData[models.PublicUserInfo]{
+	if tab == "posts" {
+		posts, fetchPostErr := h.postRep.GetPost(cx, models.PostFilter{AuthorID: &profileData.ID}, userID)
+		if fetchPostErr != nil {
+			handleError(w, r, fetchPostErr)
+			return
+		}
+
+		pageContent.Posts = posts
+	}
+
+	if tab == "comments" {
+		comments, fetchCommErr := h.commentRep.GetCommentsByUser(cx, profileData.ID)
+		if fetchCommErr != nil {
+			handleError(w, r, fetchCommErr)
+			return
+		}
+		pageContent.Comments = comments
+	}
+
+	if tab == "likedPosts" {
+		likedPosts, fetchPostLikedErr := h.postRep.GetPost(cx, models.PostFilter{LikedByID: &profileData.ID}, userID)
+		if fetchPostLikedErr != nil {
+			handleError(w, r, fetchPostLikedErr)
+			return
+		}
+		pageContent.LikedPosts = likedPosts
+	}
+	pageData := models.PageData[models.ProfilePage]{
 		User:        user,
 		IsOwner:     ok && user.ID == profileData.ID,
-		PageContent: profileData,
+		PageContent: pageContent,
 	}
 	utils.RenderTemplate(w, http.StatusOK, "profile", pageData)
+
+}
+
+// shows profile data for other registred users
+func (h *UseHandler) GetOtherUserProfile(w http.ResponseWriter, r *http.Request) {
+	username := r.PathValue("username")
+	h.showProfile(w, r, username)
+}
+
+func (h *UseHandler) GetOwnProfile(w http.ResponseWriter, r *http.Request) {
+	user, ok := r.Context().Value("user_session").(*models.UserInfo)
+	if !ok {
+		utils.RedirectTologin(w, r)
+		return
+	}
+	h.showProfile(w, r, user.Username)
 }
 
 func (h *UseHandler) UpdateUserProfile(w http.ResponseWriter, r *http.Request) {
