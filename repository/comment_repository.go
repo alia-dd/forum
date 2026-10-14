@@ -395,7 +395,7 @@ func (r *commentRepositoryImpl) GetRepliesByCommentID(ctx context.Context, paren
 
 func (r *commentRepositoryImpl) GetCommentsByUser(ctx context.Context, userID int) ([]*models.CommentView, error) {
 	rows, err := r.db.QueryContext(ctx, `
-		SELECT c.id, c.content, c.parent_post_id, u.username
+		SELECT c.id, c.content, c.parent_post_id, u.username,c.created_at
 		FROM comment c
 		JOIN user u ON u.id = c.user_id
 		WHERE c.user_id = ? AND c.deleted_at IS NULL
@@ -408,7 +408,7 @@ func (r *commentRepositoryImpl) GetCommentsByUser(ctx context.Context, userID in
 	comments := []*models.CommentView{}
 	for rows.Next() {
 		var c models.CommentView
-		if err := rows.Scan(&c.ID, &c.Content, &c.ParentPostID, &c.AuthorName); err != nil {
+		if err := rows.Scan(&c.ID, &c.Content, &c.ParentPostID, &c.AuthorName,&c.CreatedAt); err != nil {
 			return nil, customerrors.MapSQLError(err)
 		}
 		comments = append(comments, &c)

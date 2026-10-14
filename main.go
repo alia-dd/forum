@@ -1,18 +1,11 @@
 package main
 
 import (
-	"fmt"
 	"log"
-	"net/http"
 	"os"
-	"time"
 
 	"gitea.kood.tech/jyrkikarhunen/forum/database"
-	"gitea.kood.tech/jyrkikarhunen/forum/handlers"
-	"gitea.kood.tech/jyrkikarhunen/forum/middleware"
-	"gitea.kood.tech/jyrkikarhunen/forum/models"
-	"gitea.kood.tech/jyrkikarhunen/forum/repository"
-	"gitea.kood.tech/jyrkikarhunen/forum/service"
+	"gitea.kood.tech/jyrkikarhunen/forum/server"
 	"gitea.kood.tech/jyrkikarhunen/forum/utils"
 )
 
@@ -32,7 +25,7 @@ func main() {
 	if deleteDB {
 		err := os.Remove("data/forum.db")
 		if err != nil {
-			fmt.Println(err)
+			log.Fatal(err)
 		}
 	}
 
@@ -45,144 +38,11 @@ func main() {
 	if seedDB {
 		err := database.SeedData(db)
 		if err != nil {
-			fmt.Println(err)
+			log.Fatal(err)
 		}
 	}
 
 	utils.InitializeTemplate()
 
-	mux := http.NewServeMux()
-
-	sessionRepo := repository.NewSessionRepository(db)
-	userRepo := repository.NewUserRepository(db)
-
-	reactRepo := repository.NewReactionRepository(db)
-	postRepo := repository.NewPostRepository(db)
-	categoryRepo := repository.NewCategoryRepository(db)
-
-	commentRepo := repository.NewCommentRepository(db)
-
-	userService := service.NewUserService(userRepo, sessionRepo)
-	reactService := service.NewReactionService(reactRepo)
-
-	searchRepo := repository.NewSearchRepository(db)
-	// searchHandler := handlers.NewSearchHandler(searchRepo)
-
-	reactHandler := handlers.NewReactionHandler(reactService, postRepo, commentRepo)
-	userHandler := handlers.NewUserHandler(userService, postRepo, commentRepo, categoryRepo, *searchRepo)
-	postHandler := handlers.NewPostHandler(postRepo, categoryRepo, commentRepo)
-	categoryHandler := handlers.NewCategoryHandler(categoryRepo)
-	commentHandler := handlers.NewCommentHandler(commentRepo)
-
-	mux.Handle("GET /static/",
-		http.StripPrefix("/static/",
-			http.FileServer(http.Dir("static"))))
-
-	// route check if the routes bellow are not called and difult to this one and if not calls 404 page
-	// wrappes the whole with call with the safeguarded other while the user session will not we recognize and will log you out
-	mux.HandleFunc("GET /", middleware.Recoverer(
-		middleware.AllowGuest(sessionRepo, userRepo, func(w http.ResponseWriter, r *http.Request) {
-			if r.URL.Path != "/" {
-				user, _ := r.Context().Value("user_session").(*models.UserInfo)
-
-				pageData := models.PageData[models.ErrorStruct]{
-					User:        user,
-					PageContent: models.ErrorStruct{Error: "404", ErrorMs: "Page Not Found"},
-				}
-				utils.RenderTemplate(w, http.StatusNotFound, "error", pageData)
-				return
-			}
-			(postHandler.GetPosts)(w, r)
-
-		}),
-	))
-
-	// admin panel
-	mux.HandleFunc("GET /admin/confirmation", middleware.Recoverer(middleware.Admin(sessionRepo, userRepo, userHandler.GetConfirmUserAction)))
-
-	mux.HandleFunc("GET /admin/users", middleware.Recoverer(middleware.Admin(sessionRepo, userRepo, userHandler.GetAdminUserTable)))
-	mux.HandleFunc("GET /admin/posts", middleware.Recoverer(middleware.Admin(sessionRepo, userRepo, userHandler.GetAdminPostTable)))
-	// mux.HandleFunc("GET /admin/comments", middleware.Recoverer(middleware.Admin(sessionRepo, userRepo, userHandler.GetAdminCommentTable)))
-	mux.HandleFunc("GET /admin/categories", middleware.Recoverer(middleware.Admin(sessionRepo, userRepo, userHandler.GetCategoryTable)))
-
-	mux.HandleFunc("POST /admin/users/action", middleware.Recoverer(middleware.Admin(sessionRepo, userRepo, userHandler.PostAdminUserAction)))
-	mux.HandleFunc("POST /admin/post/action", middleware.Recoverer(middleware.Admin(sessionRepo, userRepo, userHandler.PostAdminPostrAction)))
-
-	// Profile page is user specific and is safeguarded by the Restrict middleware
-	// if there is no active session, it redirects to the login page.
-	mux.HandleFunc("GET /user/profile", middleware.Recoverer(middleware.Restrict(sessionRepo, userRepo, userHandler.GetOwnProfile)))
-	mux.HandleFunc("GET /user/profile/{username}", middleware.Recoverer(middleware.AllowGuest(sessionRepo, userRepo, userHandler.GetOtherUserProfile)))
-
-	mux.HandleFunc("GET /user/profile/edit", middleware.Recoverer(middleware.Restrict(sessionRepo, userRepo, userHandler.GetEditUserProfile)))
-	mux.HandleFunc("POST /user/profile/edit", middleware.Recoverer(middleware.Restrict(sessionRepo, userRepo, userHandler.UpdateUserProfile)))
-
-	mux.HandleFunc("GET /user/register", middleware.Recoverer(userHandler.GetRegisterUser))
-	mux.HandleFunc("POST /user/register", middleware.Recoverer(userHandler.PostRegisterUser))
-
-	mux.HandleFunc("GET /user/login", middleware.Recoverer(userHandler.GetSignInUser))
-	mux.HandleFunc("POST /user/login", middleware.Recoverer(userHandler.SignInUser))
-
-	mux.HandleFunc("GET /user/profile/password", middleware.Recoverer(middleware.Restrict(sessionRepo, userRepo, userHandler.GetChangePassword)))
-	mux.HandleFunc("POST /user/profile/password", middleware.Recoverer(middleware.Restrict(sessionRepo, userRepo, userHandler.PostChangePassword)))
-
-	mux.HandleFunc("POST /user/logout", middleware.Recoverer(userHandler.SignOutUser))
-
-	// POST gets React struct that has targetType (post/comment)
-	mux.HandleFunc("POST /react", middleware.Recoverer(middleware.Restrict(sessionRepo, userRepo, reactHandler.Reaction)))
-
-	// GET /post/{id} - just an int
-	mux.HandleFunc("GET /post/{id}", middleware.Recoverer(middleware.AllowGuest(sessionRepo, userRepo, postHandler.GetPostByID)))
-
-	//below need auth
-	// GET /post/new - loads template (once implemented) for submitting post
-	mux.HandleFunc("GET /post/new", middleware.Recoverer(middleware.Restrict(sessionRepo, userRepo, postHandler.NewPostForm)))
-	// POST /post/new - create post. Form: title, content, main_category={id}, category={id}… (sides)
-	mux.HandleFunc("POST /post/new", middleware.Recoverer(middleware.Restrict(sessionRepo, userRepo, postHandler.CreatePost)))
-	// GET /post/{id}/edit - loads template (once implemented) for editing a post you own
-	mux.HandleFunc("GET /post/{id}/edit", middleware.Recoverer(middleware.Restrict(sessionRepo, userRepo, postHandler.EditPostForm)))
-	// POST /post/{id}/edit - update your post. Form: title, content, main_category={id}, category={id}… (sides)
-	mux.HandleFunc("POST /post/{id}/edit", middleware.Recoverer(middleware.Restrict(sessionRepo, userRepo, postHandler.UpdatePost)))
-	mux.HandleFunc("POST /post/{id}/delete", middleware.Recoverer(middleware.Restrict(sessionRepo, userRepo, postHandler.DeletePost)))
-
-	// GET /category/new - loads template (once implemented) for creating new category
-	mux.HandleFunc("GET /category/new", middleware.Recoverer(middleware.Admin(sessionRepo, userRepo, categoryHandler.NewCategoryForm)))
-	// POST /category/new - create category. Form: name
-	mux.HandleFunc("POST /category/new", middleware.Recoverer(middleware.Admin(sessionRepo, userRepo, categoryHandler.CreateCategory)))
-	// GET /category/{id}/edit - loads template (once implemented) for editing existing category
-	mux.HandleFunc("GET /category/{id}/edit", middleware.Recoverer(middleware.Admin(sessionRepo, userRepo, categoryHandler.EditCategoryForm)))
-	// POST /category/{id}/edit - rename category. Form: name
-	mux.HandleFunc("POST /category/{id}/edit", middleware.Recoverer(middleware.Admin(sessionRepo, userRepo, categoryHandler.UpdateCategory)))
-	// POST /category/{id}/delete - delete category (if it has no references elsewhere)
-	mux.HandleFunc("POST /category/{id}/delete", middleware.Recoverer(middleware.Admin(sessionRepo, userRepo, categoryHandler.DeleteCategory)))
-
-	// POST /post/{id}/comment/create - for commenting
-	mux.HandleFunc("POST /post/{id}/comment/create", middleware.Recoverer(middleware.Restrict(sessionRepo, userRepo, commentHandler.CreateComment)))
-	// GET /post/{postID}/comment/{commentID}/edit - for editing comment
-	mux.HandleFunc("GET /post/{postID}/comment/{commentID}/edit", middleware.Recoverer(middleware.Restrict(sessionRepo, userRepo, commentHandler.GetCommentEditForm)))
-	// PUT /post/{postID}/comment/{commentID} - for updating comment
-	mux.HandleFunc("PUT /post/{postID}/comment/{commentID}", middleware.Recoverer(middleware.Restrict(sessionRepo, userRepo, commentHandler.UpdateComment)))
-	// GET /post/{postID}/comment/{commentID} - for getting comment
-	mux.HandleFunc("GET /post/{postID}/comment/{commentID}", middleware.Recoverer(middleware.Restrict(sessionRepo, userRepo, commentHandler.GetComment)))
-	// POST /post/{postID}/comment/{commentID}/delete - for deleting comment
-	mux.HandleFunc("DELETE /post/{postID}/comment/{commentID}/delete", middleware.Recoverer(middleware.Restrict(sessionRepo, userRepo, commentHandler.DeleteComment)))
-	// GET /post/{postID}/comment/{commentID}/reply - for getting the reply form
-	mux.HandleFunc("GET /post/{postID}/comment/{commentID}/reply", middleware.Recoverer(middleware.Restrict(sessionRepo, userRepo, commentHandler.GetReplyForm)))
-	// POST /post/{postID}/comment/{commentID}/reply - for creating the reply (comment)
-	mux.HandleFunc("POST /post/{postID}/comment/{commentID}/reply", middleware.Recoverer(middleware.Restrict(sessionRepo, userRepo, commentHandler.CreateReply)))
-	//above need auth
-
-	mux.HandleFunc("GET /post/{postID}/comment/{commentID}/replies", middleware.Recoverer(middleware.AllowGuest(sessionRepo, userRepo, commentHandler.GetCommentReplies)))
-
-	// mux.HandleFunc("GET /search", middleware.Recoverer(middleware.AllowGuest(sessionRepo, userRepo, searchHandler.Search)))
-
-	server := &http.Server{
-		Addr:         ":8080",
-		Handler:      mux,
-		ReadTimeout:  5 * time.Second,
-		WriteTimeout: 15 * time.Second,
-		IdleTimeout:  120 * time.Second,
-	}
-	fmt.Println("Server starting on http://localhost:8080")
-
-	log.Fatal(server.ListenAndServe())
+	server.InitServer(db)
 }

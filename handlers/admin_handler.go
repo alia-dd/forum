@@ -90,7 +90,10 @@ func (h *UseHandler) PostAdminUserAction(w http.ResponseWriter, r *http.Request)
 	userId, _ := strconv.Atoi(r.FormValue("user_id"))
 	action := r.FormValue("action")
 	actionType := r.FormValue("ActionType")
-
+	if userId == user.ID {
+		handleError(w, r, customerrors.ErrForbidden)
+		return
+	}
 	if cfm_secter != "12345" {
 		confirmFormError(w, 0, userId, action, actionType, "Incorrect confermation secret")
 		return

@@ -1,3 +1,0 @@
-Unsure if we need a separate service layer, but if we do, 
-'business' logic/validation goes here.
-Probably separated by 'category' like handlers and/or repository layers.

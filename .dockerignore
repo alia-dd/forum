@@ -1,0 +1,7 @@
+.git
+.gitignore
+.env
+*.db
+Makefile
+*.drawio
+*.svg

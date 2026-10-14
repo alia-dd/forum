@@ -63,7 +63,9 @@
             {{if (eq .PageContent.Tab "comments")}}
             {{$comments := .PageContent.Comments}}
                 {{range $comments}}
-                  {{template "comment_card" .}} 
+                <a href="/post/{{.ParentPostID}}#comment-{{.ID}}">
+                     {{template "comment_card" .}} 
+                </a>
                 {{else}} 
                     {{if eq .PageContent.Tab "comments"}}<p>No comments yet.</p>{{end}}
                 {{end}}
