@@ -84,7 +84,6 @@ func (r *postRepositoryImpl) GetPost(ctx context.Context, filter models.PostFilt
 	var conds []string
 	var args []any
 	args = append(args, user_id)
-
 	if filter.AuthorID != nil {
 		conds = append(conds, "post.user_id = ?")
 		args = append(args, *filter.AuthorID)

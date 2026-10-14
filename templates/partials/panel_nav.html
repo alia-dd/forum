@@ -1,5 +1,4 @@
 
-Panel nav · HTML
 {{define "panel_nav"}}
 <aside class="panel-nav" aria-label="Admin sections">
   <a href="/admin/users" class="panel-nav_link">
@@ -8,9 +7,6 @@ Panel nav · HTML
   <a href="/admin/posts" class="panel-nav_link ">
     <i class="ph ph-article panel-nav_icon"></i>Posts
   </a>
-  <!-- <a href="/admin/comments" class="panel-nav_link ">
-    <i class="ph ph-chat-circle panel-nav_icon"></i>Comments
-  </a> -->
   <a href="/admin/categories" class="panel-nav_link ">
     <i class="ph ph-squares-four panel-nav_icon"></i>Categories
   </a>
@@ -19,6 +15,24 @@ Panel nav · HTML
   document.querySelectorAll('.panel-nav_link').forEach(a => {
     if (a.getAttribute('href') === location.pathname) a.classList.add('active')
   })
+</script>
+{{end}}
+
+
+{{define "profile_nav"}}
+<aside class="profile-panel-nav" aria-label="Profile nav sections">
+  <a href="?tab=posts" class="profile-nav_link ">Posts</a>  
+  <a href="?tab=comments" class="profile-nav_link ">Comments</a>
+  {{if .IsOwner}}
+  <a href="?tab=likedPosts" class="profile-nav_link">Liked Posts</a>
+  {{end}}
+</aside>
+<script>
+  const tab = new URLSearchParams(location.search).get('tab') || 'posts'; // default tab
+  document.querySelectorAll('.profile-nav_link').forEach(a => {
+    const linkTab = new URLSearchParams(a.getAttribute('href').split('?')[1]).get('tab');
+    if (linkTab === tab) a.classList.add('active');
+  });
 </script>
 {{end}}
  

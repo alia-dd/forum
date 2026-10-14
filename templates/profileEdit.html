@@ -1,14 +1,12 @@
 {{define "content"}}
 
-<div id="profile">
+<div id="profile" class="profile_edit">
 
-    <span class="title">Edit Profile Data</span>
-    {{if .Error}} 
-        <div class="error"> {{.Error}} </div> 
-    {{end}}
+    <!-- <span class="title">Edit Profile Data</span> -->
     <div id="edit">
         <!-- /user/profile/{id}/edit -->
         <form method="POST" action="/user/profile/edit" enctype="multipart/form-data">
+        
             <div class="row">
                 <img {{if .User.Image}} src="/static/assets/images/{{.User.Image}}" {{else}} src="/static/assets/images/avatar1.jpg" {{end}} alt="Avatar" class="avatar">
                 <div><input type="file" accept="image/png, image/jpeg" id="imagepath" name="imagepath"  /></div>
