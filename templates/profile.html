@@ -41,7 +41,7 @@
                 {{else}}<p>No posts yet.</p>{{end}}
             {{end}}
 
-            {{if  (eq .PageContent.Tab "likedPosts")}}
+            {{if and (eq .PageContent.Tab "likedPosts") .IsOwner}}
             {{$LikesPosts := .PageContent.LikedPosts}}
                 {{range $LikesPosts}}
                     {{if not .Deleted}}

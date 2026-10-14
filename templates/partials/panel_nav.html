@@ -23,7 +23,9 @@
 <aside class="profile-panel-nav" aria-label="Profile nav sections">
   <a href="?tab=posts" class="profile-nav_link ">Posts</a>  
   <a href="?tab=comments" class="profile-nav_link ">Comments</a>
+  {{if .IsOwner}}
   <a href="?tab=likedPosts" class="profile-nav_link">Liked Posts</a>
+  {{end}}
 </aside>
 <script>
   const tab = new URLSearchParams(location.search).get('tab') || 'posts'; // default tab
