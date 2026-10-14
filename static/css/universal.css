@@ -88,7 +88,7 @@
     background-color: var(--paper);
     box-shadow: var(--shadow);
     margin: 0.5rem 0;
-    width: 100%;
+    width: 75%;
 }
 
 .post-container:hover {
@@ -145,7 +145,7 @@ a:hover {
     background-color: var(--paper);
     box-shadow: var(--shadow);
     margin: 0.5rem 0;
-    width: 100%;
+    width: 75%;
     align-items: center;
 }
 
@@ -157,7 +157,7 @@ a:hover {
     border-radius: 5px;
     margin: 0.5rem 0;
     align-items: center;
-    width: 70%;
+    width: 50%;
 }
 
 .create-comment {
@@ -182,7 +182,7 @@ a:hover {
     padding: 1rem;
     border-radius: 5px;
     margin: 0.5rem 0;
-    width: 100%;
+    width: 75%;
 }
 
 .comment-item {
@@ -264,5 +264,17 @@ a:hover {
 @media (max-width: 800px) {
     .post-form-container {
         max-width: 80%;
+    }
+
+    .post-container {
+        width: 100%;
+    }
+
+    .main-post-container {
+        width: 100%;
+    }
+
+    .comment-container {
+        width: 100%;
     }
 }
