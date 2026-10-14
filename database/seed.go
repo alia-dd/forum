@@ -80,35 +80,35 @@ func SeedData(db *sql.DB) error {
 		category[cat] = insert(`INSERT INTO category (name) VALUES (?)`, cat)
 	}
 
-	// --- posts ---
-	p1 := insert(`INSERT INTO post (user_id, title, content) VALUES (?, ?, ?)`,
+	// --- posts (created_at spread across days/hours; p9 also has an edit) ---
+	p1 := insert(`INSERT INTO post (user_id, title, content, created_at) VALUES (?, ?, ?, datetime('now','-5 days'))`,
 		users["alice"], "Thoughts on Dune, Chapter 5",
 		"Paul's arc in this chapter is incredible. The foreshadowing lands so much harder on a reread.")
-	p2 := insert(`INSERT INTO post (user_id, title, content) VALUES (?, ?, ?)`,
+	p2 := insert(`INSERT INTO post (user_id, title, content, created_at) VALUES (?, ?, ?, datetime('now','-4 days'))`,
 		users["bob"], "Best fantasy series to start with?",
 		"New to the genre and looking for a first series that isn't 14 books long. Suggestions?")
-	p3 := insert(`INSERT INTO post (user_id, title, content) VALUES (?, ?, ?)`,
+	p3 := insert(`INSERT INTO post (user_id, title, content, created_at) VALUES (?, ?, ?, datetime('now','-3 days','-12 hours'))`,
 		users["carol"], "Revisiting Pride and Prejudice",
 		"It holds up remarkably well. Curious what everyone thinks of the pacing in the first half.")
-	p4 := insert(`INSERT INTO post (user_id, title, content) VALUES (?, ?, ?)`,
+	p4 := insert(`INSERT INTO post (user_id, title, content, created_at) VALUES (?, ?, ?, datetime('now','-3 days'))`,
 		users["dave"], "Reread value", "Some books only click on the second pass. Which ones did that for you?")
-	p5 := insert(`INSERT INTO post (user_id, title, content) VALUES (?, ?, ?)`,
+	p5 := insert(`INSERT INTO post (user_id, title, content, created_at) VALUES (?, ?, ?, datetime('now','-2 days','-6 hours'))`,
 		users["frank"],
 		"On the quiet radicalism of slow books: why I've stopped apologising for taking three months to finish a single novel, and what the club taught me about reading without a finish line",
 		"I used to treat a to-read pile like a backlog to clear.\n\nThis year I read four books. Four. And I remember all of them — the shape of the sentences, where I was sitting, what I argued about here afterwards.\n\nSlow reading isn't a productivity failure. It's the whole point. Curious whether anyone else made the same shift.")
-	p6 := insert(`INSERT INTO post (user_id, title, content) VALUES (?, ?, ?)`,
+	p6 := insert(`INSERT INTO post (user_id, title, content, created_at) VALUES (?, ?, ?, datetime('now','-2 days'))`,
 		users["erin"], "The Name of the Wind — gorgeous prose or overrated?",
 		"Rothfuss can write a sentence, no question. But is the lyricism carrying a story that's actually a bit thin? Convince me either way.")
-	p7 := insert(`INSERT INTO post (user_id, title, content) VALUES (?, ?, ?)`,
+	p7 := insert(`INSERT INTO post (user_id, title, content, created_at) VALUES (?, ?, ?, datetime('now','-1 day'))`,
 		users["grace"], "True-crime that reads like fiction (without exploiting anyone)",
 		"Looking for well-reported non-fiction with real narrative craft. In Cold Blood is the obvious one — what else belongs on that shelf?")
-	p8 := insert(`INSERT INTO post (user_id, title, content) VALUES (?, ?, ?)`,
+	p8 := insert(`INSERT INTO post (user_id, title, content, created_at) VALUES (?, ?, ?, datetime('now','-8 hours'))`,
 		users["heidi"], "A poem that changed how you read everything after it",
 		"For me it was Mary Oliver's 'Wild Geese'. Share yours.")
-	p9 := insert(`INSERT INTO post (user_id, title, content) VALUES (?, ?, ?)`,
+	p9 := insert(`INSERT INTO post (user_id, title, content, created_at, updated_at) VALUES (?, ?, ?, datetime('now','-5 hours'), datetime('now','-2 hours'))`,
 		users["alice"], "Roundup: what authors say about their terrible first drafts",
 		"Collecting the best 'my first draft was garbage' quotes from interviews. Post your favourites and I'll compile them.")
-	p10 := insert(`INSERT INTO post (user_id, title, content) VALUES (?, ?, ?)`,
+	p10 := insert(`INSERT INTO post (user_id, title, content, created_at) VALUES (?, ?, ?, datetime('now','-2 hours'))`,
 		users["bob"], "Unpopular opinion: sometimes the film really is better",
 		"Fight me. I'll start: the adaptation tightened a saggy middle act and the book knows it.")
 
@@ -128,29 +128,29 @@ func SeedData(db *sql.DB) error {
 	insert(`INSERT INTO post_category (post_id, category_id, is_main) VALUES (?, ?, 1)`, p9, category["Author Interviews"])
 	insert(`INSERT INTO post_category (post_id, category_id, is_main) VALUES (?, ?, 1)`, p10, category["Classics"])
 
-	// --- comments ---
+	// --- comments (each after its post; each reply after its parent; c1 also edited) ---
 	// Top-level comments have parent_comment_id = NULL (pass nil).
-	c1 := insert(`INSERT INTO comment (user_id, parent_post_id, parent_comment_id, content) VALUES (?, ?, ?, ?)`,
+	c1 := insert(`INSERT INTO comment (user_id, parent_post_id, parent_comment_id, content, created_at, updated_at) VALUES (?, ?, ?, ?, datetime('now','-4 days','-20 hours'), datetime('now','-4 days'))`,
 		users["bob"], p1, nil, "Totally agree. The Gom Jabbar scene reads completely differently the second time.")
-	c2 := insert(`INSERT INTO comment (user_id, parent_post_id, parent_comment_id, content) VALUES (?, ?, ?, ?)`,
+	c2 := insert(`INSERT INTO comment (user_id, parent_post_id, parent_comment_id, content, created_at) VALUES (?, ?, ?, ?, datetime('now','-4 days','-2 hours'))`,
 		users["carol"], p1, nil, "I still find the pacing here a little slow, honestly.")
 	// A REPLY to c1: parent_comment_id is set, but it's still anchored to post p1.
-	c3 := insert(`INSERT INTO comment (user_id, parent_post_id, parent_comment_id, content) VALUES (?, ?, ?, ?)`,
+	c3 := insert(`INSERT INTO comment (user_id, parent_post_id, parent_comment_id, content, created_at) VALUES (?, ?, ?, ?, datetime('now','-4 days','-10 hours'))`,
 		users["alice"], p1, c1, "Right? And it sets up his whole relationship with fear later on.")
 	// A top-level comment on a different post (id not needed later).
-	insert(`INSERT INTO comment (user_id, parent_post_id, parent_comment_id, content) VALUES (?, ?, ?, ?)`,
+	insert(`INSERT INTO comment (user_id, parent_post_id, parent_comment_id, content, created_at) VALUES (?, ?, ?, ?, datetime('now','-3 days','-12 hours'))`,
 		users["alice"], p2, nil, "Start with the first Earthsea book — self-contained and short.")
-	cc1 := insert(`INSERT INTO comment (user_id, parent_post_id, parent_comment_id, content) VALUES (?, ?, ?, ?)`,
+	cc1 := insert(`INSERT INTO comment (user_id, parent_post_id, parent_comment_id, content, created_at) VALUES (?, ?, ?, ?, datetime('now','-1 day','-20 hours'))`,
 		users["bob"], p6, nil, "Overrated. The framing device is doing all the heavy lifting.")
-	cc2 := insert(`INSERT INTO comment (user_id, parent_post_id, parent_comment_id, content) VALUES (?, ?, ?, ?)`,
+	cc2 := insert(`INSERT INTO comment (user_id, parent_post_id, parent_comment_id, content, created_at) VALUES (?, ?, ?, ?, datetime('now','-1 day','-12 hours'))`,
 		users["carol"], p6, cc1, "Hard disagree — the framing IS the story. Kvothe's unreliability is the point.")
-	cc3 := insert(`INSERT INTO comment (user_id, parent_post_id, parent_comment_id, content) VALUES (?, ?, ?, ?)`,
+	cc3 := insert(`INSERT INTO comment (user_id, parent_post_id, parent_comment_id, content, created_at) VALUES (?, ?, ?, ?, datetime('now','-1 day','-5 hours'))`,
 		users["dave"], p6, cc2, "This is the reply-to-a-reply case — good for testing indentation depth 3.")
-	insert(`INSERT INTO comment (user_id, parent_post_id, parent_comment_id, content) VALUES (?, ?, ?, ?)`,
+	insert(`INSERT INTO comment (user_id, parent_post_id, parent_comment_id, content, created_at) VALUES (?, ?, ?, ?, datetime('now','-1 day','-2 hours'))`,
 		users["erin"], p6, nil, "Second top-level comment on the same post, to test sibling threads.")
-	insert(`INSERT INTO comment (user_id, parent_post_id, parent_comment_id, content) VALUES (?, ?, ?, ?)`,
+	insert(`INSERT INTO comment (user_id, parent_post_id, parent_comment_id, content, created_at) VALUES (?, ?, ?, ?, datetime('now','-20 hours'))`,
 		users["frank"], p7, nil, "Say Nothing by Patrick Radden Keefe. Reads like a thriller, deeply reported.")
-	insert(`INSERT INTO comment (user_id, parent_post_id, parent_comment_id, content) VALUES (?, ?, ?, ?)`,
+	insert(`INSERT INTO comment (user_id, parent_post_id, parent_comment_id, content, created_at) VALUES (?, ?, ?, ?, datetime('now','-18 hours'))`,
 		users["grace"], p7, nil, "The Devil in the White City, obviously.")
 
 	// --- post likes/dislikes (unique per user+post) ---

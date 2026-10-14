@@ -18,9 +18,10 @@
   <article>
     <h2><a href="/post/{{.ID}}">{{.Title}}</a></h2>
     {{if .Deleted}}
-    <p>by Anonymous — likes {{.LikeCount}}, dislikes {{.DislikeCount}}, comments {{.CommentCount}}</p>
+    <p>by Anonymous · created {{.CreatedAgo}} — likes {{.LikeCount}}, dislikes {{.DislikeCount}}, comments {{.CommentCount}}</p>
     {{else}}
-   <p>by<a href="/user/profile/{{.AuthorName}}" class="username"> {{.AuthorName}}</a> 
+   <p>by<a href="/user/profile/{{.AuthorName}}" class="username"> {{.AuthorName}}</a>
+      · created {{.CreatedAgo}}{{with .EditedAgo}} · edited {{.}}{{end}}
       {{ template "react" .}}
   </p>
     {{end}}
