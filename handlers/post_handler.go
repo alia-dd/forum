@@ -42,6 +42,10 @@ func (h *PostHandler) GetPosts(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if redirectIfPageTooHigh(w, r, pg, len(posts)) {
+		return
+	}
+
 	ids := make([]int, len(posts))
 	for i, post := range posts {
 		ids[i] = post.Post.ID

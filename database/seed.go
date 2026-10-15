@@ -183,7 +183,7 @@ func SeedData(db *sql.DB) error {
 	insert(`INSERT INTO comment_like (user_id, comment_id, value) VALUES (?, ?, ?)`, users["bob"], cc2, 1)
 	insert(`INSERT INTO comment_like (user_id, comment_id, value) VALUES (?, ?, ?)`, users["frank"], cc3, -1)
 
-	for i := 1; i <= 35; i++ {
+	for i := 1; i <= 55; i++ {
 		insert(`INSERT INTO post (user_id, title, content, created_at)
 		        VALUES (?, ?, ?, datetime('now', ?))`,
 			users["alice"],
@@ -193,7 +193,7 @@ func SeedData(db *sql.DB) error {
 	}
 
 	fillerPosts := []int64{p1, p2, p3, p4, p5}
-	for i := 1; i <= 30; i++ {
+	for i := 1; i <= 51; i++ {
 		insert(`INSERT INTO comment (user_id, parent_post_id, parent_comment_id, content, created_at)
 		        VALUES (?, ?, ?, ?, datetime('now', ?))`,
 			users["bob"], fillerPosts[i%len(fillerPosts)], nil,

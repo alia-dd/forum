@@ -147,6 +147,10 @@ func (h *UseHandler) showProfile(w http.ResponseWriter, r *http.Request, usernam
 			return
 		}
 
+		if redirectIfPageTooHigh(w, r, pg, len(posts)) {
+			return
+		}
+
 		pageContent.Posts = posts
 		pageContent.Pagination = pg
 	}
@@ -159,6 +163,11 @@ func (h *UseHandler) showProfile(w http.ResponseWriter, r *http.Request, usernam
 			handleError(w, r, fetchCommErr)
 			return
 		}
+
+		if redirectIfPageTooHigh(w, r, pg, len(comments)) {
+			return
+		}
+
 		pageContent.Comments = comments
 		pageContent.Pagination = pg
 	}
@@ -171,6 +180,11 @@ func (h *UseHandler) showProfile(w http.ResponseWriter, r *http.Request, usernam
 			handleError(w, r, fetchPostLikedErr)
 			return
 		}
+
+		if redirectIfPageTooHigh(w, r, pg, len(likedPosts)) {
+			return
+		}
+
 		pageContent.LikedPosts = likedPosts
 		pageContent.Pagination = pg
 	}

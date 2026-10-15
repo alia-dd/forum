@@ -24,6 +24,7 @@ func pageOffset(page int) int {
 
 func createPagination(r *http.Request, page int, hasNext bool) models.Pagination {
 	q := r.URL.Query()
+	q.Del("page")
 	Base := q.Encode()
 	if Base != "" {
 		Base += "&"
@@ -58,4 +59,12 @@ func paginate[T any](r *http.Request, fetch func(limit, offset int) ([]T, error)
 	}
 
 	return data, createPagination(r, page, hasNext), nil
+}
+
+func redirectIfPageTooHigh(w http.ResponseWriter, r *http.Request, pg models.Pagination, count int) bool {
+	if pg.Page > 1 && count == 0 {
+		http.Redirect(w, r, r.URL.Path+"?"+string(pg.Base)+"page=1", http.StatusSeeOther)
+		return true
+	}
+	return false
 }

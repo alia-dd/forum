@@ -24,6 +24,15 @@ func (h *UseHandler) GetAdminUserTable(w http.ResponseWriter, r *http.Request) {
 	usersData, pg, err := paginate(r, func(limit, offset int) ([]models.AdminUserInfo, error) {
 		return h.searchRep.SearchAdminUsers(cx, q, limit, offset)
 	})
+	if err != nil {
+		handleError(w, r, err)
+		return
+	}
+
+	if redirectIfPageTooHigh(w, r, pg, len(usersData)) {
+		return
+	}
+
 	pageData := models.PageData[MainPage]{
 		User: user,
 		PageContent: MainPage{
@@ -34,10 +43,7 @@ func (h *UseHandler) GetAdminUserTable(w http.ResponseWriter, r *http.Request) {
 			Pagination: pg,
 		},
 	}
-	if err != nil {
-		handleError(w, r, err)
-		return
-	}
+
 	utils.RenderTemplate(w, http.StatusOK, "admin_page", pageData)
 }
 
@@ -144,6 +150,10 @@ func (h *UseHandler) GetAdminPostTable(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if redirectIfPageTooHigh(w, r, pg, len(posts)) {
+		return
+	}
+
 	pageData := models.PageData[MainPage]{
 		User: user,
 		PageContent: MainPage{
@@ -153,10 +163,6 @@ func (h *UseHandler) GetAdminPostTable(w http.ResponseWriter, r *http.Request) {
 			Posts:      posts,
 			Pagination: pg,
 		},
-	}
-	if err != nil {
-		handleError(w, r, err)
-		return
 	}
 
 	utils.RenderTemplate(w, http.StatusOK, "admin_page", pageData)

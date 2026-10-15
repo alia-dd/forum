@@ -87,6 +87,10 @@ func (h *SearchHandler) Search(w http.ResponseWriter, r *http.Request) {
 			handleError(w, r, err)
 			return
 		}
+
+		if redirectIfPageTooHigh(w, r, results.Pagination, len(results.Users)) {
+			return
+		}
 	}
 	if scope == "posts" {
 		results.Posts, results.Pagination, err = paginate(r, func(limit, offset int) ([]models.PostResult, error) {
@@ -96,6 +100,10 @@ func (h *SearchHandler) Search(w http.ResponseWriter, r *http.Request) {
 			handleError(w, r, err)
 			return
 		}
+
+		if redirectIfPageTooHigh(w, r, results.Pagination, len(results.Posts)) {
+			return
+		}
 	}
 	if scope == "comments" {
 		results.Comments, results.Pagination, err = paginate(r, func(limit, offset int) ([]models.CommentResult, error) {
@@ -103,6 +111,10 @@ func (h *SearchHandler) Search(w http.ResponseWriter, r *http.Request) {
 		})
 		if err != nil {
 			handleError(w, r, err)
+			return
+		}
+
+		if redirectIfPageTooHigh(w, r, results.Pagination, len(results.Comments)) {
 			return
 		}
 	}
