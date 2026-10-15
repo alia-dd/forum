@@ -12,6 +12,7 @@ type MainPage struct {
 	Users      []models.AdminUserInfo
 	Comments   []*models.CommentView
 	Category   []models.Category
+	Pagination models.Pagination
 }
 
 type PostPage struct {
@@ -31,10 +32,11 @@ type CategoryFormPage struct {
 }
 
 type SearchResultPage struct {
-	Query    string
-	Scope    string
-	Sort     string
-	Users    []models.UserResult
-	Posts    []models.PostResult
-	Comments []models.CommentResult
+	Query      string
+	Scope      string
+	Sort       string
+	Users      []models.UserResult
+	Posts      []models.PostResult
+	Comments   []models.CommentResult
+	Pagination models.Pagination
 }

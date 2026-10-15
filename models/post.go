@@ -47,13 +47,15 @@ type PostFilter struct {
 	CategoryID *int
 	AuthorID   *int
 	LikedByID  *int
+	Limit      int
+	Offset     int
 }
 
 func (p Post) CreatedAgo() string {
 	return timeAgo(p.CreatedAt)
 }
 
-func (p Post) EditedAgo() string {
+func (p Post) UpdatedAgo() string {
 	if p.UpdatedAt == nil {
 		return ""
 	}
