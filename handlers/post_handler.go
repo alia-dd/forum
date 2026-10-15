@@ -118,7 +118,7 @@ func (h *PostHandler) GetPostByID(w http.ResponseWriter, r *http.Request) {
 			Comments: comments,
 		},
 	}
-
+	fmt.Println(">", post.AuthorImage)
 	utils.RenderTemplate(w, http.StatusOK, "post", pageData)
 }
 

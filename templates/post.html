@@ -1,52 +1,65 @@
 {{define "content"}}
 {{$user := .User}}
 {{$post := .PageContent.Post}}
-<article>
-  <h1>{{$post.Title}}</h1>
-  {{if $post.Deleted}}
-  <p>Anonymous —  {{ template "react" $post}}</p>
-  {{else}}
-  <p>by<a href="/user/profile/{{$post.AuthorName}}" class="username"> {{$post.AuthorName}}</a> 
+
+<div class="page-container">
+
+  <div class="main-post-container">
+
+    <p class="text">{{range $post.Categories}}[{{.Name}}] {{end}}</p>
+    <h1 class="main-post-title">{{$post.Title}}</h1>
+    {{if $post.Deleted}}
+      <p class="text">by Anonymous · created {{$post.CreatedAgo}}{{with $post.EditedAgo}} · deleted {{.}}{{end}}  {{ template "react" $post}}</p>
+      <div class="text"><em>[deleted by user]</em></div>
+    {{else}}
+      <p class="text" >by
+        <a href="/user/profile/{{$post.AuthorName}}" class="username ">
+          <span class="profile-li">
+            <img {{if $post.AuthorImage}} src="/static/assets/images/{{$post.AuthorImage}}" {{else}} src="/static/assets/images/avatar1.jpg" {{end}} alt="Avatar" class="admin-table-avatar">
+            {{$post.AuthorName}}
+          </span>   
+        </a> 
+        · created {{$post.CreatedAgo}}{{with $post.EditedAgo}} · edited {{.}}{{end}}
+      </p>
+     
+      <div class="content">{{$post.Content}}</div>
       {{ template "react" $post}}
-  </p>
-  {{end}}
+    {{end}}
 
-  <p>{{range $post.Categories}}[{{.Name}}] {{end}}</p>
-
-  {{if $post.Deleted}}
-    <div><em>[deleted by user]</em></div>
-  {{else}}
-    <div>{{$post.Content}}</div>
-  {{end}}
     {{if $user}}
         {{if or (and (eq $user.ID $post.UserID) (not $post.Deleted)) (eq $user.Role "admin")}}
-            <p><a href="/post/{{$post.ID}}/edit">Edit</a></p>
+          <div class="buttons-container">
+            <a href="/post/{{$post.ID}}/edit" class="button">Edit</a>
             <form method="POST" action="/post/{{$post.ID}}/delete" onsubmit="return confirm('Delete this post and all its comments?')">
-              <button type="submit">Delete</button>
+              <button type="submit" class="button">Delete</button>
             </form>
+          </div>
         {{end}}
     {{end}}
-</article>
 
-{{if $user}}
-<form method="POST" hx-post="/post/{{$post.ID}}/comment/create" hx-target="#comments-list" hx-swap="beforeend" hx-on::after-request="this.reset()">
-  <p>
-    <input name="userComment" placeholder="Write a comment" required>
-  </p>
-  <button type="submit">Create</button>
-</form>
-{{else}}
-  <p><a href="/user/login" style="color: red;">Log in</a> or <a href="/user/register" style="color: red;">register</a> to leave a comment.</p>
-{{end}}
-
-
-<section>
-  <h2 id="comment-count-header">Comments ({{$post.CommentCount}})</h2>
-  <div id="comments-list">
-    {{range .PageContent.Comments}}
-      {{template "comment_card" .}} 
-    {{end}}
   </div>
-</section>
+
+  {{if $user}}
+  <form class="create-comment-container" method="POST" hx-post="/post/{{$post.ID}}/comment/create" hx-target="#comments-list" hx-swap="beforeend" hx-on::after-request="this.reset()">
+    <textarea class="create-comment" name="userComment" placeholder="Write a comment" required></textarea>
+    <button type="submit" class="button">Create</button>
+  </form>
+  {{else}}
+    <p class="text"><a href="/user/login" class="tint">Log in</a> or <a href="/user/register" class="tint">register</a> to leave a comment.</p>
+  {{end}}
+
+
+  <section class="comment-container">
+
+    <h2 id="comment-count-header">Comments ({{$post.CommentCount}})</h2>
+    <div id="comments-list">
+      {{range .PageContent.Comments}}
+        {{template "comment_card" .}} 
+      {{end}}
+    </div>
+
+  </section>
+
+</div>
 
 {{end}}

@@ -40,17 +40,24 @@
             {{$posts := .PageContent.Posts}}
                 {{range $posts}}
                     {{if not .Deleted}}
-                        <article>
-                            <h2><a href="/post/{{.ID}}">{{.Title}}</a></h2>
+                         <div class="post-container">
+                            <h2 class="post-title"><a href="/post/{{.ID}}">{{.Title}}</a></h2>
                             {{if .Deleted}}
-                            <p>by Anonymous — likes {{.LikeCount}}, dislikes {{.DislikeCount}}, comments {{.CommentCount}}</p>
+                            <p class="text">by Anonymous · created {{.CreatedAgo}} — likes {{.LikeCount}}, dislikes {{.DislikeCount}}, comments {{.CommentCount}}</p>
                             {{else}}
-                            <p>by<a href="/user/profile/{{.AuthorName}}" class="username"> {{.AuthorName}}</a> 
-                                {{ template "react" .}}
-                            </p>
+                                <p class="text" >by
+                                    <a href="/user/profile/{{.AuthorName}}" class="username ">
+                                        <span class="profile-li">
+                                        <img {{if .AuthorImage}} src="/static/assets/images/{{.AuthorImage}}" {{else}} src="/static/assets/images/avatar1.jpg" {{end}} alt="Avatar" class="admin-table-avatar">
+                                        {{.AuthorName}}
+                                        </span>   
+                                    </a> 
+                                    · created {{.CreatedAgo}}{{with .EditedAgo}} · edited {{.}}{{end}}
+                                    {{ template "react" .}}
+                                </p>
                             {{end}}
-                            <p>{{range .Categories}}[{{.Name}}] {{end}}</p>
-                        </article>
+                            <p class="text">{{range .Categories}}[{{.Name}}] {{end}}</p>
+                        </div>
                     {{end}}
                 {{else}}<p>No posts yet.</p>{{end}}
             {{end}}
@@ -59,17 +66,24 @@
             {{$LikesPosts := .PageContent.LikedPosts}}
                 {{range $LikesPosts}}
                     {{if not .Deleted}}
-                        <article>
-                            <h2><a href="/post/{{.ID}}">{{.Title}}</a></h2>
+                         <div class="post-container">
+                            <h2 class="post-title"><a href="/post/{{.ID}}">{{.Title}}</a></h2>
                             {{if .Deleted}}
-                            <p>by Anonymous — likes {{.LikeCount}}, dislikes {{.DislikeCount}}, comments {{.CommentCount}}</p>
+                            <p class="text">by Anonymous · created {{.CreatedAgo}} — likes {{.LikeCount}}, dislikes {{.DislikeCount}}, comments {{.CommentCount}}</p>
                             {{else}}
-                            <p>by<a href="/user/profile/{{.AuthorName}}" class="username"> {{.AuthorName}}</a> 
-                                {{ template "react" .}}
-                            </p>
+                                <p class="text" >by
+                                    <a href="/user/profile/{{.AuthorName}}" class="username ">
+                                        <span class="profile-li">
+                                        <img {{if .AuthorImage}} src="/static/assets/images/{{.AuthorImage}}" {{else}} src="/static/assets/images/avatar1.jpg" {{end}} alt="Avatar" class="admin-table-avatar">
+                                        {{.AuthorName}}
+                                        </span>   
+                                    </a> 
+                                    · created {{.CreatedAgo}}{{with .EditedAgo}} · edited {{.}}{{end}}
+                                    {{ template "react" .}}
+                                </p>
                             {{end}}
-                            <p>{{range .Categories}}[{{.Name}}] {{end}}</p>
-                        </article>
+                            <p class="text">{{range .Categories}}[{{.Name}}] {{end}}</p>
+                        </div>
                     {{end}}
                 {{else}}<p>No Liked posts yet.</p>{{end}}
             {{end}}
@@ -78,7 +92,9 @@
             {{$comments := .PageContent.Comments}}
                 {{range $comments}}
                 <a href="/post/{{.ParentPostID}}#comment-{{.ID}}">
-                     {{template "comment_card" .}} 
+                    <div class="comment-container" style="margin: 0; padding:0 ;">
+                        {{template "comment_card" .}} 
+                    </div> 
                 </a>
                 {{else}} 
                     {{if eq .PageContent.Tab "comments"}}<p>No comments yet.</p>{{end}}

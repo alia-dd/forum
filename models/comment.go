@@ -17,6 +17,7 @@ type Comment struct {
 type CommentView struct {
 	Comment
 	AuthorName   string
+	AuthorImage  string
 	LikeCount    int
 	DislikeCount int
 	Replies      []CommentView
@@ -40,4 +41,15 @@ type CommentInput struct {
 type CommentUpdate struct {
 	ID      int
 	Content string
+}
+
+func (c Comment) CreatedAgo() string {
+	return timeAgo(c.CreatedAt)
+}
+
+func (c Comment) EditedAgo() string {
+	if c.UpdatedAt == nil {
+		return ""
+	}
+	return timeAgo(*c.UpdatedAt)
 }

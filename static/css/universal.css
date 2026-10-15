@@ -1,0 +1,341 @@
+.page-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 1rem auto;
+  max-width: 85%;
+}
+
+.title-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 1rem;
+}
+
+.page-title {
+  font-size: 3rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+.profile-li{
+  display: flex;
+  justify-content: center;
+}
+.profile-li img{
+    margin-right: 3px;
+    bottom: 5px;
+    width: 20px;
+    height: 20px;
+}
+
+.text {
+     display: flex;
+     flex-direction: row;
+    font-size: 0.9rem;
+    color: var(--ink-muted);
+}
+
+.category-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 0.5rem;
+    padding: 1rem;
+}
+
+.options-box {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 5px;
+    background-color: var(--paper);
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+    color: var(--ink);
+    font-size: 0.9rem;
+    text-decoration: none;
+}
+
+.options {
+    font-size: 0.9rem;
+    color: var(--ink-muted);
+    text-decoration: none;
+}
+
+.button {
+    padding: 6px 12.5px;
+    background-color: var(--burgundy);
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+    color: var(--paper);
+    font-size: 0.9rem;
+    text-decoration: none;
+    border-radius: 3px;
+    font-family: var(--font-head);
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+}
+
+.button:hover {
+    background-color: var(--burgundy-dk);
+    box-shadow: var(--shadow-dk);
+}
+
+.button:active {
+    background-color: var(--burgundy-dk);
+    box-shadow: var(--shadow-dk);
+    transform: translateY(1px);
+}
+
+.post-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 1rem;
+    border-radius: 5px;
+    background-color: var(--paper);
+    box-shadow: var(--shadow);
+    margin: 0.5rem 0;
+    width: 75%;
+}
+
+.post-container:hover {
+    background-color: var(--paper-light);
+    box-shadow: var(--shadow-dk);
+}
+
+.post-container:active {
+    transform: translateY(1px);
+}
+
+.post-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--ink);
+}
+
+.main-post-title {
+    font-size: 2rem;
+    font-weight: 600;
+    color: var(--ink);
+}
+
+.content {
+    background-color: rgba(0, 0, 0, 0.03);
+    padding: 0.7rem;
+    border-radius: 3px;
+    box-shadow: rgba(0, 0, 0, 0.03);
+    font-family: var(--font-body);
+    font-size: 1rem;
+    color: var(--ink);
+    margin: 0.5rem 0;
+}
+
+.buttons-container {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+    flex-direction: row;
+    justify-content: flex-end;
+}
+
+.tint {
+    color: var(--burgundy);
+    text-decoration: none;
+    font-weight: 400;
+}
+
+a:hover {
+    color: rgb(206, 27, 27);
+}
+
+.main-post-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 1rem;
+    border-radius: 5px;
+    background-color: var(--paper);
+    box-shadow: var(--shadow);
+    margin: 0.5rem 0;
+    width: 75%;
+    align-items: center;
+}
+
+.create-comment-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    padding: 0.5rem;
+    border-radius: 5px;
+    margin: 0.5rem 0;
+    align-items: center;
+    width: 50%;
+}
+
+.create-comment {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    border-radius: 3px;
+    background-color: rgb(250, 250, 250);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+    margin: 0.5rem 0 0.5rem 0;
+    width: 100%;
+    resize: none;
+    field-sizing: content;
+}
+
+.comment-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 1rem;
+    border-radius: 5px;
+    margin: 0.5rem 0;
+    width: 75%;
+}
+
+.comment-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    border-radius: 3px;
+    background-color: rgb(250, 250, 250);
+    box-shadow: var(--shadow);
+    margin: 1rem 0;
+}
+
+.comment-meta {
+    display: flex;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+    color: var(--ink-muted);
+    flex-direction: row;
+}
+
+.comment-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.button-lite {
+    gap: 0.5rem;
+    padding: 6px 12.5px;
+    background-color: rgba(0, 0, 0, 0);
+    border: 0px solid;
+    color: var(--ink);
+    font-size: 0.8rem;
+    text-decoration: none;
+    border-radius: 3px;
+    font-family: var(--font-head);
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+}
+
+.button-lite:hover {
+    background-color: var(--paper-light);
+    box-shadow: var(--shadow-dk);
+}
+
+.button-lite:active {
+    background-color: var(--paper-light);
+    box-shadow: var(--shadow-dk);
+    transform: translateY(1px);
+}
+
+.post-form-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem;
+    border-radius: 5px;
+    margin: 0.5rem 0;
+    width: 100%;
+    max-width: 50%;
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    padding: 0.5rem;
+    border-radius: 3px;
+    background-color: rgb(250, 250, 250);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+    margin: 0.5rem 0;
+    width: 100%;
+}
+
+.replies-container {
+    padding-left: 0.75rem;
+    border-left: 2px solid var(--border);
+    border-radius: 3px;
+    box-shadow: var(--shadow);
+}
+
+.search-results-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 1rem;
+    border-radius: 5px;
+    margin: 0.5rem 0;
+    width: 60%;
+}
+
+.search-result-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    border-radius: 3px;
+    margin: 0.5rem 0;
+    width: 100%;
+    background-color: rgb(250, 250, 250);
+    box-shadow: var(--shadow);
+}
+
+.errorPage {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 1rem;
+    border-radius: 5px;
+    margin: 0.5rem 0;
+    width: 60%;
+}
+
+@media (max-width: 800px) {
+    .post-form-container {
+        max-width: 80%;
+    }
+
+    .post-container {
+        width: 100%;
+    }
+
+    .main-post-container {
+        width: 100%;
+    }
+
+    .comment-container {
+        width: 100%;
+    }
+
+    .search-results-container {
+        width: 100%;
+    }
+}

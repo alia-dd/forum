@@ -16,6 +16,7 @@ type Post struct {
 type PostView struct {
 	Post
 	AuthorName   string
+	AuthorImage  string
 	Categories   []Category
 	Comments     []CommentView // keep empty if loading a list of posts, load if viewing single post
 	LikeCount    int
@@ -47,4 +48,15 @@ type PostFilter struct {
 	CategoryID *int
 	AuthorID   *int
 	LikedByID  *int
+}
+
+func (p Post) CreatedAgo() string {
+	return timeAgo(p.CreatedAt)
+}
+
+func (p Post) EditedAgo() string {
+	if p.UpdatedAt == nil {
+		return ""
+	}
+	return timeAgo(*p.UpdatedAt)
 }

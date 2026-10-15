@@ -1,6 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700&family=Barlow:wght@300;400;500&display=swap');
 :root {
   --paper:       #f4ede1;
+  --paper-light: #f0e3cd;
   --paper-dark:  #e8ddc9;
   --ink:         #241f1a;
   --ink-muted:   #6f665a;
@@ -97,7 +98,6 @@ a { text-decoration: none; color: inherit; }
   transition: color 0.18s var(--ease), background 0.18s var(--ease);
   position: relative;
 }
-
 .nav__link::after {
   content: '';
   position: absolute;

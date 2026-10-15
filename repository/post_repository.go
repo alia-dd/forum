@@ -71,7 +71,7 @@ func (r *postRepositoryImpl) GetPost(ctx context.Context, filter models.PostFilt
 	query := `
 		SELECT
 			post.id, post.user_id, post.title, post.content, post.created_at, post.updated_at,
-			user.username,
+			user.username, ifnull(user.imagepath, ''),
 			(SELECT COUNT(*) FROM post_like WHERE post_like.post_id = post.id AND post_like.value = 1)  AS like_count,
 			(SELECT COUNT(*) FROM post_like WHERE post_like.post_id = post.id AND post_like.value = -1) AS dislike_count,
 			(SELECT COUNT(*) FROM comment   WHERE comment.parent_post_id = post.id)                     AS comment_count,
@@ -144,6 +144,7 @@ func (r *postRepositoryImpl) GetPost(ctx context.Context, filter models.PostFilt
 			&pv.Post.CreatedAt,
 			&pv.Post.UpdatedAt,
 			&pv.AuthorName,
+			&pv.AuthorImage,
 			&pv.LikeCount,
 			&pv.DislikeCount,
 			&pv.CommentCount,
@@ -169,7 +170,7 @@ func (r *postRepositoryImpl) GetPostByID(ctx context.Context, id int, user_id in
 	query := `
 		SELECT
 			post.id, post.user_id, post.title, post.content, post.created_at, post.updated_at,
-			user.username,
+			user.username, ifnull(user.imagepath, ''),
 			(SELECT COUNT(*) FROM post_like WHERE post_like.post_id = post.id AND post_like.value = 1)  AS like_count,
 			(SELECT COUNT(*) FROM post_like WHERE post_like.post_id = post.id AND post_like.value = -1) AS dislike_count,
 			(SELECT COUNT(*) FROM comment   WHERE comment.parent_post_id = post.id)                     AS comment_count,
@@ -183,7 +184,7 @@ func (r *postRepositoryImpl) GetPostByID(ctx context.Context, id int, user_id in
 	var pv models.PostView
 	err := r.db.QueryRowContext(ctx, query, user_id, id).Scan(
 		&pv.Post.ID, &pv.Post.UserID, &pv.Post.Title, &pv.Post.Content, &pv.Post.CreatedAt, &pv.Post.UpdatedAt,
-		&pv.AuthorName, &pv.LikeCount, &pv.DislikeCount, &pv.CommentCount, &pv.UserReaction, &pv.Deleted,
+		&pv.AuthorName, &pv.AuthorImage, &pv.LikeCount, &pv.DislikeCount, &pv.CommentCount, &pv.UserReaction, &pv.Deleted,
 	)
 	if err != nil {
 		return nil, customerrors.MapSQLError(err)

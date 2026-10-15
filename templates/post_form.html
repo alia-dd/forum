@@ -1,20 +1,43 @@
 {{define "content"}}
 {{$id := .PageContent.PostID}}
-<h1>{{if $id}}Edit post{{else}}New post{{end}}</h1>
-<form method="POST" action="{{if $id}}/post/{{$id}}/edit{{else}}/post/new{{end}}">
-  <p><label>Title<br><input name="title" value="{{.PageContent.Form.Title}}" required></label>
-     {{with .PageContent.Form.Errors.Title}}<span>{{.}}</span>{{end}}</p>
-  <p><label>Content<br><textarea name="content" required>{{.PageContent.Form.Content}}</textarea></label>
-     {{with .PageContent.Form.Errors.Content}}<span>{{.}}</span>{{end}}</p>
-  <p><label>Main category<br>
-     <select name="main_category" required>
-       <option value="">— choose —</option>
-       {{range .PageContent.Categories}}<option value="{{.ID}}" {{if eq .ID $.PageContent.Form.MainCategoryID}}selected{{end}}>{{.Name}}</option>{{end}}
-     </select></label>
-     {{with .PageContent.Form.Errors.MainCategoryID}}<span>{{.}}</span>{{end}}</p>
-  <fieldset><legend>Extra categories</legend>
-    {{range .PageContent.Categories}}<label><input type="checkbox" name="category" value="{{.ID}}" {{if $.PageContent.Form.HasCategory .ID}}checked{{end}}> {{.Name}}</label><br>{{end}}
-  </fieldset>
-  <button type="submit">{{if $id}}Save{{else}}Create{{end}}</button>
-</form>
-{{end}}
+
+<div class="page-container">
+
+  <div class="title-container">
+    <h1 class="page-title">{{if $id}}Edit post{{else}}New post{{end}}</h1>
+  </div>
+
+  <form class="post-form-container" method="POST" action="{{if $id}}/post/{{$id}}/edit{{else}}/post/new{{end}}">
+      <h2 class="post-title">Title</h2>
+      <textarea class="create-comment" name="title" value="{{.PageContent.Form.Title}}" required></textarea>
+      {{with .PageContent.Form.Errors.Title}}
+      <span>{{.}}</span>
+      {{end}}
+
+      <h2 class="post-title">Content</h2>
+      <textarea class="create-comment" name="content" required>{{.PageContent.Form.Content}}</textarea>
+      {{with .PageContent.Form.Errors.Content}}<span>{{.}}</span>{{end}}
+
+      <h2 class="post-title">Main category</h2>
+      <select class="options-box" name="main_category" required>
+        <option class="option" value="">— choose —</option>
+        {{range .PageContent.Categories}}
+        <option value="{{.ID}}" {{if eq .ID $.PageContent.Form.MainCategoryID}}selected{{end}}>{{.Name}}</option>
+        {{end}}
+      </select>
+      {{with .PageContent.Form.Errors.MainCategoryID}}
+      <span>{{.}}</span>
+      {{end}}
+
+      <fieldset class="field">
+        <legend class="post-title">Extra categories</legend>
+        {{range .PageContent.Categories}}<label>
+          <input type="checkbox" name="category" value="{{.ID}}" {{if $.PageContent.Form.HasCategory .ID}}checked{{end}}> {{.Name}}</label><br>{{end}}
+      </fieldset>
+
+      <button class="button" type="submit">{{if $id}}Save{{else}}Create{{end}}</button>
+  </form>
+
+</div>
+
+{{end}} 
