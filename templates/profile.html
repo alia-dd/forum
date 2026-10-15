@@ -52,7 +52,7 @@
                                         {{.AuthorName}}
                                         </span>   
                                     </a> 
-                                    · created {{.CreatedAgo}}{{with .EditedAgo}} · edited {{.}}{{end}}
+                                    · created {{.CreatedAgo}}{{with .UpdatedAgo}} · edited {{.}}{{end}}
                                     {{ template "react" .}}
                                 </p>
                             {{end}}
@@ -78,7 +78,7 @@
                                         {{.AuthorName}}
                                         </span>   
                                     </a> 
-                                    · created {{.CreatedAgo}}{{with .EditedAgo}} · edited {{.}}{{end}}
+                                    · created {{.CreatedAgo}}{{with .UpdatedAgo}} · edited {{.}}{{end}}
                                     {{ template "react" .}}
                                 </p>
                             {{end}}
@@ -91,11 +91,11 @@
             {{if (eq .PageContent.Tab "comments")}}
             {{$comments := .PageContent.Comments}}
                 {{range $comments}}
-                <a href="/post/{{.ParentPostID}}#comment-{{.ID}}">
-                    <div class="comment-container" style="margin: 0; padding:0 ;">
+                <div class="comment-container" style="margin: 0; padding:0 ;">
+                    <a href="/post/{{.ParentPostID}}#comment-{{.ID}}">
                         {{template "comment_card" .}} 
-                    </div> 
-                </a>
+                    </a>
+                </div>
                 {{else}} 
                     {{if eq .PageContent.Tab "comments"}}<p>No comments yet.</p>{{end}}
                 {{end}}

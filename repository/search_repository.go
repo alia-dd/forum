@@ -17,12 +17,12 @@ func NewSearchRepository(db *sql.DB) *SearchRepository {
 	return &SearchRepository{db: db}
 }
 
-func (r *SearchRepository) SearchUsers(ctx context.Context, search string) ([]models.UserResult, error) {
+func (r *SearchRepository) SearchUsers(ctx context.Context, search string, limit, offset int) ([]models.UserResult, error) {
 	// relevance/newest sort does nothing here, minor UI issue?
 	searchArg := "%" + search + "%"
 	prefixArg := search + "%"
 
-	rows, err := r.db.QueryContext(ctx, `
+	query := `
 			SELECT id, username
 			FROM user
 			WHERE username LIKE ?
@@ -32,7 +32,14 @@ func (r *SearchRepository) SearchUsers(ctx context.Context, search string) ([]mo
 					ELSE 1
 				END,
 				username
-			`, searchArg, prefixArg) // order results so that matches that begin with the searchArg are shown before those that contain it 'in' them
+			`
+	args := []any{searchArg, prefixArg}
+	if limit > 0 {
+		query += " LIMIT ? OFFSET ?"
+		args = append(args, limit, offset)
+	}
+
+	rows, err := r.db.QueryContext(ctx, query, args...) // order results so that matches that begin with the searchArg are shown before those that contain it 'in' them
 	if err != nil {
 		return nil, customerrors.MapSQLError(err)
 	}
@@ -50,7 +57,7 @@ func (r *SearchRepository) SearchUsers(ctx context.Context, search string) ([]mo
 	return result, rows.Err()
 }
 
-func (r *SearchRepository) SearchPosts(ctx context.Context, term string, sort string) ([]models.PostResult, error) {
+func (r *SearchRepository) SearchPosts(ctx context.Context, term string, sort string, limit, offset int) ([]models.PostResult, error) {
 	var orderBy string
 
 	switch sort {
@@ -69,8 +76,14 @@ func (r *SearchRepository) SearchPosts(ctx context.Context, term string, sort st
 		ORDER BY %s
 		`, orderBy)
 
+	args := []any{term}
+	if limit > 0 {
+		query += " LIMIT ? OFFSET ?"
+		args = append(args, limit, offset)
+	}
+
 	// not checking for if post is deleted, since title should still be searchable even then
-	rows, err := r.db.QueryContext(ctx, query, term)
+	rows, err := r.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, customerrors.MapSQLError(err)
 	}
@@ -87,7 +100,7 @@ func (r *SearchRepository) SearchPosts(ctx context.Context, term string, sort st
 	return result, rows.Err()
 }
 
-func (r *SearchRepository) SearchComments(ctx context.Context, term string, sort string) ([]models.CommentResult, error) {
+func (r *SearchRepository) SearchComments(ctx context.Context, term string, sort string, limit, offset int) ([]models.CommentResult, error) {
 	var orderBy string
 
 	switch sort {
@@ -107,7 +120,13 @@ func (r *SearchRepository) SearchComments(ctx context.Context, term string, sort
 		ORDER BY %s
 		`, orderBy)
 
-	rows, err := r.db.QueryContext(ctx, query, term)
+	args := []any{term}
+	if limit > 0 {
+		query += " LIMIT ? OFFSET ?"
+		args = append(args, limit, offset)
+	}
+
+	rows, err := r.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, customerrors.MapSQLError(err)
 	}
@@ -124,11 +143,11 @@ func (r *SearchRepository) SearchComments(ctx context.Context, term string, sort
 	return result, rows.Err()
 }
 
-func (r *SearchRepository) SearchAdminUsers(ctx context.Context, search string) ([]models.AdminUserInfo, error) {
+func (r *SearchRepository) SearchAdminUsers(ctx context.Context, search string, limit, offset int) ([]models.AdminUserInfo, error) {
 	searchArg := "%" + search + "%"
 	prefixArg := search + "%"
 
-	rows, err := r.db.QueryContext(ctx, `
+	query := `
 			SELECT id, username, email, role, COALESCE(imagepath, '')
 			FROM user
 			WHERE username LIKE ?
@@ -138,7 +157,15 @@ func (r *SearchRepository) SearchAdminUsers(ctx context.Context, search string) 
 					ELSE 1
 				END,
 				username
-			`, searchArg, prefixArg)
+			`
+	args := []any{searchArg, prefixArg}
+
+	if limit > 0 {
+		query += " LIMIT ? OFFSET ?"
+		args = append(args, limit, offset)
+	}
+
+	rows, err := r.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, customerrors.MapSQLError(err)
 	}
@@ -156,7 +183,7 @@ func (r *SearchRepository) SearchAdminUsers(ctx context.Context, search string) 
 	return result, rows.Err()
 }
 
-func (r *SearchRepository) SearchAdminPosts(ctx context.Context, term string) ([]*models.PostView, error) {
+func (r *SearchRepository) SearchAdminPosts(ctx context.Context, term string, limit, offset int) ([]*models.PostView, error) {
 	orderBy := "bm25(post_fts, 10.0, 1.0), post.created_at DESC"
 
 	query := fmt.Sprintf(`
@@ -171,7 +198,13 @@ func (r *SearchRepository) SearchAdminPosts(ctx context.Context, term string) ([
 		ORDER BY %s
 		`, orderBy)
 
-	rows, err := r.db.QueryContext(ctx, query, term)
+	args := []any{term}
+	if limit > 0 {
+		query += " LIMIT ? OFFSET ?"
+		args = append(args, limit, offset)
+	}
+
+	rows, err := r.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, customerrors.MapSQLError(err)
 	}

@@ -9,7 +9,7 @@
     <p class="text">{{range $post.Categories}}[{{.Name}}] {{end}}</p>
     <h1 class="main-post-title">{{$post.Title}}</h1>
     {{if $post.Deleted}}
-      <p class="text">by Anonymous · created {{$post.CreatedAgo}}{{with $post.EditedAgo}} · deleted {{.}}{{end}}  {{ template "react" $post}}</p>
+      <p class="text">by Anonymous · created {{$post.CreatedAgo}}{{with $post.UpdatedAgo}} · deleted {{.}}{{end}}  {{ template "react" $post}}</p>
       <div class="text"><em>[deleted by user]</em></div>
     {{else}}
       <p class="text" >by
@@ -19,7 +19,7 @@
             {{$post.AuthorName}}
           </span>   
         </a> 
-        · created {{$post.CreatedAgo}}{{with $post.EditedAgo}} · edited {{.}}{{end}}
+        · created {{$post.CreatedAgo}}{{with $post.UpdatedAgo}} · edited {{.}}{{end}}
       </p>
      
       <div class="content">{{$post.Content}}</div>

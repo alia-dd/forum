@@ -47,7 +47,7 @@ func (c Comment) CreatedAgo() string {
 	return timeAgo(c.CreatedAt)
 }
 
-func (c Comment) EditedAgo() string {
+func (c Comment) UpdatedAgo() string {
 	if c.UpdatedAt == nil {
 		return ""
 	}

@@ -183,6 +183,24 @@ func SeedData(db *sql.DB) error {
 	insert(`INSERT INTO comment_like (user_id, comment_id, value) VALUES (?, ?, ?)`, users["bob"], cc2, 1)
 	insert(`INSERT INTO comment_like (user_id, comment_id, value) VALUES (?, ?, ?)`, users["frank"], cc3, -1)
 
+	for i := 1; i <= 55; i++ {
+		insert(`INSERT INTO post (user_id, title, content, created_at)
+		        VALUES (?, ?, ?, datetime('now', ?))`,
+			users["alice"],
+			fmt.Sprintf("Pagination filler post #%d", i),
+			fmt.Sprintf("Filler body %d — here to make the feed span multiple pages.", i),
+			fmt.Sprintf("-%d days", i))
+	}
+
+	fillerPosts := []int64{p1, p2, p3, p4, p5}
+	for i := 1; i <= 51; i++ {
+		insert(`INSERT INTO comment (user_id, parent_post_id, parent_comment_id, content, created_at)
+		        VALUES (?, ?, ?, ?, datetime('now', ?))`,
+			users["bob"], fillerPosts[i%len(fillerPosts)], nil,
+			fmt.Sprintf("Pagination filler comment #%d by bob.", i),
+			fmt.Sprintf("-%d days", i))
+	}
+
 	if err != nil {
 		return fmt.Errorf("seed: %w", err)
 	}

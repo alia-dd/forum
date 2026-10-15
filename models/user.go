@@ -64,6 +64,7 @@ type ProfilePage struct {
 	Posts      []*PostView
 	Comments   []*CommentView
 	LikedPosts []*PostView
+	Pagination Pagination
 }
 type UserUpdate struct {
 	ID       int     `json:"id"`

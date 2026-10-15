@@ -125,6 +125,12 @@ func (r *postRepositoryImpl) GetPost(ctx context.Context, filter models.PostFilt
 	} else {
 		query += " ORDER BY post.created_at DESC"
 	}
+
+	if filter.Limit > 0 {
+		query += " LIMIT ? OFFSET ?"
+		args = append(args, filter.Limit, filter.Offset)
+	}
+
 	rows, err := r.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, customerrors.MapSQLError(err)

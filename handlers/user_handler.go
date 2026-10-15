@@ -137,31 +137,54 @@ func (h *UseHandler) showProfile(w http.ResponseWriter, r *http.Request, usernam
 	pageContent.Profile = profileData
 
 	if tab == "posts" {
-		posts, fetchPostErr := h.postRep.GetPost(cx, models.PostFilter{AuthorID: &profileData.ID}, userID)
+		posts, pg, fetchPostErr := paginate(r, func(limit, offset int) ([]*models.PostView, error) {
+			return h.postRep.GetPost(cx, models.PostFilter{AuthorID: &profileData.ID, Limit: limit, Offset: offset}, userID)
+		})
 		if fetchPostErr != nil {
 			handleError(w, r, fetchPostErr)
 			return
 		}
 
+		if redirectIfPageTooHigh(w, r, pg, len(posts)) {
+			return
+		}
+
 		pageContent.Posts = posts
+		pageContent.Pagination = pg
 	}
 
 	if tab == "comments" {
-		comments, fetchCommErr := h.commentRep.GetCommentsByUser(cx, profileData.ID)
+		comments, pg, fetchCommErr := paginate(r, func(limit, offset int) ([]*models.CommentView, error) {
+			return h.commentRep.GetCommentsByUser(cx, profileData.ID, limit, offset)
+		})
 		if fetchCommErr != nil {
 			handleError(w, r, fetchCommErr)
 			return
 		}
+
+		if redirectIfPageTooHigh(w, r, pg, len(comments)) {
+			return
+		}
+
 		pageContent.Comments = comments
+		pageContent.Pagination = pg
 	}
 
 	if tab == "likedPosts" {
-		likedPosts, fetchPostLikedErr := h.postRep.GetPost(cx, models.PostFilter{LikedByID: &profileData.ID}, userID)
+		likedPosts, pg, fetchPostLikedErr := paginate(r, func(limit, offset int) ([]*models.PostView, error) {
+			return h.postRep.GetPost(cx, models.PostFilter{LikedByID: &profileData.ID, Limit: limit, Offset: offset}, userID)
+		})
 		if fetchPostLikedErr != nil {
 			handleError(w, r, fetchPostLikedErr)
 			return
 		}
+
+		if redirectIfPageTooHigh(w, r, pg, len(likedPosts)) {
+			return
+		}
+
 		pageContent.LikedPosts = likedPosts
+		pageContent.Pagination = pg
 	}
 	pageData := models.PageData[models.ProfilePage]{
 		User:        user,

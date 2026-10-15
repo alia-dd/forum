@@ -45,7 +45,7 @@
           {{.AuthorName}}
         </span>   
       </a> 
-      · created {{.CreatedAgo}}{{with .EditedAgo}} · edited {{.}}{{end}}
+      · created {{.CreatedAgo}}{{with .UpdatedAgo}} · edited {{.}}{{end}}
       {{ template "react" .}}
     </p>
     {{end}}
@@ -56,5 +56,6 @@
   <p class="text">No posts.</p>
   {{end}}
 
+  {{template "pagination" .PageContent.Pagination}}
 </div>
 {{end}}
