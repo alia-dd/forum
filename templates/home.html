@@ -1,5 +1,6 @@
 {{define "content"}}
 {{$post := .PageContent.Posts}}
+{{$selCat := .PageContent.SelectedCategory}}
 <div class="page-container">
 
   <div class="title-container">
@@ -7,7 +8,7 @@
     <h1 class="page-title">Posts</h1>
     <p class="text">{{if .User}}Signed in as 
       <a href="/user/profile/{{.User.Username}}" class="username">{{.User.Username}}</a>
-       — <a href="/post/new" class="tint">New post</a>
+       — <a href="/post/new{{if $selCat}}?category={{$selCat}}{{end}}" class="tint">New post</a>
        — <a href="/?author=me" class="tint">My posts</a>
        — <a href="/?liked=true" class="tint">Liked</a>
       {{else}}
@@ -21,9 +22,9 @@
     <h2 class="options-title">Category</h2>
     <label>
       <select name="category" class="options-box">
-        <option value="" class="options">All categories</option>
+        <option value="" class="options" {{if eq $selCat 0}}selected{{end}}>All categories</option>
         {{range .PageContent.Categories}}
-        <option value="{{.ID}}">{{.Name}}</option>
+        <option value="{{.ID}}" {{if eq .ID $selCat}}selected{{end}}>{{.Name}}</option>
         {{end}}
       </select>
     </label>
