@@ -1,9 +1,13 @@
 {{define "content"}}
-<section class="errorPage">
-  <h1 class="errortype">{{.PageContent.Error}}</h1>
-  <span class="errorsep"></span>
-  <h1 class="errormessage">{{.PageContent.ErrorMs}}</h1>
-</section>
+
+<div class="page-container">
+
+  <section class="errorPage">
+    <h1 class="errortype">{{.PageContent.Error}}</h1>
+    <span class="errorsep"></span>
+    <h1 class="errormessage">{{.PageContent.ErrorMs}}</h1>
+  </section>
+  
+</div>
+
 {{end}}
-
-
