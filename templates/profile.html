@@ -12,11 +12,25 @@
         {{if .IsOwner}}
             <p class="profile-email">{{$user.Email}}</p>
             <div class="profile-action">
-                <a class="btn" href="/user/profile/edit">Edit Profile</a>
+                
+                <a class="btn" href="/user/profile/edit">Edit Profile {{$user.Username}}</a>
                 <a class="btn btn-chg" href="/user/profile/password">Change password</a>
+                <button class="btn" command="show-modal" commandfor="confirm-delete">Delete account</button>
             </div>
         {{end}}
     </aside>
+
+    <dialog id="confirm-delete" class="ConfermationForm">
+        <form action="/user/profile/delete" method="POST">
+            <h3 class="cfm_title">Delete Account</h3>
+            <p class="cfm_txt">Enter you password to permenently delete you account.</p>
+            <input  class="cfm_inp" type="text" pattern="^{{$user.Username}}$" placeholder="username..." autofocus required>
+            <div class="cfm_btn_div">
+                <button class="cfm_btn" type="submit" aria-label="Delete user">Delete account</button>
+                <button class="cfm_btn" commandfor="confirm-delete"  onclick="this.closest('dialog').close()" >Close</button>
+            </div>
+        </form>
+    </dialog>
 
     <section class="profile-content" style="display: flex; flex-direction: column;">
         {{template "profile_nav" .}}
@@ -73,4 +87,5 @@
         </section>
     </section>
 </div>
+ <script>document.currentScript.closest('dialog').showModal()</script>
 {{end}}

@@ -118,7 +118,6 @@ func (h *UseHandler) GetEditUserProfile(w http.ResponseWriter, r *http.Request) 
 func (h *UseHandler) showProfile(w http.ResponseWriter, r *http.Request, username string) {
 	cx := r.Context()
 	user, ok := r.Context().Value("user_session").(*models.UserInfo)
-
 	tab := r.URL.Query().Get("tab")
 	if tab != "posts" && tab != "comments" && tab != "likedPosts" {
 		tab = "posts"
@@ -267,6 +266,25 @@ func (h *UseHandler) UpdateUserProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	http.Redirect(w, r, "/user/profile", http.StatusSeeOther)
+}
+
+// delete user using the corrent cookie userid
+func (h *UseHandler) DeleteUserAcccount(w http.ResponseWriter, r *http.Request) {
+	cx := r.Context()
+	user, ok := r.Context().Value("user_session").(*models.UserInfo)
+	if !ok {
+		utils.RedirectTologin(w, r)
+		return
+	}
+	if deleteErr := h.service.DeleteUser(cx, user.ID); deleteErr != nil {
+		handleError(w, r, deleteErr)
+		return
+	}
+	cookie, cookieErr := r.Cookie("session_token")
+	if cookieErr == nil {
+		h.service.LogoutService(cx, cookie.Value)
+	}
+	utils.RedirectTologin(w, r)
 }
 
 // render change password page

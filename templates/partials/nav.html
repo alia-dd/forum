@@ -43,17 +43,18 @@
       {{end}}
 
     <li><a href="/user/profile" class="nav__link" data-label="Profile">Profile</a></li>
-    <li>
-      <form method="POST" action="/user/logout" class="nav__logout-form" >
+    <li class="nav__logout-form" >
+      <form method="POST" action="/user/logout"  >
         <button type="submit" class="nav__link nav__link--cta">Sign out</button>
       </form>
     </li>
     {{else}}
     <li><a href="/user/login" class="nav__link">Sign in</a></li>
-    <li><a href="/user/register" class="nav__link nav__link">Sign up</a></li>
+    <li class="singUPbtn"><a href="/user/register" class=" nav__link">Sign up</a></li>
     {{end}}
   </ul>
 </nav>
+<div id="navOverlay" class="navOverlay"></div>
 <script>
   const toggle = document.getElementById('navToggle')
   const links  = document.getElementById('navLinks')
@@ -62,7 +63,9 @@
   toggle.addEventListener('click', () => {
     const open = links.classList.toggle('open');
     toggle.setAttribute('aria-expanded', open);
+    console.log("overlay",overlay)
     overlay.classList.toggle('visible', open);
+
   });
   document.querySelectorAll('.nav__link').forEach(a => {
     if (a.getAttribute('href') === location.pathname) a.classList.add('active')
