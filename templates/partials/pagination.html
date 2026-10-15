@@ -1,0 +1,9 @@
+{{define "pagination"}}
+{{if .Page}}
+<nav class="pagination">
+  {{if .HasPrev}}<a href="?{{.Base}}page={{.PrevPage}}">← Prev</a>{{end}}
+  <span>Page {{.Page}}</span>
+  {{if .HasNext}}<a href="?{{.Base}}page={{.NextPage}}">Next →</a>{{end}}
+</nav>
+{{end}}
+{{end}}

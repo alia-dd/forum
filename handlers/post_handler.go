@@ -33,7 +33,10 @@ func (h *PostHandler) GetPosts(w http.ResponseWriter, r *http.Request) {
 		handleError(w, r, customerrors.ErrBadRequest)
 		return
 	}
-	posts, err := h.postRep.GetPost(r.Context(), filter, userID)
+	posts, pg, err := paginate(r, func(limit, offset int) ([]*models.PostView, error) {
+		filter.Limit, filter.Offset = limit, offset
+		return h.postRep.GetPost(r.Context(), filter, userID)
+	})
 	if err != nil {
 		handleError(w, r, err)
 		return
@@ -65,6 +68,7 @@ func (h *PostHandler) GetPosts(w http.ResponseWriter, r *http.Request) {
 		PageContent: MainPage{
 			Posts:      posts,
 			Categories: allCats,
+			Pagination: pg,
 		},
 	}
 

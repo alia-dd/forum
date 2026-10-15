@@ -21,7 +21,9 @@ func (h *UseHandler) GetAdminUserTable(w http.ResponseWriter, r *http.Request) {
 
 	q := r.URL.Query().Get("q")
 
-	usersData, err := h.searchRep.SearchAdminUsers(cx, q)
+	usersData, pg, err := paginate(r, func(limit, offset int) ([]models.AdminUserInfo, error) {
+		return h.searchRep.SearchAdminUsers(cx, q, limit, offset)
+	})
 	pageData := models.PageData[MainPage]{
 		User: user,
 		PageContent: MainPage{
@@ -29,6 +31,7 @@ func (h *UseHandler) GetAdminUserTable(w http.ResponseWriter, r *http.Request) {
 			SearchPath: "/admin/users",
 			Query:      q,
 			Users:      usersData,
+			Pagination: pg,
 		},
 	}
 	if err != nil {
@@ -130,12 +133,15 @@ func (h *UseHandler) GetAdminPostTable(w http.ResponseWriter, r *http.Request) {
 	}
 	q := r.URL.Query().Get("q")
 
-	var posts []*models.PostView
-	var err error
-	if q != "" {
-		posts, err = h.searchRep.SearchAdminPosts(cx, createFTSQuery(q))
-	} else {
-		posts, err = h.postRep.GetPost(cx, models.PostFilter{}, -1)
+	posts, pg, err := paginate(r, func(limit, offset int) ([]*models.PostView, error) {
+		if q != "" {
+			return h.searchRep.SearchAdminPosts(cx, createFTSQuery(q), limit, offset)
+		}
+		return h.postRep.GetPost(cx, models.PostFilter{Limit: limit, Offset: offset}, -1)
+	})
+	if err != nil {
+		handleError(w, r, err)
+		return
 	}
 
 	pageData := models.PageData[MainPage]{
@@ -145,6 +151,7 @@ func (h *UseHandler) GetAdminPostTable(w http.ResponseWriter, r *http.Request) {
 			SearchPath: "/admin/posts",
 			Query:      q,
 			Posts:      posts,
+			Pagination: pg,
 		},
 	}
 	if err != nil {

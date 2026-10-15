@@ -21,7 +21,7 @@
     <p>by Anonymous · created {{.CreatedAgo}} — likes {{.LikeCount}}, dislikes {{.DislikeCount}}, comments {{.CommentCount}}</p>
     {{else}}
    <p>by<a href="/user/profile/{{.AuthorName}}" class="username"> {{.AuthorName}}</a>
-      · created {{.CreatedAgo}}{{with .EditedAgo}} · edited {{.}}{{end}}
+      · created {{.CreatedAgo}}{{with .UpdatedAgo}} · edited {{.}}{{end}}
       {{ template "react" .}}
   </p>
     {{end}}
