@@ -1,12 +1,53 @@
 {{define "content"}}
+
 {{if .PageContent.Query}}
-  {{if .PageContent.Users}}<h2>Users</h2><ul>
-    {{range .PageContent.Users}}<li><a href="/user/profile/{{.Username}}">{{.Username}}</a></li>{{end}}</ul>{{end}}
-  {{if .PageContent.Posts}}<h2>Posts</h2><ul>
-    {{range .PageContent.Posts}}<li><a href="/post/{{.ID}}">{{.Title}}</a> - by {{.AuthorName}}</li>{{end}}</ul>{{end}}
-  {{if .PageContent.Comments}}<h2>Comments</h2><ul>
-    {{range .PageContent.Comments}}<li><a href="/post/{{.ParentPostID}}">{{.Content}}</a> - by {{.AuthorName}}</li>{{end}}</ul>{{end}}
-  {{if and (not .Error) (not .PageContent.Users) (not .PageContent.Posts) (not .PageContent.Comments)}}
-  <p>No results for "{{.PageContent.Query}}"</p>{{end}}
+
+  <div class="page-container">
+
+    {{if .PageContent.Users}}
+      <h2 class="page-title">Users</h2>
+      <div class="search-results-container" style="width: auto;">
+        {{range .PageContent.Users}}
+        <div class="search-result-container">
+          <a href="/user/profile/{{.Username}}" class="post-title">{{.Username}}</a>
+        </div>
+        {{end}}
+      </div>
+    {{end}}
+
+    {{if .PageContent.Posts}}
+      <h2 class="page-title">Posts</h2>
+      <div class="search-results-container">
+        {{range .PageContent.Posts}}
+        <div class="search-result-container">
+          <a href="/post/{{.ID}}" class="post-title">{{.Title}}</a>
+          <p class="text">by 
+            <a href="/user/profile/{{.AuthorName}}" class="tint">{{.AuthorName}}</a>
+          </p>
+        </div>
+        {{end}}
+      </div>
+    {{end}}
+
+    {{if .PageContent.Comments}}
+      <h2 class="page-title">Comments</h2>
+      <div class="search-results-container">
+        {{range .PageContent.Comments}}
+        <div class="search-result-container">
+          <a href="/post/{{.ParentPostID}}" class="post-title">{{.Content}}</a>
+          <p class="text">by 
+            <a href="/user/profile/{{.AuthorName}}" class="tint">{{.AuthorName}}</a>
+          </p>
+        </div>
+        {{end}}
+      </div>
+    {{end}}
+
+    {{if and (not .Error) (not .PageContent.Users) (not .PageContent.Posts) (not .PageContent.Comments)}}
+      <p class="post-title">No results for "{{.PageContent.Query}}"</p>
+    {{end}}
+
+  </div>
+
 {{end}}
 {{end}}

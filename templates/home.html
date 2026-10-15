@@ -1,34 +1,54 @@
 {{define "content"}}
 {{$post := .PageContent.Posts}}
-<h1>Posts</h1>
-<p>{{if .User}}Signed in as <a href="/user/profile/{{.User.Username}}" class="username">{{.User.Username}}</a> — <a href="/post/new">New post</a>{{else}}<a href="/user/login">Sign in</a> to post{{end}}</p>
+<div class="page-container">
 
-<form method="GET" action="/">
-  <label>Category
-    <select name="category">
-      <option value="">All categories</option>
-      {{range .PageContent.Categories}}<option value="{{.ID}}">{{.Name}}</option>{{end}}
-    </select>
-  </label>
-  <button type="submit">Filter</button>
-  {{if .User}} · <a href="/?author=me">My posts</a> · <a href="/?liked=true">Liked</a>{{end}}
-</form>
+  <div class="title-container">
 
-{{range $post}}
-  <article>
-    <h2><a href="/post/{{.ID}}">{{.Title}}</a></h2>
+    <h1 class="page-title">Posts</h1>
+    <p class="text">{{if .User}}Signed in as 
+      <a href="/user/profile/{{.User.Username}}" class="username">{{.User.Username}}</a>
+       — <a href="/post/new" class="tint">New post</a>
+       — <a href="/?author=me" class="tint">My posts</a>
+       — <a href="/?liked=true" class="tint">Liked</a>
+      {{else}}
+      <a href="/user/login" class="tint">Sign in</a> to post{{end}}
+    </p>
+
+  </div>
+
+  <form method="GET" action="/" class="category-container">
+
+    <h2 class="options-title">Category</h2>
+    <label>
+      <select name="category" class="options-box">
+        <option value="" class="options">All categories</option>
+        {{range .PageContent.Categories}}
+        <option value="{{.ID}}">{{.Name}}</option>
+        {{end}}
+      </select>
+    </label>
+    <button type="submit" class="button">Filter</button>
+
+  </form>
+
+  {{range $post}}
+  <div class="post-container">
+
+    <h2 class="post-title"><a href="/post/{{.ID}}">{{.Title}}</a></h2>
     {{if .Deleted}}
-    <p>by Anonymous · created {{.CreatedAgo}} — likes {{.LikeCount}}, dislikes {{.DislikeCount}}, comments {{.CommentCount}}</p>
+    <p class="text">by Anonymous · created {{.CreatedAgo}} — likes {{.LikeCount}}, dislikes {{.DislikeCount}}, comments {{.CommentCount}}</p>
     {{else}}
    <p>by<a href="/user/profile/{{.AuthorName}}" class="username"> {{.AuthorName}}</a>
       · created {{.CreatedAgo}}{{with .UpdatedAgo}} · edited {{.}}{{end}}
       {{ template "react" .}}
-  </p>
+    </p>
     {{end}}
-    <p>{{range .Categories}}[{{.Name}}] {{end}}</p>
-  </article>
-{{else}}
-  <p>No posts.</p>
-{{end}}
-{{template "pagination" .PageContent.Pagination}}
+    <p class="text">{{range .Categories}}[{{.Name}}] {{end}}</p>
+
+  </div>
+  {{else}}
+  <p class="text">No posts.</p>
+  {{end}}
+
+</div>
 {{end}}
