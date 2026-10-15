@@ -61,14 +61,3 @@ func (p Post) UpdatedAgo() string {
 	}
 	return timeAgo(*p.UpdatedAt)
 }
-
-func (p Post) CreatedAgo() string {
-	return timeAgo(p.CreatedAt)
-}
-
-func (p Post) EditedAgo() string {
-	if p.UpdatedAt == nil {
-		return ""
-	}
-	return timeAgo(*p.UpdatedAt)
-}

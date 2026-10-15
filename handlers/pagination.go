@@ -45,7 +45,7 @@ func createPagination(r *http.Request, page int, hasNext bool) models.Pagination
 func paginate[T any](r *http.Request, fetch func(limit, offset int) ([]T, error)) ([]T, models.Pagination, error) {
 	page := pageNumber(r)
 
-	// try to fetch one extra page's worth of stuff to easily see if there *is* an extra page
+	// try to fetch one extra item to easily see if there *is* an extra page
 	data, err := fetch(pageSize+1, pageOffset(page))
 	if err != nil {
 		return nil, models.Pagination{}, err
@@ -53,7 +53,7 @@ func paginate[T any](r *http.Request, fetch func(limit, offset int) ([]T, error)
 
 	hasNext := len(data) > pageSize
 
-	// there was an extra page -> slice those results off
+	// there was an extra page -> slice the extra item off
 	if hasNext {
 		data = data[:pageSize]
 	}
