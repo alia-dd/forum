@@ -94,7 +94,7 @@ func (h *UseHandler) PostAdminUserAction(w http.ResponseWriter, r *http.Request)
 		handleError(w, r, customerrors.ErrForbidden)
 		return
 	}
-	if cfm_secter != "12345" {
+	if _, cfmErr := confirmaAdminsecret(cfm_secter); cfmErr != nil {
 		confirmFormError(w, 0, userId, action, actionType, "Incorrect confermation secret")
 		return
 	}
@@ -169,7 +169,7 @@ func (h *UseHandler) PostAdminPostrAction(w http.ResponseWriter, r *http.Request
 	actionType := r.FormValue("ActionType")
 	// check here
 
-	if cfm_secter != "12345" {
+	if _, cfmErr := confirmaAdminsecret(cfm_secter); cfmErr != nil {
 		confirmFormError(w, postId, userId, action, actionType, "Incorrect confermation secret")
 		return
 	}

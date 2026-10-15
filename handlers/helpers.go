@@ -16,6 +16,7 @@ import (
 
 	customerrors "gitea.kood.tech/jyrkikarhunen/forum/errors"
 	"gitea.kood.tech/jyrkikarhunen/forum/models"
+	"gitea.kood.tech/jyrkikarhunen/forum/utils"
 )
 
 // postform
@@ -284,4 +285,13 @@ func parseID(r *http.Request, key string) (int, error) {
 		return 0, customerrors.ErrBadRequest
 	}
 	return id, nil
+}
+
+func confirmaAdminsecret(cfm_secter string) (bool, error) {
+	scr := "12345"
+	hash, hasherr := utils.GenerateHashPassword(scr)
+	if hasherr != nil {
+		return false, customerrors.ErrInternalError
+	}
+	return utils.VerifyPassword(hash, cfm_secter)
 }

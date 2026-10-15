@@ -122,7 +122,6 @@ func (h *UseHandler) showProfile(w http.ResponseWriter, r *http.Request, usernam
 	if tab != "posts" && tab != "comments" && tab != "likedPosts" {
 		tab = "posts"
 	}
-
 	pageContent := models.ProfilePage{Tab: tab}
 	profileData, fetchErr := h.service.GetUserService(cx, username)
 	if fetchErr != nil {
