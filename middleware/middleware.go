@@ -21,7 +21,7 @@ func Recoverer(handler http.HandlerFunc) http.HandlerFunc {
 }
 
 // for GET endpoint to view post and comment this will work
-// it allows the session but its not nessecery
+// it allows the session but its not necessary
 func AllowGuest(sessionRepo *repository.SessionRepository, userRepo *repository.UserRepository, handler http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		cx := r.Context()
@@ -48,12 +48,12 @@ func AllowGuest(sessionRepo *repository.SessionRepository, userRepo *repository.
 	}
 }
 
-// wrapp this in request where the user must be authorized eg creating post/comment
+// wrap this in request where the user must be authorized eg creating post/comment
 func Restrict(sessionRepo *repository.SessionRepository, userRepo *repository.UserRepository, handler http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		cx := r.Context()
-		// we saved the sessoion token data when we create the session
-		// it retrieves that and uses hte cookie session uuid to get the useid
+		// we save the session token data when we create the session
+		// it retrieves that and uses the cookie session uid to get the useid
 		cookie, cookieErr := r.Cookie("session_token")
 		if cookieErr != nil {
 			utils.RedirectTologin(w, r)
@@ -76,9 +76,10 @@ func Restrict(sessionRepo *repository.SessionRepository, userRepo *repository.Us
 	}
 }
 
-// wrapp this in request where the user must be an admin
+// wrap this in request where the user must be an admin
 func Admin(sessionRepo *repository.SessionRepository, userRepo *repository.UserRepository, handler http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+
 		cx := r.Context()
 		cookie, cookieErr := r.Cookie("session_token")
 		if cookieErr != nil {
@@ -90,17 +91,14 @@ func Admin(sessionRepo *repository.SessionRepository, userRepo *repository.UserR
 			http.Redirect(w, r, "/user/login", http.StatusSeeOther)
 			return
 		}
+
 		user, err := userRepo.FetchUserData(cx, session.UserID)
 		if err != nil || user.Role != "admin" {
-			/// may be handle this better later on not sure now,
-			// with our current error handling
-			// i dont know how show the user they are not allowed
-			// maybe i should redirect to homepage with the message that sound better
 			http.Redirect(w, r, "/user/login", http.StatusSeeOther)
 			return
 		}
+
 		ctx := context.WithValue(r.Context(), "user_session", &user)
 		handler(w, r.WithContext(ctx))
-
 	}
 }

@@ -12,9 +12,9 @@ import (
 
 const (
 	RegisterUserQuery            = ` INSERT INTO user (username, name, email, bio, imagepath, password_hash) VALUES(?,?,?,?,?,?)`
-	fetchUserInfoQurrey          = ` SELECT id, username, name, email, ifnull(bio, ''), ifnull(imagepath, ''), password_hash, created_at, updated_at, role FROM user WHERE (username = ? or email = ?)`
-	fetchUserInfoByIdQurrey      = ` SELECT id, username, name, email, ifnull(bio, ''), ifnull(imagepath, ''), role FROM user WHERE id = ?`
-	fetchUserInfoByUsernameQurey = ` SELECT id, username, name, ifnull(bio, ''), ifnull(imagepath, '')  FROM user WHERE username = ?`
+	fetchUserInfoQuery           = ` SELECT id, username, name, email, ifnull(bio, ''), ifnull(imagepath, ''), password_hash, created_at, updated_at, role FROM user WHERE (username = ? or email = ?)`
+	fetchUserInfoByIdQuery       = ` SELECT id, username, name, email, ifnull(bio, ''), ifnull(imagepath, ''), role FROM user WHERE id = ?`
+	fetchUserInfoByUsernameQuery = ` SELECT id, username, name, ifnull(bio, ''), ifnull(imagepath, '')  FROM user WHERE username = ?`
 
 	UpdateUserRoleByIdQuery = ` UPDATE user SET updated_at = CURRENT_TIMESTAMP, role = ? WHERE id = ?`
 
@@ -26,7 +26,7 @@ const (
 	checkAvailableExcludeUserQuery = ` SELECT EXISTS(SELECT 1 FROM user WHERE (username = ? or email = ?) AND id != ?)`
 
 	// admin specific
-	fetchAllUsersQurrey = ` SELECT  id, username, email, role, ifnull(imagepath, ''), created_at, updated_at  FROM user`
+	fetchAllUsersQuery = ` SELECT  id, username, email, role, ifnull(imagepath, ''), created_at, updated_at  FROM user`
 )
 
 type UserRepository struct {
@@ -46,15 +46,17 @@ func (r *UserRepository) RegisterUser(cx context.Context, u models.UserRegister)
 	return nil
 }
 
-// check if use exist in the database
-// this func is used for the login to authentica the profided use credentials
+// check if user exists in the database
+// this func is used for the login to authenticate the provided user credentials
 func (r *UserRepository) AuthenticateUser(cx context.Context, col string) (models.UserInfo, error) {
 	var user models.UserInfo
 	var role int
-	fetchErr := r.db.QueryRowContext(cx, fetchUserInfoQurrey, col, col).Scan(&user.ID, &user.Username, &user.Name, &user.Email, &user.Bio, &user.Image, &user.Password, &user.CreatedAt, &user.UpdatedAt, &role)
+
+	fetchErr := r.db.QueryRowContext(cx, fetchUserInfoQuery, col, col).Scan(&user.ID, &user.Username, &user.Name, &user.Email, &user.Bio, &user.Image, &user.Password, &user.CreatedAt, &user.UpdatedAt, &role)
 	if fetchErr != nil {
 		return user, customerrors.MapSQLError(fetchErr)
 	}
+
 	switch role {
 	case 700:
 		user.Role = "admin"
@@ -62,18 +64,20 @@ func (r *UserRepository) AuthenticateUser(cx context.Context, col string) (model
 		user.Role = "blocked"
 	default:
 		user.Role = "user"
-
 	}
+
 	return user, nil
 }
 
 func (r *UserRepository) FetchUserData(cx context.Context, userId int) (models.UserInfo, error) {
 	var user models.UserInfo
 	var role int
-	fetchErr := r.db.QueryRowContext(cx, fetchUserInfoByIdQurrey, userId).Scan(&user.ID, &user.Username, &user.Name, &user.Email, &user.Bio, &user.Image, &role)
+
+	fetchErr := r.db.QueryRowContext(cx, fetchUserInfoByIdQuery, userId).Scan(&user.ID, &user.Username, &user.Name, &user.Email, &user.Bio, &user.Image, &role)
 	if fetchErr != nil {
 		return user, customerrors.MapSQLError(fetchErr)
 	}
+
 	switch role {
 	case 700:
 		user.Role = "admin"
@@ -81,22 +85,23 @@ func (r *UserRepository) FetchUserData(cx context.Context, userId int) (models.U
 		user.Role = "blocked"
 	default:
 		user.Role = "user"
-
 	}
+
 	return user, nil
 }
 
 // this repo func is used by the profile fetch for another user using their username
 func (r *UserRepository) FetchUserDataByUserName(cx context.Context, username string) (models.PublicUserInfo, error) {
 	var user models.PublicUserInfo
-	fetchErr := r.db.QueryRowContext(cx, fetchUserInfoByUsernameQurey, username).Scan(&user.ID, &user.Username, &user.Name, &user.Bio, &user.Image)
+	fetchErr := r.db.QueryRowContext(cx, fetchUserInfoByUsernameQuery, username).Scan(&user.ID, &user.Username, &user.Name, &user.Bio, &user.Image)
 	if fetchErr != nil {
 		return user, customerrors.MapSQLError(fetchErr)
 	}
+
 	return user, nil
 }
 
-// this func implement a patch update on the user profile
+// this func implements a patch update on the user profile
 func (r *UserRepository) UpdateUserData(cx context.Context, user models.UserUpdate) error {
 
 	var extraQuery []string
@@ -116,10 +121,12 @@ func (r *UserRepository) UpdateUserData(cx context.Context, user models.UserUpda
 		extraQuery = append(extraQuery, "email = ?")
 		args = append(args, *user.Email)
 	}
+
 	if user.Bio != nil {
 		extraQuery = append(extraQuery, "bio = ?")
 		args = append(args, *user.Bio)
 	}
+
 	if user.Image != nil {
 		extraQuery = append(extraQuery, "imagepath = ?")
 		args = append(args, *user.Image)
@@ -153,9 +160,9 @@ func (r *UserRepository) UpdateUserRole(cx context.Context, user_id, role int) e
 func (r *UserRepository) DeleteUser(cx context.Context, userID int) error {
 	res, deleteErr := r.db.ExecContext(cx, DeleteUserQuery, userID)
 	if deleteErr != nil {
-		fmt.Println(deleteErr)
 		return customerrors.MapSQLError(deleteErr)
 	}
+
 	if rows, _ := res.RowsAffected(); rows == 0 {
 		return customerrors.ErrNotFound
 	}
@@ -166,9 +173,11 @@ func (r *UserRepository) DeleteUser(cx context.Context, userID int) error {
 func (r *UserRepository) GetPasswordHash(cx context.Context, userID int) (string, error) {
 	var hashPass string
 	fetchErr := r.db.QueryRowContext(cx, fetchPasswordHashQuery, userID).Scan(&hashPass)
+
 	if fetchErr != nil {
 		return "", customerrors.MapSQLError(fetchErr)
 	}
+
 	return hashPass, nil
 }
 
@@ -177,21 +186,24 @@ func (r *UserRepository) UpdatePassword(cx context.Context, userID int, newPass 
 	if updateErr != nil {
 		return customerrors.MapSQLError(updateErr)
 	}
+
 	return nil
 }
 
-// this check if used by registrasion to see if the username/email are availabe
+// this check is used by registration to see if the username/email is available
 func (r *UserRepository) CheckIfAvailable(cx context.Context, col string) (bool, error) {
-	qurrey := `SELECT EXISTS(SELECT 1 FROM user WHERE (username = ? or email = ?))`
+	query := `SELECT EXISTS(SELECT 1 FROM user WHERE (username = ? or email = ?))`
 	var exist bool
-	fetchErr := r.db.QueryRowContext(cx, qurrey, col, col).Scan(&exist)
+	fetchErr := r.db.QueryRowContext(cx, query, col, col).Scan(&exist)
+
 	if fetchErr != nil {
 		return false, customerrors.MapSQLError(fetchErr)
 	}
+
 	return exist, nil
 }
 
-// this is used for the use profile edit to check if the profided username / email is availabe
+// this is used for the user profile edit to check if the profided username / email is available
 // excluding the user incase they reuse the same email
 func (r *UserRepository) CheckIfAvailableExcludeUser(cx context.Context, col string, userId int) (bool, error) {
 	var exist bool
@@ -199,6 +211,7 @@ func (r *UserRepository) CheckIfAvailableExcludeUser(cx context.Context, col str
 	if fetchErr != nil {
 		return false, customerrors.MapSQLError(fetchErr)
 	}
+
 	return exist, nil
 }
 
@@ -206,7 +219,7 @@ func (r *UserRepository) CheckIfAvailableExcludeUser(cx context.Context, col str
 func (r *UserRepository) FetchUsers(cx context.Context) ([]models.AdminUserInfo, error) {
 	var users []models.AdminUserInfo
 
-	rows, fetchErr := r.db.QueryContext(cx, fetchAllUsersQurrey)
+	rows, fetchErr := r.db.QueryContext(cx, fetchAllUsersQuery)
 	if fetchErr != nil {
 		fmt.Println("fetch", fetchErr)
 		return users, customerrors.MapSQLError(fetchErr)
@@ -225,6 +238,7 @@ func (r *UserRepository) FetchUsers(cx context.Context) ([]models.AdminUserInfo,
 		}
 		users = append(users, user)
 	}
+
 	if err := rows.Err(); err != nil {
 		return nil, customerrors.MapSQLError(err)
 	}

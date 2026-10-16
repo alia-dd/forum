@@ -31,6 +31,7 @@ func NewCategoryRepository(db *sql.DB) CategoryRepository {
 
 func (r *categoryRepositoryImpl) GetCategoryByID(ctx context.Context, id int) (*models.Category, error) {
 	var cat models.Category
+
 	err := r.db.QueryRowContext(ctx, `
 		SELECT id, name
 		FROM category
@@ -39,6 +40,7 @@ func (r *categoryRepositoryImpl) GetCategoryByID(ctx context.Context, id int) (*
 	if err != nil {
 		return nil, customerrors.MapSQLError(err)
 	}
+
 	return &cat, nil
 }
 
@@ -66,6 +68,7 @@ func (r *categoryRepositoryImpl) GetCatByPostIDs(ctx context.Context, postIDs []
 
 	conds := make([]string, len(postIDs))
 	args := make([]any, len(postIDs))
+
 	for i, id := range postIDs {
 		conds[i] = "?"
 		args[i] = id
@@ -79,6 +82,7 @@ func (r *categoryRepositoryImpl) GetCatByPostIDs(ctx context.Context, postIDs []
 		ORDER BY pc.post_id, pc.is_main DESC, category.name`, strings.Join(conds, ", "))
 
 	rows, err := r.db.QueryContext(ctx, query, args...)
+
 	if err != nil {
 		return nil, customerrors.MapSQLError(err)
 	}
@@ -92,11 +96,13 @@ func (r *categoryRepositoryImpl) GetCatByPostIDs(ctx context.Context, postIDs []
 		}
 		res[postID] = append(res[postID], cat)
 	}
+
 	return res, rows.Err()
 }
 
 func (r *categoryRepositoryImpl) GetAllCategories(ctx context.Context) ([]models.Category, error) {
 	ret := []models.Category{}
+
 	rows, err := r.db.QueryContext(ctx, `
 		SELECT id, name
 		FROM category
@@ -114,6 +120,7 @@ func (r *categoryRepositoryImpl) GetAllCategories(ctx context.Context) ([]models
 		}
 		ret = append(ret, cat)
 	}
+
 	return ret, rows.Err()
 }
 
@@ -173,5 +180,6 @@ func (r *categoryRepositoryImpl) DeleteCategory(ctx context.Context, id int) err
 	if rowCount == 0 {
 		return customerrors.ErrNotFound
 	}
+
 	return tx.Commit()
 }

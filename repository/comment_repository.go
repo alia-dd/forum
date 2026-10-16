@@ -18,7 +18,6 @@ type CommentRepository interface {
 	GetCommentsByPost(ctx context.Context, postID int, userID *int) ([]*models.CommentView, error)
 	GetCommentByID(ctx context.Context, comID int, curUserID *int) (*models.CommentView, error)
 	GetCommentsByUser(ctx context.Context, userID, limit, offset int) ([]*models.CommentView, error)
-	// // GetRepliesByComment(ctx context.Context, commentID, int, userID *int) (*models.CommentView, error)
 	UpdateCommentContent(ctx context.Context, commentID, userID int, userRole, content string) error
 	CountByPost(ctx context.Context, postID int) (int, error)
 	DeleteComment(ctx context.Context, id, authorID int, userRole string) error
@@ -141,7 +140,7 @@ func (r *commentRepositoryImpl) GetCommentsByPost(ctx context.Context, postID in
 		query += `, 0 AS user_reaction`
 	}
 
-	// sort by oldest first by default, probably adding in toggle for oldest/newest/highest score first later
+	// sort by oldest first by default
 	query += `
 		FROM comment c
 		JOIN user u ON u.id = c.user_id

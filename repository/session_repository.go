@@ -32,15 +32,18 @@ func (r *SessionRepository) CreateSession(cx context.Context, userID int) (*mode
 	if uuidErr != nil {
 		return nil, uuidErr
 	}
+
 	session := models.Session{
 		SesssionId: uuid,
 		UserID:     userID,
 		ExpiresAt:  time.Now().Add(30 * (24 * time.Hour)), // the expire is currently set to 30 days
 	}
+
 	_, postErr := r.db.ExecContext(cx, createUserSession, session.SesssionId, session.UserID, session.ExpiresAt)
 	if postErr != nil {
 		return nil, customerrors.MapSQLError(postErr)
 	}
+
 	return &session, nil
 }
 
@@ -49,6 +52,7 @@ func (r *SessionRepository) GetSessionwithSessionId(cx context.Context, sessionI
 	session := models.Session{
 		SesssionId: sessionId,
 	}
+
 	fetchErr := r.db.QueryRowContext(cx, GetUserSession, sessionId).Scan(&session.UserID, &session.ExpiresAt)
 	if fetchErr != nil {
 		if fetchErr == sql.ErrNoRows || session.ExpiresAt.Before(time.Now()) {
@@ -57,29 +61,30 @@ func (r *SessionRepository) GetSessionwithSessionId(cx context.Context, sessionI
 		}
 		return nil, customerrors.ErrInternalError
 	}
+
 	return &session, nil
 }
 
-// what happens if the session table is deleted
-// the pereiodic clean up should fix this but that takes time
-// should the user sessoin validity be checked as well what is the best way to handle this the proper way
 func (r *SessionRepository) DeleteSession(cx context.Context, sessionId string) error {
 	resp, deleteErr := r.db.ExecContext(cx, deleteUserSession, sessionId)
 	if deleteErr != nil {
 		return customerrors.MapSQLError(deleteErr)
 	}
+
 	rows, _ := resp.RowsAffected()
 	if rows == 0 {
 		return customerrors.ErrNotFound
 	}
+
 	return nil
 }
 
-// this delets the session by userId
+// this deletes the session by userId
 func (r *SessionRepository) DeleteSessionsByUserId(cx context.Context, userID int) error {
 	_, deleteErr := r.db.ExecContext(cx, deleteSessionsByUserId, userID)
 	if deleteErr != nil {
 		return customerrors.MapSQLError(deleteErr)
 	}
+
 	return nil
 }

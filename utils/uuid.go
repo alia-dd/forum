@@ -8,13 +8,13 @@ import (
 	customerrors "gitea.kood.tech/jyrkikarhunen/forum/errors"
 )
 
-// uuid resourse https://www.rfc-editor.org/rfc/rfc9562.html?utm_source=chatgpt.com#name-uuid-version-7
+// uuid resource https://www.rfc-editor.org/rfc/rfc9562.html?utm_source=chatgpt.com#name-uuid-version-7
 
 func NewUuid() (string, error) {
 	timestamp := time.Now().UnixMilli()
 
 	b := make([]byte, 16)
-	// generate 16 random bytes
+	// generates 16 random bytes
 	if _, randomizeErr := rand.Read(b); randomizeErr != nil {
 		return "", customerrors.ErrInternalError
 	}

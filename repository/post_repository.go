@@ -3,7 +3,6 @@ package repository
 import (
 	"context"
 	"database/sql"
-	"fmt"
 	"strings"
 
 	customerrors "gitea.kood.tech/jyrkikarhunen/forum/errors"
@@ -188,6 +187,7 @@ func (r *postRepositoryImpl) GetPostByID(ctx context.Context, id int, user_id in
 		`
 
 	var pv models.PostView
+
 	err := r.db.QueryRowContext(ctx, query, user_id, id).Scan(
 		&pv.Post.ID, &pv.Post.UserID, &pv.Post.Title, &pv.Post.Content, &pv.Post.CreatedAt, &pv.Post.UpdatedAt,
 		&pv.AuthorName, &pv.AuthorImage, &pv.LikeCount, &pv.DislikeCount, &pv.CommentCount, &pv.UserReaction, &pv.Deleted,
@@ -195,6 +195,7 @@ func (r *postRepositoryImpl) GetPostByID(ctx context.Context, id int, user_id in
 	if err != nil {
 		return nil, customerrors.MapSQLError(err)
 	}
+
 	pv.TargetType = "post"
 	pv.TargetId = pv.Post.ID
 	return &pv, nil
@@ -205,8 +206,10 @@ func (r *postRepositoryImpl) UpdatePost(ctx context.Context, update models.PostU
 	if err != nil {
 		return customerrors.MapSQLError(err)
 	}
+
 	defer tx.Rollback()
 	arg := []any{update.Title, update.Content, update.ID}
+
 	query := `UPDATE post SET title = ?, content = ?, updated_at = CURRENT_TIMESTAMP
 		WHERE id = ? AND deleted_at IS NULL
 		`
@@ -214,6 +217,7 @@ func (r *postRepositoryImpl) UpdatePost(ctx context.Context, update models.PostU
 		query += ` AND user_id = ?`
 		arg = append(arg, authorID)
 	}
+
 	res, err := tx.ExecContext(ctx, query, arg...)
 	if err != nil {
 		return customerrors.MapSQLError(err)
@@ -251,21 +255,23 @@ func (r *postRepositoryImpl) UpdatePost(ctx context.Context, update models.PostU
 			return customerrors.MapSQLError(err)
 		}
 	}
+
 	return tx.Commit()
 }
 
 func (r *postRepositoryImpl) DeletePost(ctx context.Context, id, authorID int, userRole string) error {
 	var hasComments bool
 	var err error
+
 	err = r.db.QueryRowContext(ctx, `
 		SELECT EXISTS(
 			SELECT 1 FROM comment
 			WHERE parent_post_id = ?)
 		`, id).Scan(&hasComments)
 	if err != nil {
-		fmt.Println("here1")
 		return customerrors.MapSQLError(err)
 	}
+
 	arg := []any{id}
 
 	var res sql.Result
@@ -284,20 +290,17 @@ func (r *postRepositoryImpl) DeletePost(ctx context.Context, id, authorID int, u
 			`, id, authorID)
 	}
 	if err != nil {
-		fmt.Println("here2", err)
 		return customerrors.MapSQLError(err)
 	}
 
 	rowCount, err := res.RowsAffected()
 	if err != nil {
-		fmt.Println("here3")
 		return customerrors.MapSQLError(err)
 	}
 
 	if rowCount == 0 {
-		fmt.Println("here4")
 		return customerrors.ErrNotFound
 	}
-	fmt.Println("here4")
+
 	return nil
 }

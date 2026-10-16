@@ -125,6 +125,7 @@ func (h *PostHandler) GetPostByID(w http.ResponseWriter, r *http.Request) {
 	for _, comment := range comments {
 		comment.UserRole = role
 	}
+
 	//get comments linked to post or its subcomments
 	pageData := models.PageData[PostPage]{
 		User: user,
@@ -133,7 +134,7 @@ func (h *PostHandler) GetPostByID(w http.ResponseWriter, r *http.Request) {
 			Comments: comments,
 		},
 	}
-	fmt.Println(">", post.AuthorImage)
+
 	utils.RenderTemplate(w, http.StatusOK, "post", pageData)
 }
 

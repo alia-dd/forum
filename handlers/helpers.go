@@ -112,9 +112,7 @@ func (h *PostHandler) getAuthorID(ctx context.Context, author string) (int, erro
 		}
 		return authorID, nil
 	}
-	//todo: get userid by username and return that or error if not found
 
-	//placeholder return
 	return 0, nil
 }
 
@@ -287,11 +285,11 @@ func parseID(r *http.Request, key string) (int, error) {
 	return id, nil
 }
 
-func confirmaAdminsecret(cfm_secter string) (bool, error) {
+func confirmaAdminSecret(cfm_sector string) (bool, error) {
 	scr := "12345"
 	hash, hasherr := utils.GenerateHashPassword(scr)
 	if hasherr != nil {
 		return false, customerrors.ErrInternalError
 	}
-	return utils.VerifyPassword(hash, cfm_secter)
+	return utils.VerifyPassword(hash, cfm_sector)
 }
