@@ -15,6 +15,22 @@
         </p>
 
         <p class="text"><em>[This comment has been deleted]</em></p>
+
+        {{if gt .ReplyCount 0}}
+            <div class="comment-meta">
+                <button hx-get="/post/{{.ParentPostID}}/comment/{{.ID}}/replies" 
+                    hx-target="#replies-{{.ID}}" 
+                    hx-swap="innerHTML"
+                    hx-on:click="
+                    const container = document.getElementById('replies-{{.ID}}');
+                    if (container.children.length > 0) {
+                    container.style.display = container.style.display === 'none' ? 'block' : 'none';
+                    event.preventDefault();
+                    }" class="button">
+                    View {{.ReplyCount}} replies
+                </button>
+            </div>
+        {{end}}
     {{else}}
         <div class="comment-header">
             <p class="text">
