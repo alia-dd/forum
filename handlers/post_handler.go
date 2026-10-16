@@ -73,12 +73,23 @@ func (h *PostHandler) GetPosts(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	mode := ""
+	author := r.URL.Query().Get("author")
+	liked := r.URL.Query().Get("liked")
+
+	if author != "" {
+		mode = "myposts"
+	} else if liked != "" {
+		mode = "liked"
+	}
+
 	pageData := models.PageData[MainPage]{
 		User: user,
 		PageContent: MainPage{
 			Posts:            posts,
 			Categories:       allCats,
 			SelectedCategory: selectedCat,
+			Filter:           mode,
 			Pagination:       pg,
 		},
 	}
