@@ -158,6 +158,11 @@ func (s *UserService) AuthenticateUserService(cx context.Context, u models.UserL
 	return session, nil
 }
 
+// delete use with provided user id
+func (s *UserService) DeleteUser(cx context.Context, userId int) error {
+	return s.repo.DeleteUser(cx, userId)
+}
+
 // deleting the session will force the user to the login page
 // and the middlewere will prefent the user to go back without login session
 func (s *UserService) LogoutService(cx context.Context, sessionId string) error {

@@ -1,0 +1,18 @@
+.navOverlay {
+    display: none;
+    position: fixed;
+    height: 100vh;
+    width: 100vw;
+    inset: var(--nav-h) 0 0;
+    background: rgba(0, 0, 0, 0.45);
+    opacity: 0.5;
+    z-index: 90;
+}
+
+.navOverlay.visible {
+    display: block;
+}
+
+.nav__links {
+    z-index: 101;
+}

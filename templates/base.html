@@ -13,7 +13,7 @@
     <link rel="stylesheet" href="/static/css/userTable.css">
     <link rel="stylesheet" href="/static/css/error.css">
     <link rel="stylesheet" href="/static/css/search.css">
-
+    <link rel="stylesheet" href="/static/css/home.css">
     <link rel="stylesheet" href="/static/css/universal.css">
 
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
@@ -25,11 +25,11 @@
      {{template "nav" .}}
      <div id="page-error" >
         {{template "partail_error" .}}
-        <!-- {{if .Error}}<div  class="page-error">{{.Error}}</div>{{end}} -->
     </div>
     <main id="mainContent">
         {{block "content" .}}{{end}}
     </main>
 </body>
+
 </html>
 {{end}}

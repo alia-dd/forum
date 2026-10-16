@@ -5,14 +5,18 @@
   <div class="title-container">
 
     <h1 class="page-title">Posts</h1>
-    <p class="text">{{if .User}}Signed in as 
-      <a href="/user/profile/{{.User.Username}}" class="username">{{.User.Username}}</a>
-       — <a href="/post/new" class="tint">New post</a>
-       — <a href="/?author=me" class="tint">My posts</a>
-       — <a href="/?liked=true" class="tint">Liked</a>
+    <p class="text">
+      {{if .User}}Signed in as 
+        <a href="/user/profile/{{.User.Username}}" class="tint pads">{{.User.Username}}</a>
+        — <a href="/?author=me" class="tint pads">My posts</a>
+        — <a href="/?liked=true" class="tint pads">Liked</a>
       {{else}}
-      <a href="/user/login" class="tint">Sign in</a> to post{{end}}
+      <a href="/user/login" class="tint pads">Sign in</a> to post{{end}}
     </p>
+
+    <form method="GET" action="/post/new">
+      <button type="submit" class="button">New post</button>
+    </form>
 
   </div>
 
@@ -38,7 +42,13 @@
     {{if .Deleted}}
     <p class="text">by Anonymous · created {{.CreatedAgo}} — likes {{.LikeCount}}, dislikes {{.DislikeCount}}, comments {{.CommentCount}}</p>
     {{else}}
-   <p>by<a href="/user/profile/{{.AuthorName}}" class="username"> {{.AuthorName}}</a>
+    <p class="text" >by
+      <a href="/user/profile/{{.AuthorName}}" class="username ">
+        <span class="profile-li">
+          <img {{if .AuthorImage}} src="/static/assets/images/{{.AuthorImage}}" {{else}} src="/static/assets/images/avatar1.jpg" {{end}} alt="Avatar" class="admin-table-avatar">
+          {{.AuthorName}}
+        </span>   
+      </a> 
       · created {{.CreatedAgo}}{{with .UpdatedAgo}} · edited {{.}}{{end}}
       {{ template "react" .}}
     </p>
@@ -50,6 +60,9 @@
   <p class="text">No posts.</p>
   {{end}}
 
+  {{if .PageContent.Posts}}
   {{template "pagination" .PageContent.Pagination}}
+  {{end}}
+  
 </div>
 {{end}}

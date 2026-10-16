@@ -1,9 +1,13 @@
+.table-rap{
+    width: 100%;
+    overflow-x: auto;
+}
 .admin-table {
     width: 100%;
+    min-width: 0; 
     border-collapse: collapse;
     font-family: var(--font-body);
     color: var(--ink);
-    overflow: scroll;
 }
 
 .admin-table thead th {

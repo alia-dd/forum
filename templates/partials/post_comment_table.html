@@ -29,8 +29,13 @@
       </td>
     </tr>
     {{else}}
-    <tr><td colspan="5">No posts yet.</td></tr>
+    <tr><td colspan="5">Search results for "{{.PageContent.Query}}" do not match any posts.</td></tr>
     {{end}}
   </tbody>
 </table>
+
+{{if .PageContent.Posts}}
+  {{template "pagination" .PageContent.Pagination}}
+{{end}}
+
 {{end}}

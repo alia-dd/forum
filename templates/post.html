@@ -12,7 +12,16 @@
       <p class="text">by Anonymous · created {{$post.CreatedAgo}}{{with $post.UpdatedAgo}} · deleted {{.}}{{end}}  {{ template "react" $post}}</p>
       <div class="text"><em>[deleted by user]</em></div>
     {{else}}
-      <p class="text">by<a href="/user/profile/{{$post.AuthorName}}" class="username"> {{$post.AuthorName}}</a> · created {{$post.CreatedAgo}}{{with $post.UpdatedAgo}} · edited {{.}}{{end}}</p>
+      <p class="text" >by
+        <a href="/user/profile/{{$post.AuthorName}}" class="username ">
+          <span class="profile-li">
+            <img {{if $post.AuthorImage}} src="/static/assets/images/{{$post.AuthorImage}}" {{else}} src="/static/assets/images/avatar1.jpg" {{end}} alt="Avatar" class="admin-table-avatar">
+            {{$post.AuthorName}}
+          </span>   
+        </a> 
+        · created {{$post.CreatedAgo}}{{with $post.UpdatedAgo}} · edited {{.}}{{end}}
+      </p>
+     
       <div class="content">{{$post.Content}}</div>
       {{ template "react" $post}}
     {{end}}
@@ -36,7 +45,11 @@
     <button type="submit" class="button">Create</button>
   </form>
   {{else}}
-    <p class="text"><a href="/user/login" class="tint">Log in</a> or <a href="/user/register" class="tint">register</a> to leave a comment.</p>
+    <p class="text">
+      <a href="/user/login" class="tint pads">Log in</a>
+      or
+      <a href="/user/register" class="tint pads">register</a>
+      to leave a comment.</p>
   {{end}}
 
 

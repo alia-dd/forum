@@ -17,6 +17,7 @@ type Comment struct {
 type CommentView struct {
 	Comment
 	AuthorName   string
+	AuthorImage  string
 	LikeCount    int
 	DislikeCount int
 	Replies      []CommentView

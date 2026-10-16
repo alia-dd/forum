@@ -16,6 +16,7 @@ type Post struct {
 type PostView struct {
 	Post
 	AuthorName   string
+	AuthorImage  string
 	Categories   []Category
 	Comments     []CommentView // keep empty if loading a list of posts, load if viewing single post
 	LikeCount    int
