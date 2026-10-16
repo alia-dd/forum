@@ -3,6 +3,7 @@ package handlers
 import (
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
 
 	customerrors "gitea.kood.tech/jyrkikarhunen/forum/errors"
@@ -75,9 +76,11 @@ func handleError(w http.ResponseWriter, r *http.Request, err error) {
 		message = customerrors.ErrInvalidLogin.Error()
 		status = http.StatusBadRequest
 	case errors.Is(err, customerrors.ErrBlockedUser):
-		// code = "INVALID_LOGIN"
 		message = customerrors.ErrBlockedUser.Error()
 		status = http.StatusForbidden
+	case errors.Is(err, customerrors.ErrInvalidEmail):
+		message = customerrors.ErrInvalidEmail.Error()
+		status = http.StatusBadRequest
 	default:
 		//code = "INTERNAL_ERROR"
 		message = "An unexpected error occurred while processing the request"
@@ -100,7 +103,6 @@ func handleError(w http.ResponseWriter, r *http.Request, err error) {
 			ErrorMs: message,
 		},
 	}
-
-	fmt.Print(err)
+	log.Println(err)
 	utils.RenderTemplate(w, status, "error", pageData)
 }

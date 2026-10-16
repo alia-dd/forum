@@ -13,10 +13,10 @@
       <div class="text"><em>[deleted by user]</em></div>
     {{else}}
       <p class="text" >by
-        <a href="/user/profile/{{$post.AuthorName}}" class="username ">
+        <a {{if $post.AuthorDeleted}}{{else}}href="/user/profile/{{$post.AuthorName}}"{{end}} class="username ">
           <span class="profile-li">
             <img {{if $post.AuthorImage}} src="/static/assets/images/{{$post.AuthorImage}}" {{else}} src="/static/assets/images/avatar1.jpg" {{end}} alt="Avatar" class="admin-table-avatar">
-            {{$post.AuthorName}}
+            {{if $post.AuthorDeleted}}Anonymous{{else}}{{$post.AuthorName}}{{end}}
           </span>   
         </a> 
         · created {{$post.CreatedAgo}}{{with $post.UpdatedAgo}} · edited {{.}}{{end}}

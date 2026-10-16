@@ -16,17 +16,18 @@ type Post struct {
 
 type PostView struct {
 	Post
-	AuthorName   string
-	AuthorImage  string
-	Categories   []Category
-	Comments     []CommentView // keep empty if loading a list of posts, load if viewing single post
-	LikeCount    int
-	DislikeCount int
-	UserReaction int // user post Reaction value
-	TargetType   string
-	TargetId     int
-	CommentCount int
-	Deleted      bool
+	AuthorName    string
+	AuthorImage   string
+	AuthorDeleted bool
+	Categories    []Category
+	Comments      []CommentView // keep empty if loading a list of posts, load if viewing single post
+	LikeCount     int
+	DislikeCount  int
+	UserReaction  int // user post Reaction value
+	TargetType    string
+	TargetId      int
+	CommentCount  int
+	Deleted       bool
 }
 
 type PostInput struct {

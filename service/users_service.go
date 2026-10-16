@@ -45,33 +45,34 @@ func (s *UserService) GetAllUsersService(cx context.Context) ([]models.AdminUser
 }
 
 // patch user
-func (s *UserService) UpdateUserService(cx context.Context, u models.UserUpdate) error {
+func (s *UserService) UpdateUserService(cx context.Context, u models.UserUpdate, deleteAccount bool) error {
+	if !deleteAccount {
+		fmt.Println("no no nooo")
+		if validationsErr := u.Isvalid(); validationsErr != nil {
+			fmt.Println("validation errpr", validationsErr)
+			return validationsErr
+		}
+		if u.Username != nil {
+			notAvailable, availableErr := s.repo.CheckIfAvailableExcludeUser(cx, *u.Username, u.ID)
+			if availableErr != nil {
+				return availableErr
+			}
+			if notAvailable {
+				return customerrors.ErrDuplicateEntry
+			}
+		}
 
-	if validationsErr := u.Isvalid(); validationsErr != nil {
-		return validationsErr
+		if u.Email != nil {
+			notAvailable, availableErr := s.repo.CheckIfAvailableExcludeUser(cx, *u.Email, u.ID)
+			if availableErr != nil {
+				return availableErr
+			}
+			if notAvailable {
+				return customerrors.ErrDuplicateEntry
+			}
+		}
 	}
-
-	if u.Username != nil {
-		notAvailable, availableErr := s.repo.CheckIfAvailableExcludeUser(cx, *u.Username, u.ID)
-		if availableErr != nil {
-			return availableErr
-		}
-		if notAvailable {
-			return customerrors.ErrDuplicateEntry
-		}
-	}
-
-	if u.Email != nil {
-		notAvailable, availableErr := s.repo.CheckIfAvailableExcludeUser(cx, *u.Email, u.ID)
-		if availableErr != nil {
-			return availableErr
-		}
-		if notAvailable {
-			return customerrors.ErrDuplicateEntry
-		}
-	}
-
-	return s.repo.UpdateUserData(cx, u)
+	return s.repo.UpdateUserData(cx, u, deleteAccount)
 }
 
 func (s *UserService) UpdateUserRoleService(cx context.Context, action string, user_id int) error {
@@ -100,8 +101,6 @@ func (s *UserService) UpdateUserRoleService(cx context.Context, action string, u
 			role = 0
 		}
 		err = s.repo.UpdateUserRole(cx, user_id, role)
-	case "delete":
-		err = s.repo.DeleteUser(cx, user_id)
 	default:
 		return fmt.Errorf("unknown user action: %s", action)
 	}

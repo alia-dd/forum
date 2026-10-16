@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -133,6 +134,10 @@ func (h *UseHandler) showProfile(w http.ResponseWriter, r *http.Request, usernam
 		handleError(w, r, fetchErr)
 		return
 	}
+	if profileData.DeletedAt {
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+		return
+	}
 	userID := -1
 	if ok {
 		userID = user.ID
@@ -162,6 +167,7 @@ func (h *UseHandler) showProfile(w http.ResponseWriter, r *http.Request, usernam
 			return h.commentRep.GetCommentsByUser(cx, profileData.ID, limit, offset)
 		})
 		if fetchCommErr != nil {
+			fmt.Println("comment err", fetchCommErr)
 			handleError(w, r, fetchCommErr)
 			return
 		}
@@ -279,8 +285,7 @@ func (h *UseHandler) UpdateUserProfile(w http.ResponseWriter, r *http.Request) {
 	if fileName != "" {
 		userData.Image = &fileName
 	}
-
-	if UpdateErr := h.service.UpdateUserService(cx, userData); UpdateErr != nil {
+	if UpdateErr := h.service.UpdateUserService(cx, userData, false); UpdateErr != nil {
 		// replace mainpage with a dedicated profile struct later
 		pageData := models.PageData[MainPage]{
 			User: &models.UserInfo{
@@ -309,6 +314,7 @@ func (h *UseHandler) UpdateUserProfile(w http.ResponseWriter, r *http.Request) {
 
 // delete user using the corrent cookie userid
 func (h *UseHandler) DeleteUserAcccount(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("here")
 	cx := r.Context()
 	user, ok := r.Context().Value("user_session").(*models.UserInfo)
 
@@ -316,8 +322,8 @@ func (h *UseHandler) DeleteUserAcccount(w http.ResponseWriter, r *http.Request) 
 		utils.RedirectTologin(w, r)
 		return
 	}
-	if deleteErr := h.service.DeleteUser(cx, user.ID); deleteErr != nil {
-		handleError(w, r, deleteErr)
+	if checkErr := h.checkDeletetionType(cx, user); checkErr != nil {
+		handleError(w, r, checkErr)
 		return
 	}
 	cookie, cookieErr := r.Cookie("session_token")
