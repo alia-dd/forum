@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -131,6 +132,10 @@ func (h *UseHandler) showProfile(w http.ResponseWriter, r *http.Request, usernam
 
 	if fetchErr != nil {
 		HandleError(w, r, fetchErr)
+		return
+	}
+	if profileData.DeletedAt {
+		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
 	}
 	userID := -1
@@ -279,8 +284,7 @@ func (h *UseHandler) UpdateUserProfile(w http.ResponseWriter, r *http.Request) {
 	if fileName != "" {
 		userData.Image = &fileName
 	}
-
-	if UpdateErr := h.service.UpdateUserService(cx, userData); UpdateErr != nil {
+	if UpdateErr := h.service.UpdateUserService(cx, userData, false); UpdateErr != nil {
 		// replace mainpage with a dedicated profile struct later
 		pageData := models.PageData[MainPage]{
 			User: &models.UserInfo{
@@ -309,6 +313,7 @@ func (h *UseHandler) UpdateUserProfile(w http.ResponseWriter, r *http.Request) {
 
 // delete user using the corrent cookie userid
 func (h *UseHandler) DeleteUserAcccount(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("here")
 	cx := r.Context()
 	user, ok := r.Context().Value("user_session").(*models.UserInfo)
 

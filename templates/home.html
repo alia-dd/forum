@@ -5,7 +5,13 @@
 
   <div class="title-container">
 
-    <h1 class="page-title">Posts</h1>
+    {{if not .PageContent.Filter}}
+      <h1 class="page-title">Posts</h1>
+    {{else if eq .PageContent.Filter "myposts"}}
+      <h1 class="page-title">My Posts</h1>
+    {{else if eq .PageContent.Filter "liked"}}
+      <h1 class="page-title">Liked</h1>
+    {{end}}
 
     {{if .User}}
     <p class="text">Signed in as 
@@ -15,7 +21,7 @@
     </p>
 
     <form method="GET" action="/post/new">
-      <button type="submit" class="button">New post</button>
+      <button type="submit" class="button" style="margin: 10px 0 0 0">New post</button>
     </form>
 
     {{else}}
@@ -53,10 +59,10 @@
     <p class="text">by Anonymous · created {{.CreatedAgo}} — likes {{.LikeCount}}, dislikes {{.DislikeCount}}, comments {{.CommentCount}}</p>
     {{else}}
     <p class="text" >by
-      <a href="/user/profile/{{.AuthorName}}" class="username ">
+      <a {{if .AuthorDeleted}}{{else}}href="/user/profile/{{.AuthorName}}"{{end}} class="username ">
         <span class="profile-li">
           <img {{if .AuthorImage}} src="/static/assets/images/{{.AuthorImage}}" {{else}} src="/static/assets/images/avatar1.jpg" {{end}} alt="Avatar" class="admin-table-avatar">
-          {{.AuthorName}}
+          {{if .AuthorDeleted}}Anonymous{{else}}{{.AuthorName}}{{end}}
         </span>   
       </a> 
       · created {{.CreatedAgo}}{{with .UpdatedAgo}} · edited {{.}}{{end}}

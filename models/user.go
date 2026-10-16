@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/mail"
 	"regexp"
+	"strings"
 	"time"
 
 	customerrors "gitea.kood.tech/jyrkikarhunen/forum/errors"
@@ -57,6 +58,7 @@ type PublicUserInfo struct {
 	Image     string    `json:"imagePath,omitempty"`
 	Bio       string    `json:"bio,omitempty"`
 	CreatedAt time.Time `json:"createdat"`
+	DeletedAt bool
 }
 type ProfilePage struct {
 	Profile    PublicUserInfo
@@ -76,13 +78,13 @@ type UserUpdate struct {
 }
 
 func (u *UserRegister) Isvalid() error {
-	if u.Username != "" && !IsValidName(u.Username) {
+	if !IsValidName(u.Username) {
 		return customerrors.ErrInvalidName
 	}
-	if u.Email != "" && !IsValidEmail(u.Email) {
-		return customerrors.ErrInvalidData
+	if !IsValidEmail(u.Email) {
+		return customerrors.ErrInvalidEmail
 	}
-	if u.Password != "" && u.ConfirmPassword != "" && (u.Password != u.ConfirmPassword) {
+	if u.Password == "" || u.ConfirmPassword == "" || (u.Password != u.ConfirmPassword) {
 		return customerrors.ErrIncorrectPassword
 	}
 	return nil
@@ -94,7 +96,7 @@ func (u *UserUpdate) Isvalid() error {
 	}
 	if u.Email != nil && !IsValidEmail(*u.Email) {
 		fmt.Println(u.Email)
-		return customerrors.ErrInvalidData
+		return customerrors.ErrInvalidEmail
 	}
 	if u.Bio != nil && len(*u.Bio) > 500 {
 		return customerrors.ErrInvalidData
@@ -104,7 +106,7 @@ func (u *UserUpdate) Isvalid() error {
 
 func IsValidName(name string) bool {
 	r, _ := regexp.Compile("^[A-Za-z0-9]+(?:-[A-Za-z0-9]+)*$")
-	if r.MatchString(name) {
+	if r.MatchString(name) && len(name) >= 3 && len(name) <= 20 {
 		return true
 	}
 	fmt.Println("not a march")
@@ -113,5 +115,13 @@ func IsValidName(name string) bool {
 
 func IsValidEmail(email string) bool {
 	validEmail, emailErr := mail.ParseAddress(email)
-	return emailErr == nil && validEmail.Address == email
+	correct := emailErr == nil && validEmail.Address == email
+	res := strings.Split(email, "@")
+	if len(res) != 2 {
+		return false
+	}
+	f := len(res[0])
+	s := len(res[1])
+	extraCheck := f > 0 && f <= 64 && s > 0 && s <= 255-f
+	return correct && extraCheck
 }

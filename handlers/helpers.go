@@ -315,3 +315,31 @@ func confirmaAdminSecret(cfm_sector string) (bool, error) {
 	}
 	return utils.VerifyPassword(hash, cfm_sector)
 }
+
+func (h *UseHandler) checkDeletetionType(cx context.Context, user *models.UserInfo) error {
+	// fetch post and comment if they return error not found (meaning no post/comment)
+	// then we can do hard delete
+	// if there is post/comment found then we do soft deleteion we update the user and remove
+	// the userdata except the id
+	p, _ := h.postRep.GetPost(cx, models.PostFilter{AuthorID: &user.ID, Limit: 1, Offset: 0}, -1)
+	c, _ := h.commentRep.GetCommentsByUser(cx, user.ID, 1, 0)
+	if len(p) == 0 && len(c) == 0 {
+		fmt.Println("here permanent")
+		if deleteErr := h.service.DeleteUser(cx, user.ID); deleteErr != nil {
+			return deleteErr
+		}
+	} else {
+		fmt.Println("here partial")
+		if updateErr := h.service.UpdateUserService(cx, models.UserUpdate{
+			ID:       user.ID,
+			Username: nil,
+			Name:     nil,
+			Email:    nil,
+			Image:    nil,
+			Bio:      nil},
+			true); updateErr != nil {
+			return updateErr
+		}
+	}
+	return nil
+}

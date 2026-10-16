@@ -107,8 +107,15 @@ func (h *UseHandler) PostAdminUserAction(w http.ResponseWriter, r *http.Request)
 		confirmFormError(w, 0, userId, action, actionType, "Incorrect confirmation secret")
 		return
 	}
+	var updateErr error
+	if action == "delete" {
+		updateErr = h.checkDeletetionType(cx, user)
 
-	updateErr := h.service.UpdateUserRoleService(cx, action, userId)
+	} else {
+		updateErr = h.service.UpdateUserRoleService(cx, action, userId)
+
+	}
+
 	usersData, err := h.service.GetAllUsersService(cx)
 
 	pageData := models.PageData[MainPage]{

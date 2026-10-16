@@ -16,19 +16,20 @@ type Comment struct {
 
 type CommentView struct {
 	Comment
-	AuthorName   string
-	AuthorImage  string
-	LikeCount    int
-	DislikeCount int
-	Replies      []CommentView
-	ReplyCount   int
-	IsOwner      bool
-	UserRole     string
-	IsLogged     bool
-	Deleted      bool
-	UserReaction int // user post Reaction value
-	TargetType   string
-	TargetId     int
+	AuthorName    string
+	AuthorImage   string
+	AuthorDeleted bool
+	LikeCount     int
+	DislikeCount  int
+	Replies       []CommentView
+	ReplyCount    int
+	IsOwner       bool
+	UserRole      string
+	IsLogged      bool
+	Deleted       bool
+	UserReaction  int // user post Reaction value
+	TargetType    string
+	TargetId      int
 }
 
 type CommentInput struct {
