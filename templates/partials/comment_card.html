@@ -18,10 +18,10 @@
     {{else}}
         <div class="comment-header">
             <p class="text">
-                <a href="/user/profile/{{.AuthorName}}" class="username">
+                <a {{if .AuthorDeleted}}{{else}} href="/user/profile/{{.AuthorName}}"{{end}} class="username">
                     <span class="profile-li">
                         <img {{if .AuthorImage}} src="/static/assets/images/{{.AuthorImage}}" {{else}} src="/static/assets/images/avatar1.jpg" {{end}} alt="Avatar" class="admin-table-avatar">                   
-                        {{.AuthorName}}</a> - 
+                        {{if .AuthorDeleted}}Anonymous{{else}}{{.AuthorName}}{{end}}</a> -
                     </span>   
                 {{if .UpdatedAt}}
                     <small>{{.CreatedAgo}}</small> —

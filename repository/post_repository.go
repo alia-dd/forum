@@ -71,7 +71,7 @@ func (r *postRepositoryImpl) GetPost(ctx context.Context, filter models.PostFilt
 	query := `
 		SELECT
 			post.id, post.user_id, post.title, post.content, post.created_at, post.updated_at,
-			user.username, ifnull(user.imagepath, ''),
+			user.username, ifnull(user.imagepath, ''), user.deleted_at IS NOT NULL,
 			(SELECT COUNT(*) FROM post_like WHERE post_like.post_id = post.id AND post_like.value = 1)  AS like_count,
 			(SELECT COUNT(*) FROM post_like WHERE post_like.post_id = post.id AND post_like.value = -1) AS dislike_count,
 			(SELECT COUNT(*) FROM comment   WHERE comment.parent_post_id = post.id)                     AS comment_count,
@@ -133,6 +133,7 @@ func (r *postRepositoryImpl) GetPost(ctx context.Context, filter models.PostFilt
 
 	rows, err := r.db.QueryContext(ctx, query, args...)
 	if err != nil {
+		fmt.Println("here err post", err)
 		return nil, customerrors.MapSQLError(err)
 	}
 	defer rows.Close()
@@ -151,6 +152,7 @@ func (r *postRepositoryImpl) GetPost(ctx context.Context, filter models.PostFilt
 			&pv.Post.UpdatedAt,
 			&pv.AuthorName,
 			&pv.AuthorImage,
+			&pv.AuthorDeleted,
 			&pv.LikeCount,
 			&pv.DislikeCount,
 			&pv.CommentCount,
@@ -159,16 +161,18 @@ func (r *postRepositoryImpl) GetPost(ctx context.Context, filter models.PostFilt
 		)
 
 		if err != nil {
+			fmt.Println("here err post>", err)
 			return nil, customerrors.MapSQLError(err)
 		}
 		pv.TargetType = "post"
 		pv.TargetId = pv.Post.ID
 		posts = append(posts, &pv)
+
 	}
 	if err := rows.Err(); err != nil {
 		return nil, customerrors.MapSQLError(err)
 	}
-
+	fmt.Println(posts)
 	return posts, nil
 }
 
@@ -176,7 +180,7 @@ func (r *postRepositoryImpl) GetPostByID(ctx context.Context, id int, user_id in
 	query := `
 		SELECT
 			post.id, post.user_id, post.title, post.content, post.created_at, post.updated_at,
-			user.username, ifnull(user.imagepath, ''),
+			user.username, ifnull(user.imagepath, ''), user.deleted_at IS NOT NULL,
 			(SELECT COUNT(*) FROM post_like WHERE post_like.post_id = post.id AND post_like.value = 1)  AS like_count,
 			(SELECT COUNT(*) FROM post_like WHERE post_like.post_id = post.id AND post_like.value = -1) AS dislike_count,
 			(SELECT COUNT(*) FROM comment   WHERE comment.parent_post_id = post.id)                     AS comment_count,
@@ -190,7 +194,7 @@ func (r *postRepositoryImpl) GetPostByID(ctx context.Context, id int, user_id in
 	var pv models.PostView
 	err := r.db.QueryRowContext(ctx, query, user_id, id).Scan(
 		&pv.Post.ID, &pv.Post.UserID, &pv.Post.Title, &pv.Post.Content, &pv.Post.CreatedAt, &pv.Post.UpdatedAt,
-		&pv.AuthorName, &pv.AuthorImage, &pv.LikeCount, &pv.DislikeCount, &pv.CommentCount, &pv.UserReaction, &pv.Deleted,
+		&pv.AuthorName, &pv.AuthorImage, &pv.AuthorDeleted, &pv.LikeCount, &pv.DislikeCount, &pv.CommentCount, &pv.UserReaction, &pv.Deleted,
 	)
 	if err != nil {
 		return nil, customerrors.MapSQLError(err)
@@ -263,7 +267,6 @@ func (r *postRepositoryImpl) DeletePost(ctx context.Context, id, authorID int, u
 			WHERE parent_post_id = ?)
 		`, id).Scan(&hasComments)
 	if err != nil {
-		fmt.Println("here1")
 		return customerrors.MapSQLError(err)
 	}
 	arg := []any{id}
@@ -284,20 +287,16 @@ func (r *postRepositoryImpl) DeletePost(ctx context.Context, id, authorID int, u
 			`, id, authorID)
 	}
 	if err != nil {
-		fmt.Println("here2", err)
 		return customerrors.MapSQLError(err)
 	}
 
 	rowCount, err := res.RowsAffected()
 	if err != nil {
-		fmt.Println("here3")
 		return customerrors.MapSQLError(err)
 	}
 
 	if rowCount == 0 {
-		fmt.Println("here4")
 		return customerrors.ErrNotFound
 	}
-	fmt.Println("here4")
 	return nil
 }

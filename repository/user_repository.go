@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"strconv"
 	"strings"
 
 	customerrors "gitea.kood.tech/jyrkikarhunen/forum/errors"
@@ -14,7 +15,7 @@ const (
 	RegisterUserQuery            = ` INSERT INTO user (username, name, email, bio, imagepath, password_hash) VALUES(?,?,?,?,?,?)`
 	fetchUserInfoQurrey          = ` SELECT id, username, name, email, ifnull(bio, ''), ifnull(imagepath, ''), password_hash, created_at, updated_at, role FROM user WHERE (username = ? or email = ?)`
 	fetchUserInfoByIdQurrey      = ` SELECT id, username, name, email, ifnull(bio, ''), ifnull(imagepath, ''), role FROM user WHERE id = ?`
-	fetchUserInfoByUsernameQurey = ` SELECT id, username, name, ifnull(bio, ''), ifnull(imagepath, '')  FROM user WHERE username = ?`
+	fetchUserInfoByUsernameQurey = ` SELECT id, username, name, ifnull(bio, ''), ifnull(imagepath, ''), deleted_at IS NOT NULL  FROM user WHERE username = ?`
 
 	UpdateUserRoleByIdQuery = ` UPDATE user SET updated_at = CURRENT_TIMESTAMP, role = ? WHERE id = ?`
 
@@ -38,7 +39,7 @@ func NewUserRepository(db *sql.DB) *UserRepository {
 }
 
 func (r *UserRepository) RegisterUser(cx context.Context, u models.UserRegister) error {
-	_, postErr := r.db.ExecContext(cx, RegisterUserQuery, u.Username, u.Name, u.Email, u.Image, u.Bio, u.Password)
+	_, postErr := r.db.ExecContext(cx, RegisterUserQuery, u.Username, u.Name, u.Email, u.Bio, u.Image, u.Password)
 	if postErr != nil {
 		return customerrors.MapSQLError(postErr)
 	}
@@ -89,22 +90,32 @@ func (r *UserRepository) FetchUserData(cx context.Context, userId int) (models.U
 // this repo func is used by the profile fetch for another user using their username
 func (r *UserRepository) FetchUserDataByUserName(cx context.Context, username string) (models.PublicUserInfo, error) {
 	var user models.PublicUserInfo
-	fetchErr := r.db.QueryRowContext(cx, fetchUserInfoByUsernameQurey, username).Scan(&user.ID, &user.Username, &user.Name, &user.Bio, &user.Image)
+	fetchErr := r.db.QueryRowContext(cx, fetchUserInfoByUsernameQurey, username).Scan(&user.ID, &user.Username, &user.Name, &user.Bio, &user.Image, &user.DeletedAt)
 	if fetchErr != nil {
+		fmt.Println("user er", fetchErr)
 		return user, customerrors.MapSQLError(fetchErr)
 	}
+
 	return user, nil
 }
 
 // this func implement a patch update on the user profile
-func (r *UserRepository) UpdateUserData(cx context.Context, user models.UserUpdate) error {
-
+func (r *UserRepository) UpdateUserData(cx context.Context, user models.UserUpdate, deleteAccount bool) error {
+	var query string
 	var extraQuery []string
 	var args []any
 
+	if deleteAccount {
+		fmt.Println("here delete")
+		idString := strconv.Itoa(user.ID)
+		extraQuery = append(extraQuery, "deleted_at = CURRENT_TIMESTAMP", "username = ?", "name = ?", "email = ?", "imagepath = ?", "bio = ?", "password_hash = ?")
+		args = append(args, idString, "", idString, "", "", "")
+		fmt.Println(">", args)
+	}
+
 	if user.Username != nil {
 		extraQuery = append(extraQuery, "username = ?")
-		args = append(args, *user.Username)
+		args = append(args, &user.Username)
 	}
 
 	if user.Name != nil {
@@ -126,14 +137,16 @@ func (r *UserRepository) UpdateUserData(cx context.Context, user models.UserUpda
 	}
 
 	if len(extraQuery) == 0 {
+		fmt.Println(">> why", 0)
 		return nil
 	}
-
-	query := UpdateUserByIdQuery + strings.Join(extraQuery, ", ") + " WHERE id = ?"
-
+	// fmt.Println(query)
+	query = UpdateUserByIdQuery + strings.Join(extraQuery, ", ") + " WHERE id = ?"
 	args = append(args, user.ID)
+	fmt.Println(query, "\n", args)
 	_, err := r.db.ExecContext(cx, query, args...)
 	if err != nil {
+		fmt.Println(">>", err)
 		return customerrors.MapSQLError(err)
 	}
 

@@ -8,7 +8,7 @@
     {{end}}
     <div class="inputContainer">
       <label for="fullname">Full Name</label>
-      <div><input type="text" id="fullname" name="fullname" value="{{.PageContent.Name}}" placeholder="Enter your name" required/></div>
+      <div><input type="text" id="fullname" name="fullname" value="{{.PageContent.Name}}" placeholder="Enter your name" minlength="3" maxlength="20" required/></div>
     </div>
     <div class="inputContainer">
       <label for="username">Username</label>
@@ -23,7 +23,7 @@
     
     <div class="inputContainer">
       <label for="email">Email</label>
-      <div><input type="email" id="email" name="email" placeholder="Enter your email" value="{{.PageContent.Email}}"/></div>
+      <div><input type="email" id="email" name="email" placeholder="Enter your email" value="{{.PageContent.Email}}" required/></div>
     </div>
     <div class="inputContainer">
       <label for="password">Password</label>

@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS user (
     imagepath     TEXT,
     role          INTEGER DEFAULT 0,
     password_hash TEXT NOT NULL,
+    deleted_at   DATETIME,
     created_at    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
