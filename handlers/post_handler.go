@@ -33,6 +33,12 @@ func (h *PostHandler) GetPosts(w http.ResponseWriter, r *http.Request) {
 		handleError(w, r, customerrors.ErrBadRequest)
 		return
 	}
+
+	selectedCat := 0
+	if filter.CategoryID != nil {
+		selectedCat = *filter.CategoryID
+	}
+
 	posts, pg, err := paginate(r, func(limit, offset int) ([]*models.PostView, error) {
 		filter.Limit, filter.Offset = limit, offset
 		return h.postRep.GetPost(r.Context(), filter, userID)
@@ -70,9 +76,10 @@ func (h *PostHandler) GetPosts(w http.ResponseWriter, r *http.Request) {
 	pageData := models.PageData[MainPage]{
 		User: user,
 		PageContent: MainPage{
-			Posts:      posts,
-			Categories: allCats,
-			Pagination: pg,
+			Posts:            posts,
+			Categories:       allCats,
+			SelectedCategory: selectedCat,
+			Pagination:       pg,
 		},
 	}
 
@@ -143,9 +150,17 @@ func (h *PostHandler) NewPostForm(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	mainCat := 0
+	if c := r.URL.Query().Get("category"); c != "" {
+		if id, err := strconv.Atoi(c); err == nil {
+			mainCat = id
+		}
+	}
+
 	pageData := models.PageData[PostFormPage]{
 		User: user,
 		PageContent: PostFormPage{
+			Form:       PostForm{MainCategoryID: mainCat},
 			Categories: cats,
 		},
 	}
