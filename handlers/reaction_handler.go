@@ -35,7 +35,7 @@ func (h *ReactionHandler) Reaction(w http.ResponseWriter, r *http.Request) {
 	value, valErr := strconv.Atoi(r.FormValue("value"))
 
 	if idErr != nil || valErr != nil {
-		handleError(w, r, customerrors.ErrBadRequest)
+		HandleError(w, r, customerrors.ErrBadRequest)
 		return
 	}
 
@@ -52,20 +52,20 @@ func (h *ReactionHandler) Reaction(w http.ResponseWriter, r *http.Request) {
 	switch targetType {
 	case "post":
 		if err := h.service.SetPostReact(cx, view); err != nil {
-			handleError(w, r, err)
+			HandleError(w, r, err)
 			return
 		}
 		pv, _ = h.postRep.GetPostByID(cx, targetID, user.ID)
 		utils.RenderPartial(w, http.StatusAccepted, "react", pv)
 	case "comment":
 		if err := h.service.SetCommentReact(cx, view); err != nil {
-			handleError(w, r, err)
+			HandleError(w, r, err)
 			return
 		}
 		cv, _ = h.commentRep.GetCommentByID(cx, targetID, &user.ID)
 		utils.RenderPartial(w, http.StatusAccepted, "react", cv)
 	default:
-		handleError(w, r, customerrors.ErrInternalError)
+		HandleError(w, r, customerrors.ErrInternalError)
 		return
 	}
 }

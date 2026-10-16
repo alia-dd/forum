@@ -27,19 +27,19 @@ func (h *CommentHandler) CreateComment(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := r.ParseForm(); err != nil {
-		handleError(w, r, customerrors.ErrBadRequest)
+		HandleError(w, r, customerrors.ErrBadRequest)
 		return
 	}
 
 	postID, err := strconv.Atoi(r.PathValue("id"))
 	if err != nil {
-		handleError(w, r, customerrors.ErrBadRequest)
+		HandleError(w, r, customerrors.ErrBadRequest)
 		return
 	}
 
 	content := strings.TrimSpace(r.FormValue("userComment"))
 	if content == "" {
-		handleError(w, r, customerrors.ErrBadRequest)
+		HandleError(w, r, customerrors.ErrBadRequest)
 		return
 	}
 
@@ -60,20 +60,20 @@ func (h *CommentHandler) CreateComment(w http.ResponseWriter, r *http.Request) {
 
 	comID, err := h.comRep.CreateComment(r.Context(), input)
 	if err != nil {
-		handleError(w, r, err)
+		HandleError(w, r, err)
 		return
 	}
 
 	newComment, err := h.comRep.GetCommentByID(r.Context(), comID, &user.ID)
 	if err != nil {
-		handleError(w, r, err)
+		HandleError(w, r, err)
 		return
 	}
 	newComment.IsOwner = (user.ID == newComment.UserID)
 
 	newCount, err := h.comRep.CountByPost(r.Context(), postID)
 	if err != nil {
-		handleError(w, r, err)
+		HandleError(w, r, err)
 		return
 	}
 
@@ -97,13 +97,13 @@ func (h *CommentHandler) GetCommentEditForm(w http.ResponseWriter, r *http.Reque
 
 	commentID, err := parseID(r, "commentID")
 	if err != nil {
-		handleError(w, r, err)
+		HandleError(w, r, err)
 		return
 	}
 
 	comment, err := h.comRep.GetCommentByID(r.Context(), commentID, &user.ID)
 	if err != nil {
-		handleError(w, r, err)
+		HandleError(w, r, err)
 		return
 	}
 
@@ -122,13 +122,13 @@ func (h *CommentHandler) UpdateComment(w http.ResponseWriter, r *http.Request) {
 
 	err := h.comRep.UpdateCommentContent(r.Context(), commentID, user.ID, user.Role, newContent)
 	if err != nil {
-		handleError(w, r, err)
+		HandleError(w, r, err)
 		return
 	}
 
 	comment, err := h.comRep.GetCommentByID(r.Context(), commentID, &user.ID)
 	if err != nil {
-		handleError(w, r, err)
+		HandleError(w, r, err)
 		return
 	}
 	comment.IsOwner = (user.ID == comment.UserID)
@@ -144,13 +144,13 @@ func (h *CommentHandler) GetComment(w http.ResponseWriter, r *http.Request) {
 	}
 	commentID, err := parseID(r, "commentID")
 	if err != nil {
-		handleError(w, r, err)
+		HandleError(w, r, err)
 		return
 	}
 
 	comment, err := h.comRep.GetCommentByID(r.Context(), commentID, &user.ID)
 	if err != nil {
-		handleError(w, r, err)
+		HandleError(w, r, err)
 		return
 	}
 	comment.IsOwner = (user.ID == comment.UserID)
@@ -167,25 +167,25 @@ func (h *CommentHandler) DeleteComment(w http.ResponseWriter, r *http.Request) {
 
 	commentID, err := parseID(r, "commentID")
 	if err != nil {
-		handleError(w, r, err)
+		HandleError(w, r, err)
 		return
 	}
 
 	postID, err := parseID(r, "postID")
 	if err != nil {
-		handleError(w, r, err)
+		HandleError(w, r, err)
 		return
 	}
 
 	err = h.comRep.DeleteComment(r.Context(), commentID, user.ID, user.Role)
 	if err != nil {
-		handleError(w, r, err)
+		HandleError(w, r, err)
 		return
 	}
 
 	newCount, err := h.comRep.CountByPost(r.Context(), postID)
 	if err != nil {
-		handleError(w, r, err)
+		HandleError(w, r, err)
 		return
 	}
 
@@ -207,13 +207,13 @@ func (h *CommentHandler) GetCommentReplies(w http.ResponseWriter, r *http.Reques
 
 	commentID, err := parseID(r, "commentID")
 	if err != nil {
-		handleError(w, r, err)
+		HandleError(w, r, err)
 		return
 	}
 
 	replies, err := h.comRep.GetRepliesByCommentID(r.Context(), commentID, userID)
 	if err != nil {
-		handleError(w, r, err)
+		HandleError(w, r, err)
 		return
 	}
 
@@ -223,13 +223,13 @@ func (h *CommentHandler) GetCommentReplies(w http.ResponseWriter, r *http.Reques
 func (h *CommentHandler) GetReplyForm(w http.ResponseWriter, r *http.Request) {
 	postID, err := parseID(r, "postID")
 	if err != nil {
-		handleError(w, r, err)
+		HandleError(w, r, err)
 		return
 	}
 
 	commentID, err := parseID(r, "commentID")
 	if err != nil {
-		handleError(w, r, err)
+		HandleError(w, r, err)
 		return
 	}
 
@@ -250,13 +250,13 @@ func (h *CommentHandler) CreateReply(w http.ResponseWriter, r *http.Request) {
 
 	postID, err := parseID(r, "postID")
 	if err != nil {
-		handleError(w, r, err)
+		HandleError(w, r, err)
 		return
 	}
 
 	parentCommentID, err := parseID(r, "commentID")
 	if err != nil {
-		handleError(w, r, err)
+		HandleError(w, r, err)
 		return
 	}
 
@@ -271,13 +271,13 @@ func (h *CommentHandler) CreateReply(w http.ResponseWriter, r *http.Request) {
 
 	replyID, err := h.comRep.CreateComment(r.Context(), input)
 	if err != nil {
-		handleError(w, r, err)
+		HandleError(w, r, err)
 		return
 	}
 
 	replyView, err := h.comRep.GetCommentByID(r.Context(), replyID, &user.ID)
 	if err != nil {
-		handleError(w, r, err)
+		HandleError(w, r, err)
 		return
 	}
 
