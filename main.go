@@ -25,7 +25,7 @@ func main() {
 	if deleteDB {
 		err := os.Remove("data/forum.db")
 		if err != nil {
-			log.Fatal(err)
+			log.Print(err)
 		}
 	}
 

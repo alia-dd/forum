@@ -184,12 +184,25 @@ func SeedData(db *sql.DB) error {
 	insert(`INSERT INTO comment_like (user_id, comment_id, value) VALUES (?, ?, ?)`, users["frank"], cc3, -1)
 
 	for i := 1; i <= 55; i++ {
-		insert(`INSERT INTO post (user_id, title, content, created_at)
-		        VALUES (?, ?, ?, datetime('now', ?))`,
+		postID := insert(
+			`INSERT INTO post (user_id, title, content, created_at)
+         VALUES (?, ?, ?, datetime('now', ?))`,
 			users["alice"],
 			fmt.Sprintf("Pagination filler post #%d", i),
 			fmt.Sprintf("Filler body %d — here to make the feed span multiple pages.", i),
-			fmt.Sprintf("-%d days", i))
+			fmt.Sprintf("-%d days", i),
+		)
+
+		// Assign at least one category to every filler post.
+		categoryNames := categorySeedData
+		categoryName := categoryNames[(i-1)%len(categoryNames)]
+
+		insert(
+			`INSERT INTO post_category (post_id, category_id, is_main)
+         VALUES (?, ?, 1)`,
+			postID,
+			category[categoryName],
+		)
 	}
 
 	fillerPosts := []int64{p1, p2, p3, p4, p5}
