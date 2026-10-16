@@ -92,16 +92,22 @@
             {{$comments := .PageContent.Comments}}
                 {{range $comments}}
                 <div class="comment-container" style="margin: 0; padding:0 ;">
-                    <a href="/post/{{.ParentPostID}}#comment-{{.ID}}">
-                        {{template "comment_card" .}} 
-                    </a>
+                    {{template "comment_card" .}} 
                 </div>
-                {{else}} 
+                {{else}}
                     {{if eq .PageContent.Tab "comments"}}<p>No comments yet.</p>{{end}}
                 {{end}}
             {{end}}
+
+            {{if .PageContent.Comments}}
+              {{template "pagination" .PageContent.Pagination}}
+            {{else if .PageContent.Posts}}
+              {{template "pagination" .PageContent.Pagination}}
+            {{else if .PageContent.LikedPosts}}
+              {{template "pagination" .PageContent.Pagination}}
+            {{end}}
+          </section>
         </section>
-    </section>
-</div>
+      </div>
  <script>document.currentScript.closest('dialog').showModal()</script>
 {{end}}

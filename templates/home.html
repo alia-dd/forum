@@ -5,14 +5,18 @@
   <div class="title-container">
 
     <h1 class="page-title">Posts</h1>
-    <p class="text">{{if .User}}Signed in as 
-      <a href="/user/profile/{{.User.Username}}" class="username">{{.User.Username}}</a>
-       — <a href="/post/new" class="tint">New post</a>
-       — <a href="/?author=me" class="tint">My posts</a>
-       — <a href="/?liked=true" class="tint">Liked</a>
+    <p class="text">
+      {{if .User}}Signed in as 
+        <a href="/user/profile/{{.User.Username}}" class="tint pads">{{.User.Username}}</a>
+        — <a href="/?author=me" class="tint pads">My posts</a>
+        — <a href="/?liked=true" class="tint pads">Liked</a>
       {{else}}
-      <a href="/user/login" class="tint">Sign in</a> to post{{end}}
+      <a href="/user/login" class="tint pads">Sign in</a> to post{{end}}
     </p>
+
+    <form method="GET" action="/post/new">
+      <button type="submit" class="button">New post</button>
+    </form>
 
   </div>
 
@@ -56,6 +60,9 @@
   <p class="text">No posts.</p>
   {{end}}
 
+  {{if .PageContent.Posts}}
   {{template "pagination" .PageContent.Pagination}}
+  {{end}}
+  
 </div>
 {{end}}

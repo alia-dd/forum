@@ -50,8 +50,12 @@
             {{end}}
         </div>
 
-        <div class="content">{{.Content}}</div>
-        
+        <div class="content">
+            <a href="/post/{{.ParentPostID}}#comment-{{.ID}}" style="display: contents;">
+                {{.Content}}
+            </a>
+        </div>
+
         <div class="comment-meta">
             {{template "react" .}}
 
