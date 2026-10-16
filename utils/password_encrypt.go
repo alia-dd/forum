@@ -27,10 +27,12 @@ func GenerateHashPassword(password string) (string, error) {
 		Thread:     4,
 		KeyLen:     32,
 	}
+
 	salt, saltGenError := generateSalt(16)
 	if saltGenError != nil {
 		return "", fmt.Errorf("Password hashing failed: %w", saltGenError)
 	}
+
 	cf.Salt = salt
 	cf.Hash = argon2.IDKey(
 		[]byte(password),
@@ -51,6 +53,7 @@ func GenerateHashPassword(password string) (string, error) {
 		base64.RawStdEncoding.EncodeToString(cf.Salt),
 		base64.RawStdEncoding.EncodeToString(cf.Hash),
 	)
+
 	return encodedHash, nil
 }
 
@@ -60,6 +63,7 @@ func generateSalt(size uint32) ([]byte, error) {
 	if _, randomizeErr := rand.Read(salt); randomizeErr != nil {
 		return nil, fmt.Errorf("salt generation error: %w", randomizeErr)
 	}
+
 	return salt, nil
 }
 

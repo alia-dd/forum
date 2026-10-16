@@ -33,6 +33,12 @@ func (h *PostHandler) GetPosts(w http.ResponseWriter, r *http.Request) {
 		handleError(w, r, customerrors.ErrBadRequest)
 		return
 	}
+
+	selectedCat := 0
+	if filter.CategoryID != nil {
+		selectedCat = *filter.CategoryID
+	}
+
 	posts, pg, err := paginate(r, func(limit, offset int) ([]*models.PostView, error) {
 		filter.Limit, filter.Offset = limit, offset
 		return h.postRep.GetPost(r.Context(), filter, userID)
@@ -67,12 +73,24 @@ func (h *PostHandler) GetPosts(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	mode := ""
+	author := r.URL.Query().Get("author")
+	liked := r.URL.Query().Get("liked")
+
+	if author != "" {
+		mode = "myposts"
+	} else if liked != "" {
+		mode = "liked"
+	}
+
 	pageData := models.PageData[MainPage]{
 		User: user,
 		PageContent: MainPage{
-			Posts:      posts,
-			Categories: allCats,
-			Pagination: pg,
+			Posts:            posts,
+			Categories:       allCats,
+			SelectedCategory: selectedCat,
+			Filter:           mode,
+			Pagination:       pg,
 		},
 	}
 
@@ -118,6 +136,7 @@ func (h *PostHandler) GetPostByID(w http.ResponseWriter, r *http.Request) {
 	for _, comment := range comments {
 		comment.UserRole = role
 	}
+
 	//get comments linked to post or its subcomments
 	pageData := models.PageData[PostPage]{
 		User: user,
@@ -126,7 +145,7 @@ func (h *PostHandler) GetPostByID(w http.ResponseWriter, r *http.Request) {
 			Comments: comments,
 		},
 	}
-	fmt.Println(">", post.AuthorImage)
+
 	utils.RenderTemplate(w, http.StatusOK, "post", pageData)
 }
 
@@ -143,9 +162,17 @@ func (h *PostHandler) NewPostForm(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	mainCat := 0
+	if c := r.URL.Query().Get("category"); c != "" {
+		if id, err := strconv.Atoi(c); err == nil {
+			mainCat = id
+		}
+	}
+
 	pageData := models.PageData[PostFormPage]{
 		User: user,
 		PageContent: PostFormPage{
+			Form:       PostForm{MainCategoryID: mainCat},
 			Categories: cats,
 		},
 	}
@@ -185,6 +212,7 @@ func (h *PostHandler) CreatePost(w http.ResponseWriter, r *http.Request) {
 		UserID:         user.ID,
 		Title:          form.Title,
 		Content:        form.Content,
+		Image:          form.Image,
 		MainCategoryID: form.MainCategoryID,
 		CategoryIDs:    form.CategoryIDs,
 	}
@@ -238,7 +266,7 @@ func (h *PostHandler) EditPostForm(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	form := PostForm{Title: post.Post.Title, Content: post.Post.Content}
+	form := PostForm{Title: post.Post.Title, Content: post.Post.Content, Image: post.Post.Image}
 	for _, c := range postCats[id] {
 		if c.IsMain {
 			form.MainCategoryID = c.ID
@@ -289,6 +317,7 @@ func (h *PostHandler) UpdatePost(w http.ResponseWriter, r *http.Request) {
 				Form: PostForm{
 					Title:   form.Title,
 					Content: form.Content,
+					Image:   form.Image,
 				},
 				Categories: cats,
 			},
@@ -301,6 +330,7 @@ func (h *PostHandler) UpdatePost(w http.ResponseWriter, r *http.Request) {
 		ID:             id,
 		Title:          form.Title,
 		Content:        form.Content,
+		Image:          form.Image,
 		MainCategoryID: form.MainCategoryID,
 		CategoryIDs:    form.CategoryIDs,
 	}

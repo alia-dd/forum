@@ -46,14 +46,14 @@ func (h *UseHandler) PostRegisterUser(w http.ResponseWriter, r *http.Request) {
 	name := strings.TrimSpace(r.FormValue("fullname"))
 	email := strings.TrimSpace(r.FormValue("email"))
 	password := strings.TrimSpace(r.FormValue("password"))
-	conformPassword := strings.TrimSpace(r.FormValue("confirm_password"))
+	confirmPassword := strings.TrimSpace(r.FormValue("confirm_password"))
 
 	var fileName string
 
 	file, header, fileErr := r.FormFile("imagepath")
 	if fileErr == nil && header.Size > 0 {
 		defer file.Close()
-		savename, saveErr := SaveUploadedFile(file)
+		saveName, saveErr := SaveUploadedFile(file)
 		if saveErr != nil {
 			pageData := models.PageData[models.UserRegister]{
 				User:    nil,
@@ -63,14 +63,14 @@ func (h *UseHandler) PostRegisterUser(w http.ResponseWriter, r *http.Request) {
 					Name:            name,
 					Email:           email,
 					Password:        password,
-					ConformPassword: conformPassword,
+					ConfirmPassword: confirmPassword,
 				},
 				Error: customerrors.ErrBadRequest.Error(),
 			}
 			utils.RenderTemplate(w, http.StatusBadRequest, "user_registration", pageData)
 			return
 		}
-		fileName = savename
+		fileName = saveName
 	}
 
 	userData := models.UserRegister{
@@ -79,7 +79,7 @@ func (h *UseHandler) PostRegisterUser(w http.ResponseWriter, r *http.Request) {
 		Email:           email,
 		Image:           fileName,
 		Password:        password,
-		ConformPassword: conformPassword,
+		ConfirmPassword: confirmPassword,
 	}
 
 	if PostErr := h.service.CreateUserService(cx, userData); PostErr != nil {
@@ -91,7 +91,7 @@ func (h *UseHandler) PostRegisterUser(w http.ResponseWriter, r *http.Request) {
 				Name:            name,
 				Email:           email,
 				Password:        password,
-				ConformPassword: conformPassword,
+				ConfirmPassword: confirmPassword,
 			},
 			Error: PostErr.Error(),
 		}
@@ -122,11 +122,14 @@ func (h *UseHandler) showProfile(w http.ResponseWriter, r *http.Request, usernam
 	cx := r.Context()
 	user, ok := r.Context().Value("user_session").(*models.UserInfo)
 	tab := r.URL.Query().Get("tab")
+
 	if tab != "posts" && tab != "comments" && tab != "likedPosts" {
 		tab = "posts"
 	}
+
 	pageContent := models.ProfilePage{Tab: tab}
 	profileData, fetchErr := h.service.GetUserService(cx, username)
+
 	if fetchErr != nil {
 		handleError(w, r, fetchErr)
 		return
@@ -139,6 +142,7 @@ func (h *UseHandler) showProfile(w http.ResponseWriter, r *http.Request, usernam
 	if ok {
 		userID = user.ID
 	}
+
 	pageContent.Profile = profileData
 
 	if tab == "posts" {
@@ -231,10 +235,12 @@ func (h *UseHandler) UpdateUserProfile(w http.ResponseWriter, r *http.Request) {
 		handleError(w, r, customerrors.ErrInternalError)
 		return
 	}
+
 	username := strings.TrimSpace(r.FormValue("username"))
 	name := strings.TrimSpace(r.FormValue("fullname"))
 	email := strings.TrimSpace(r.FormValue("email"))
 	bio := strings.TrimSpace(r.FormValue("bio"))
+
 	var fileName string
 	var oldFileName string
 
@@ -242,7 +248,7 @@ func (h *UseHandler) UpdateUserProfile(w http.ResponseWriter, r *http.Request) {
 	if fileErr == nil && header.Size > 0 {
 		defer file.Close()
 		oldFileName = user.Image
-		savename, saveErr := SaveUploadedFile(file)
+		saveName, saveErr := SaveUploadedFile(file)
 		if saveErr != nil {
 			// replace mainpage with a dedicated profile struct later
 			pageData := models.PageData[MainPage]{
@@ -260,7 +266,7 @@ func (h *UseHandler) UpdateUserProfile(w http.ResponseWriter, r *http.Request) {
 			utils.RenderTemplate(w, http.StatusBadRequest, "profileEdit", pageData)
 			return
 		}
-		fileName = savename
+		fileName = saveName
 	}
 
 	userData := models.UserUpdate{
@@ -311,6 +317,7 @@ func (h *UseHandler) DeleteUserAcccount(w http.ResponseWriter, r *http.Request) 
 	fmt.Println("here")
 	cx := r.Context()
 	user, ok := r.Context().Value("user_session").(*models.UserInfo)
+
 	if !ok {
 		utils.RedirectTologin(w, r)
 		return
@@ -323,6 +330,7 @@ func (h *UseHandler) DeleteUserAcccount(w http.ResponseWriter, r *http.Request) 
 	if cookieErr == nil {
 		h.service.LogoutService(cx, cookie.Value)
 	}
+
 	utils.RedirectTologin(w, r)
 }
 
@@ -339,6 +347,7 @@ func (h *UseHandler) GetChangePassword(w http.ResponseWriter, r *http.Request) {
 		IsOwner:     true,
 		PageContent: MainPage{},
 	}
+
 	utils.RenderTemplate(w, http.StatusOK, "password_change", pageData)
 }
 
@@ -387,5 +396,6 @@ func (h *UseHandler) PostChangePassword(w http.ResponseWriter, r *http.Request) 
 		HttpOnly: true,
 		SameSite: http.SameSiteLaxMode,
 	})
+
 	utils.RedirectTologin(w, r)
 }

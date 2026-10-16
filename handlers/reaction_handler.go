@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"fmt"
 	"net/http"
 	"strconv"
 
@@ -34,6 +33,7 @@ func (h *ReactionHandler) Reaction(w http.ResponseWriter, r *http.Request) {
 	targetType := r.FormValue("target_type")
 	targetID, idErr := strconv.Atoi(r.FormValue("target_id"))
 	value, valErr := strconv.Atoi(r.FormValue("value"))
+
 	if idErr != nil || valErr != nil {
 		handleError(w, r, customerrors.ErrBadRequest)
 		return
@@ -45,11 +45,10 @@ func (h *ReactionHandler) Reaction(w http.ResponseWriter, r *http.Request) {
 		Value:      value,
 		TargetType: targetType,
 	}
-	fmt.Printf("%+v\n", view)
 
 	var pv *models.PostView
 	var cv *models.CommentView
-	
+
 	switch targetType {
 	case "post":
 		if err := h.service.SetPostReact(cx, view); err != nil {

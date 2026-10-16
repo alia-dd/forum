@@ -30,7 +30,7 @@
                     hx-get="/admin/confirmation" 
                     hx-trigger="click"
                     hx-vals='{"action":"role","id":"0","user_id":{{.Id}},"ActionType":"userAction"}'  
-                    hx-target="#cfm_diologe" hx-swap="innerHTML">
+                    hx-target="#cfm_dialogue" hx-swap="innerHTML">
               <span class="toggle-track"></span>
             </label>
           </td>
@@ -41,7 +41,7 @@
                     hx-get="/admin/confirmation" 
                     hx-trigger="click"
                     hx-vals='{"action":"block","id":"0","user_id":{{.Id}},"ActionType":"userAction"}' 
-                    hx-target="#cfm_diologe" hx-swap="innerHTML">
+                    hx-target="#cfm_dialogue" hx-swap="innerHTML">
               <span class="toggle-track"></span>
             </label>
           </td>
@@ -51,7 +51,7 @@
               hx-get="/admin/confirmation"
               hx-trigger="click"
               hx-vals='{"action":"delete","id":"0","user_id":{{.Id}},"ActionType":"userAction"}'
-              hx-target="#cfm_diologe"
+              hx-target="#cfm_dialogue"
               hx-swap="innerHTML" 
               type="button" class="btn--icon" aria-label="Delete user">
                 <i class="ph ph-trash"></i>

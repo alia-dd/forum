@@ -21,8 +21,13 @@
         </a> 
         · created {{$post.CreatedAgo}}{{with $post.UpdatedAgo}} · edited {{.}}{{end}}
       </p>
-     
+    
       <div class="content">{{$post.Content}}</div>
+
+      {{if $post.Image}}
+        <img src="/static/assets/images/{{$post.Image}}" class="resizable-img" onclick="this.classList.toggle('expanded');" alt="Resizable Image">
+      {{end}}
+
       {{ template "react" $post}}
     {{end}}
 

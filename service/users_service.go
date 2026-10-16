@@ -19,12 +19,13 @@ func NewUserService(repo *repository.UserRepository, sessionRepo *repository.Ses
 	return &UserService{repo: repo, sessionRepo: sessionRepo}
 }
 
-// register new use
+// register new user
 func (s *UserService) CreateUserService(cx context.Context, u models.UserRegister) error {
 
 	if validationsErr := u.Isvalid(); validationsErr != nil {
 		return validationsErr
 	}
+
 	hashedPass, hashErr := utils.GenerateHashPassword(u.Password)
 	if hashErr != nil {
 		return customerrors.ErrInternalError
@@ -89,7 +90,6 @@ func (s *UserService) UpdateUserRoleService(cx context.Context, action string, u
 		} else {
 			role = 700
 		}
-		fmt.Println(role)
 		err = s.repo.UpdateUserRole(cx, user_id, role)
 	case "block":
 		role := 5
@@ -100,18 +100,11 @@ func (s *UserService) UpdateUserRoleService(cx context.Context, action string, u
 		if userData.Role == "blocked" {
 			role = 0
 		}
-		fmt.Println(role)
 		err = s.repo.UpdateUserRole(cx, user_id, role)
-	// case "delete":
-	// 	if checkErr := h.checkDeletetionType(w, r, cx, user); checkErr != nil {
-	// 		handleError(w, r, checkErr)
-	// 		return
-	// 	}
-	// err = s.repo.DeleteUser(cx, user_id)
-	// fmt.Println(err)
 	default:
 		return fmt.Errorf("unknown user action: %s", action)
 	}
+
 	return err
 }
 
@@ -120,6 +113,7 @@ func (s *UserService) ChangePasswordService(cx context.Context, userID int, curr
 	if fetchErr != nil {
 		return fetchErr
 	}
+
 	match, err := utils.VerifyPassword(currentPassHash, currentPass)
 	if err != nil {
 		return customerrors.ErrInternalError
@@ -134,13 +128,13 @@ func (s *UserService) ChangePasswordService(cx context.Context, userID int, curr
 	}
 
 	if updateErr := s.repo.UpdatePassword(cx, userID, string(newPassHash)); updateErr != nil {
-		fmt.Println(">>>", updateErr)
 		return updateErr
 	}
+
 	return s.sessionRepo.DeleteSessionsByUserId(cx, userID)
 }
 
-// authernticate use with their email/usename and password
+// authenticate user with their email/usename and password
 func (s *UserService) AuthenticateUserService(cx context.Context, u models.UserLogin) (*models.Session, error) {
 
 	user, fetchErr := s.repo.AuthenticateUser(cx, u.Username)
@@ -150,6 +144,7 @@ func (s *UserService) AuthenticateUserService(cx context.Context, u models.UserL
 	if user.Role == "blocked" {
 		return nil, customerrors.ErrBlockedUser
 	}
+
 	match, err := utils.VerifyPassword(user.Password, u.Password)
 	if err != nil {
 		return nil, customerrors.ErrInternalError
@@ -157,25 +152,27 @@ func (s *UserService) AuthenticateUserService(cx context.Context, u models.UserL
 	if !match {
 		return nil, customerrors.ErrInvalidLogin //401?
 	}
+
 	session, sessionErr := s.sessionRepo.CreateSession(cx, user.ID)
 	if sessionErr != nil {
 		return nil, sessionErr
 	}
+
 	return session, nil
 }
 
-// delete use with provided user id
+// delete user with provided user id
 func (s *UserService) DeleteUser(cx context.Context, userId int) error {
 	return s.repo.DeleteUser(cx, userId)
 }
 
 // deleting the session will force the user to the login page
-// and the middlewere will prefent the user to go back without login session
+// and the middleware will prevent the user to go back without login session
 func (s *UserService) LogoutService(cx context.Context, sessionId string) error {
 	return s.sessionRepo.DeleteSession(cx, sessionId)
 }
 
-// this check if the profided username/email are available
+// this checks if the provided username/email are available
 func (s *UserService) CheckIfAvailable(cx context.Context, col string) (bool, error) {
 	return s.repo.CheckIfAvailable(cx, col)
 }

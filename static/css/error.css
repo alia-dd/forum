@@ -5,7 +5,7 @@
   width: 100%;
 }
 
-.errorPartail {
+.errorPartial {
   display: flex;
   align-items: center;
   gap: 0.75rem;
@@ -19,7 +19,7 @@
   font-weight: 500;
 }
 
-.errorPartail .errormsg {
+.errorPartial .errormsg {
   flex: 1;
   font-size: 1rem;
 }

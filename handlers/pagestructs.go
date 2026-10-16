@@ -2,17 +2,18 @@ package handlers
 
 import "gitea.kood.tech/jyrkikarhunen/forum/models"
 
-//todo: add user info
 type MainPage struct {
-	Section    string
-	SearchPath string
-	Query      string
-	Posts      []*models.PostView
-	Categories []models.Category
-	Users      []models.AdminUserInfo
-	Comments   []*models.CommentView
-	Category   []models.Category
-	Pagination models.Pagination
+	Section          string
+	SearchPath       string
+	Query            string
+	SelectedCategory int
+	Filter           string
+	Posts            []*models.PostView
+	Categories       []models.Category
+	Users            []models.AdminUserInfo
+	Comments         []*models.CommentView
+	Category         []models.Category
+	Pagination       models.Pagination
 }
 
 type PostPage struct {

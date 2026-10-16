@@ -331,6 +331,20 @@ a:hover {
   cursor: pointer;
 }
 
+.resizable-img {
+  width: auto;
+  max-width: 80%;
+  height: auto;
+  max-height: 500px;
+  transition: max-height 0.4s ease-in-out, max-width 0.4s ease-in-out;
+  cursor: pointer;
+}
+
+.resizable-img.expanded {
+  max-width: 95%;
+  max-height: 1000px;
+}
+
 @media (max-width: 800px) {
     .post-form-container {
         max-width: 80%;

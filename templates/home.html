@@ -1,37 +1,53 @@
 {{define "content"}}
 {{$post := .PageContent.Posts}}
+{{$selCat := .PageContent.SelectedCategory}}
 <div class="page-container">
 
   <div class="title-container">
 
-    <h1 class="page-title">Posts</h1>
-    <p class="text">
-      {{if .User}}Signed in as 
+    {{if not .PageContent.Filter}}
+      <h1 class="page-title">Posts</h1>
+    {{else if eq .PageContent.Filter "myposts"}}
+      <h1 class="page-title">My Posts</h1>
+    {{else if eq .PageContent.Filter "liked"}}
+      <h1 class="page-title">Liked</h1>
+    {{end}}
+
+    {{if .User}}
+    <p class="text">Signed in as 
         <a href="/user/profile/{{.User.Username}}" class="tint pads">{{.User.Username}}</a>
         — <a href="/?author=me" class="tint pads">My posts</a>
         — <a href="/?liked=true" class="tint pads">Liked</a>
-      {{else}}
-      <a href="/user/login" class="tint pads">Sign in</a> to post{{end}}
     </p>
 
     <form method="GET" action="/post/new">
-      <button type="submit" class="button">New post</button>
+      <button type="submit" class="button" style="margin: 10px 0 0 0">New post</button>
     </form>
 
+    {{else}}
+
+    <p class="text">
+      <a href="/user/login" class="tint pads">Sign in</a> to post
+    </p>
+    
+    {{end}}
   </div>
 
   <form method="GET" action="/" class="category-container">
 
     <h2 class="options-title">Category</h2>
     <label>
-      <select name="category" class="options-box">
-        <option value="" class="options">All categories</option>
+      <select name="category" class="options-box"
+        onchange="if (this.value !== '{{ $selCat }}') this.form.submit()">
+        <option value="" class="options" {{if eq $selCat 0}}selected{{end}}>All categories</option>
         {{range .PageContent.Categories}}
-        <option value="{{.ID}}">{{.Name}}</option>
+        <option value="{{.ID}}" {{if eq .ID $selCat}}selected{{end}}>{{.Name}}</option>
         {{end}}
       </select>
     </label>
-    <button type="submit" class="button">Filter</button>
+    <noscript>
+      <button type="submit" class="button">Filter</button>
+    </noscript>
 
   </form>
 

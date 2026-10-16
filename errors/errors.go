@@ -7,12 +7,7 @@ import (
 	"github.com/mattn/go-sqlite3"
 )
 
-// Example of functionality, probably not using what exists currently,
-// just there to show how it was done last time
-
 var (
-	//messages here are for internal use
-	// messages to be sent externally are configured in handlers/errors.go
 	ErrNotFound             = errors.New("resource not found")
 	ErrDuplicateEntry       = errors.New("entry already exists")
 	ErrForeignKeyConstraint = errors.New("Foreign key error")

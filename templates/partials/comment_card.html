@@ -15,6 +15,22 @@
         </p>
 
         <p class="text"><em>[This comment has been deleted]</em></p>
+
+        {{if gt .ReplyCount 0}}
+            <div class="comment-meta">
+                <button hx-get="/post/{{.ParentPostID}}/comment/{{.ID}}/replies" 
+                    hx-target="#replies-{{.ID}}" 
+                    hx-swap="innerHTML"
+                    hx-on:click="
+                    const container = document.getElementById('replies-{{.ID}}');
+                    if (container.children.length > 0) {
+                    container.style.display = container.style.display === 'none' ? 'block' : 'none';
+                    event.preventDefault();
+                    }" class="button">
+                    View {{.ReplyCount}} replies
+                </button>
+            </div>
+        {{end}}
     {{else}}
         <div class="comment-header">
             <p class="text">
@@ -101,7 +117,10 @@
           hx-swap="outerHTML">
         
         <p class="text">
-            <a href="/user/profile/{{.AuthorName}}" class="username"> {{.AuthorName}}</a> - 
+            <span class="profile-li">
+                <img {{if .AuthorImage}} src="/static/assets/images/{{.AuthorImage}}" {{else}} src="/static/assets/images/avatar1.jpg" {{end}} alt="Avatar" class="admin-table-avatar">                   
+                {{.AuthorName}}</a> - 
+            </span>
             <small>editing...</small>
         </p>
         

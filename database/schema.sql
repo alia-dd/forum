@@ -25,6 +25,7 @@ CREATE TABLE IF NOT EXISTS post (
     user_id    INTEGER NOT NULL,
     title      TEXT NOT NULL,
     content    TEXT NOT NULL,
+    imagepath  TEXT,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME,
     deleted_at DATETIME,

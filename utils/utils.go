@@ -45,10 +45,12 @@ func serverErrorHandler(w http.ResponseWriter) {
 		http.Error(w, tmpErr.Error(), http.StatusInternalServerError)
 		return
 	}
+
 	if _, err := t.ParseFiles("templates/" + "error.html"); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
 	renderExecuted(w, t, http.StatusOK, models.PageData[models.ErrorStruct]{
 		PageContent: models.ErrorStruct{Error: "500", ErrorMs: "Internal Server Error"},
 	})
@@ -59,10 +61,10 @@ func renderExecuted(w http.ResponseWriter, t *template.Template, statusCode int,
 	var buf bytes.Buffer
 
 	if err := t.ExecuteTemplate(&buf, "base", payload); err != nil {
-		// handleError()
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
 	w.WriteHeader(statusCode)
 	buf.WriteTo(w)
 }
@@ -91,5 +93,6 @@ func RedirectTologin(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		return
 	}
+
 	http.Redirect(w, r, "/user/login", http.StatusSeeOther)
 }
