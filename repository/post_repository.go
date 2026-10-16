@@ -3,7 +3,6 @@ package repository
 import (
 	"context"
 	"database/sql"
-	"fmt"
 	"strings"
 
 	customerrors "gitea.kood.tech/jyrkikarhunen/forum/errors"
@@ -133,7 +132,6 @@ func (r *postRepositoryImpl) GetPost(ctx context.Context, filter models.PostFilt
 
 	rows, err := r.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		fmt.Println("here err post", err)
 		return nil, customerrors.MapSQLError(err)
 	}
 	defer rows.Close()
@@ -162,7 +160,6 @@ func (r *postRepositoryImpl) GetPost(ctx context.Context, filter models.PostFilt
 		)
 
 		if err != nil {
-			fmt.Println("here err post>", err)
 			return nil, customerrors.MapSQLError(err)
 		}
 		pv.TargetType = "post"
@@ -173,7 +170,7 @@ func (r *postRepositoryImpl) GetPost(ctx context.Context, filter models.PostFilt
 	if err := rows.Err(); err != nil {
 		return nil, customerrors.MapSQLError(err)
 	}
-	fmt.Println(posts)
+
 	return posts, nil
 }
 

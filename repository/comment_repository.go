@@ -305,7 +305,7 @@ func (r *commentRepositoryImpl) GetRepliesByCommentID(ctx context.Context, paren
             c.deleted_at,
             u.username,
 			ifnull(u.imagepath, ''),
-			user.deleted_at IS NOT NULL,
+			u.deleted_at IS NOT NULL,
             (
                 SELECT COUNT(*)
                 FROM comment_like cl
