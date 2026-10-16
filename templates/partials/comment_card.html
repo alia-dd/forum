@@ -101,7 +101,10 @@
           hx-swap="outerHTML">
         
         <p class="text">
-            <a href="/user/profile/{{.AuthorName}}" class="username"> {{.AuthorName}}</a> - 
+            <span class="profile-li">
+                <img {{if .AuthorImage}} src="/static/assets/images/{{.AuthorImage}}" {{else}} src="/static/assets/images/avatar1.jpg" {{end}} alt="Avatar" class="admin-table-avatar">                   
+                {{.AuthorName}}</a> - 
+            </span>
             <small>editing...</small>
         </p>
         

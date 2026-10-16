@@ -5,19 +5,25 @@
   <div class="title-container">
 
     <h1 class="page-title">Posts</h1>
-    <p class="text">
-      {{if .User}}Signed in as 
+
+    {{if .User}}
+    <p class="text">Signed in as 
         <a href="/user/profile/{{.User.Username}}" class="tint pads">{{.User.Username}}</a>
         — <a href="/?author=me" class="tint pads">My posts</a>
         — <a href="/?liked=true" class="tint pads">Liked</a>
-      {{else}}
-      <a href="/user/login" class="tint pads">Sign in</a> to post{{end}}
     </p>
 
     <form method="GET" action="/post/new">
       <button type="submit" class="button">New post</button>
     </form>
 
+    {{else}}
+
+    <p class="text">
+      <a href="/user/login" class="tint pads">Sign in</a> to post
+    </p>
+    
+    {{end}}
   </div>
 
   <form method="GET" action="/" class="category-container">
