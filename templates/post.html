@@ -21,8 +21,13 @@
         </a> 
         · created {{$post.CreatedAgo}}{{with $post.UpdatedAgo}} · edited {{.}}{{end}}
       </p>
-     
+    
       <div class="content">{{$post.Content}}</div>
+
+      <!-- {{if $post.Image}}
+        <img src="/static/assets/images/{{$post.Image}}">
+      {{end}} -->
+
       {{ template "react" $post}}
     {{end}}
 

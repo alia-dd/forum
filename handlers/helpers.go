@@ -24,6 +24,7 @@ type PostForm struct {
 	//userdata
 	Title          string
 	Content        string
+	Image          string
 	MainCategoryID int
 	CategoryIDs    []int
 	Errors         map[string]string // [field]message
@@ -45,6 +46,9 @@ func (f *PostForm) Validate() bool {
 		f.Errors["Content"] = "Content is required"
 	} else if utf8.RuneCountInString(content) > 10000 {
 		f.Errors["Content"] = "Content is too long"
+	}
+	if f.Image == "fail" {
+		f.Errors["Image"] = "Not a valid image"
 	}
 	if f.MainCategoryID == 0 {
 		f.Errors["MainCategoryID"] = "Main category is required"
@@ -112,13 +116,15 @@ func (h *PostHandler) getAuthorID(ctx context.Context, author string) (int, erro
 		}
 		return authorID, nil
 	}
-	//todo: get userid by username and return that or error if not found
 
-	//placeholder return
 	return 0, nil
 }
 
 func (h *PostHandler) parsePostForm(w http.ResponseWriter, r *http.Request) (PostForm, bool) {
+
+	r.Body = http.MaxBytesReader(w, r.Body, 10<<20)
+	r.ParseMultipartForm(10 << 20)
+
 	if err := r.ParseForm(); err != nil {
 		handleError(w, r, customerrors.ErrBadRequest)
 		return PostForm{}, false
@@ -142,9 +148,23 @@ func (h *PostHandler) parsePostForm(w http.ResponseWriter, r *http.Request) (Pos
 		}
 	}
 
+	var fileName string
+
+	file, header, fileErr := r.FormFile("imagepath")
+	if fileErr == nil && header.Size > 0 {
+		defer file.Close()
+		saveName, saveErr := SaveUploadedFile(file)
+		if saveErr != nil {
+			fileName = "fail"
+		} else {
+			fileName = saveName
+		}
+	}
+
 	return PostForm{
 		Title:          strings.TrimSpace(r.FormValue("title")),
 		Content:        strings.TrimSpace(r.FormValue("content")),
+		Image:          fileName,
 		MainCategoryID: mainCat,
 		CategoryIDs:    categoryIDs,
 	}, true
@@ -287,11 +307,11 @@ func parseID(r *http.Request, key string) (int, error) {
 	return id, nil
 }
 
-func confirmaAdminsecret(cfm_secter string) (bool, error) {
+func confirmaAdminSecret(cfm_sector string) (bool, error) {
 	scr := "12345"
 	hash, hasherr := utils.GenerateHashPassword(scr)
 	if hasherr != nil {
 		return false, customerrors.ErrInternalError
 	}
-	return utils.VerifyPassword(hash, cfm_secter)
+	return utils.VerifyPassword(hash, cfm_sector)
 }

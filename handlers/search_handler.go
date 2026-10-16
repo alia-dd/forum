@@ -92,6 +92,7 @@ func (h *SearchHandler) Search(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
+
 	if scope == "posts" {
 		results.Posts, results.Pagination, err = paginate(r, func(limit, offset int) ([]models.PostResult, error) {
 			return h.searchRep.SearchPosts(ctx, ftsQuery, sort, limit, offset)
@@ -105,6 +106,7 @@ func (h *SearchHandler) Search(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
+
 	if scope == "comments" {
 		results.Comments, results.Pagination, err = paginate(r, func(limit, offset int) ([]models.CommentResult, error) {
 			return h.searchRep.SearchComments(ctx, ftsQuery, sort, limit, offset)

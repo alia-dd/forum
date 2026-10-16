@@ -3,7 +3,6 @@ package repository
 import (
 	"context"
 	"database/sql"
-	"fmt"
 	"strings"
 
 	customerrors "gitea.kood.tech/jyrkikarhunen/forum/errors"
@@ -36,8 +35,8 @@ func (r *postRepositoryImpl) CreatePost(ctx context.Context, post models.PostInp
 	defer tx.Rollback()
 
 	res, err := tx.ExecContext(ctx, `
-		INSERT INTO post (user_id, title, content) VALUES (?, ?, ?)
-	`, post.UserID, post.Title, post.Content)
+		INSERT INTO post (user_id, title, content, imagepath) VALUES (?, ?, ?, ?)
+	`, post.UserID, post.Title, post.Content, post.Image)
 	if err != nil {
 		return 0, customerrors.MapSQLError(err)
 	}
@@ -70,7 +69,7 @@ func (r *postRepositoryImpl) CreatePost(ctx context.Context, post models.PostInp
 func (r *postRepositoryImpl) GetPost(ctx context.Context, filter models.PostFilter, user_id int) ([]*models.PostView, error) {
 	query := `
 		SELECT
-			post.id, post.user_id, post.title, post.content, post.created_at, post.updated_at,
+			post.id, post.user_id, post.title, post.content, COALESCE(post.imagepath, ''), post.created_at, post.updated_at,
 			user.username, ifnull(user.imagepath, ''),
 			(SELECT COUNT(*) FROM post_like WHERE post_like.post_id = post.id AND post_like.value = 1)  AS like_count,
 			(SELECT COUNT(*) FROM post_like WHERE post_like.post_id = post.id AND post_like.value = -1) AS dislike_count,
@@ -147,6 +146,7 @@ func (r *postRepositoryImpl) GetPost(ctx context.Context, filter models.PostFilt
 			&pv.Post.UserID,
 			&pv.Post.Title,
 			&pv.Post.Content,
+			&pv.Post.Image,
 			&pv.Post.CreatedAt,
 			&pv.Post.UpdatedAt,
 			&pv.AuthorName,
@@ -175,7 +175,7 @@ func (r *postRepositoryImpl) GetPost(ctx context.Context, filter models.PostFilt
 func (r *postRepositoryImpl) GetPostByID(ctx context.Context, id int, user_id int) (*models.PostView, error) {
 	query := `
 		SELECT
-			post.id, post.user_id, post.title, post.content, post.created_at, post.updated_at,
+			post.id, post.user_id, post.title, post.content, COALESCE(post.imagepath, ''), post.created_at, post.updated_at,
 			user.username, ifnull(user.imagepath, ''),
 			(SELECT COUNT(*) FROM post_like WHERE post_like.post_id = post.id AND post_like.value = 1)  AS like_count,
 			(SELECT COUNT(*) FROM post_like WHERE post_like.post_id = post.id AND post_like.value = -1) AS dislike_count,
@@ -188,13 +188,15 @@ func (r *postRepositoryImpl) GetPostByID(ctx context.Context, id int, user_id in
 		`
 
 	var pv models.PostView
+
 	err := r.db.QueryRowContext(ctx, query, user_id, id).Scan(
-		&pv.Post.ID, &pv.Post.UserID, &pv.Post.Title, &pv.Post.Content, &pv.Post.CreatedAt, &pv.Post.UpdatedAt,
+		&pv.Post.ID, &pv.Post.UserID, &pv.Post.Title, &pv.Post.Content, &pv.Post.Image, &pv.Post.CreatedAt, &pv.Post.UpdatedAt,
 		&pv.AuthorName, &pv.AuthorImage, &pv.LikeCount, &pv.DislikeCount, &pv.CommentCount, &pv.UserReaction, &pv.Deleted,
 	)
 	if err != nil {
 		return nil, customerrors.MapSQLError(err)
 	}
+
 	pv.TargetType = "post"
 	pv.TargetId = pv.Post.ID
 	return &pv, nil
@@ -205,15 +207,18 @@ func (r *postRepositoryImpl) UpdatePost(ctx context.Context, update models.PostU
 	if err != nil {
 		return customerrors.MapSQLError(err)
 	}
+
 	defer tx.Rollback()
-	arg := []any{update.Title, update.Content, update.ID}
-	query := `UPDATE post SET title = ?, content = ?, updated_at = CURRENT_TIMESTAMP
+	arg := []any{update.Title, update.Content, update.Image, update.ID}
+
+	query := `UPDATE post SET title = ?, content = ?, imagepath = ?, updated_at = CURRENT_TIMESTAMP
 		WHERE id = ? AND deleted_at IS NULL
 		`
 	if userRole != "admin" {
 		query += ` AND user_id = ?`
 		arg = append(arg, authorID)
 	}
+
 	res, err := tx.ExecContext(ctx, query, arg...)
 	if err != nil {
 		return customerrors.MapSQLError(err)
@@ -251,21 +256,23 @@ func (r *postRepositoryImpl) UpdatePost(ctx context.Context, update models.PostU
 			return customerrors.MapSQLError(err)
 		}
 	}
+
 	return tx.Commit()
 }
 
 func (r *postRepositoryImpl) DeletePost(ctx context.Context, id, authorID int, userRole string) error {
 	var hasComments bool
 	var err error
+
 	err = r.db.QueryRowContext(ctx, `
 		SELECT EXISTS(
 			SELECT 1 FROM comment
 			WHERE parent_post_id = ?)
 		`, id).Scan(&hasComments)
 	if err != nil {
-		fmt.Println("here1")
 		return customerrors.MapSQLError(err)
 	}
+
 	arg := []any{id}
 
 	var res sql.Result
@@ -284,20 +291,17 @@ func (r *postRepositoryImpl) DeletePost(ctx context.Context, id, authorID int, u
 			`, id, authorID)
 	}
 	if err != nil {
-		fmt.Println("here2", err)
 		return customerrors.MapSQLError(err)
 	}
 
 	rowCount, err := res.RowsAffected()
 	if err != nil {
-		fmt.Println("here3")
 		return customerrors.MapSQLError(err)
 	}
 
 	if rowCount == 0 {
-		fmt.Println("here4")
 		return customerrors.ErrNotFound
 	}
-	fmt.Println("here4")
+
 	return nil
 }

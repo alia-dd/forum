@@ -17,7 +17,7 @@ type UserRegister struct {
 	Image           string    `json:"imagePath"`
 	Bio             string    `json:"bio"`
 	Password        string    `json:"password"`
-	ConformPassword string    `json:"ConformPassword"`
+	ConfirmPassword string    `json:"ConfirmPassword"`
 	CreatedAt       time.Time `json:"createdat"`
 	UpdatedAt       time.Time `json:"updatedat"`
 }
@@ -82,7 +82,7 @@ func (u *UserRegister) Isvalid() error {
 	if u.Email != "" && !IsValidEmail(u.Email) {
 		return customerrors.ErrInvalidData
 	}
-	if u.Password != "" && u.ConformPassword != "" && (u.Password != u.ConformPassword) {
+	if u.Password != "" && u.ConfirmPassword != "" && (u.Password != u.ConfirmPassword) {
 		return customerrors.ErrIncorrectPassword
 	}
 	return nil
@@ -101,6 +101,7 @@ func (u *UserUpdate) Isvalid() error {
 	}
 	return nil
 }
+
 func IsValidName(name string) bool {
 	r, _ := regexp.Compile("^[A-Za-z0-9]+(?:-[A-Za-z0-9]+)*$")
 	if r.MatchString(name) {

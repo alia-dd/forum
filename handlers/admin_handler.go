@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"fmt"
 	"net/http"
 	"strconv"
 
@@ -60,7 +59,7 @@ func (h *UseHandler) GetConfirmUserAction(w http.ResponseWriter, r *http.Request
 	actionType := r.FormValue("ActionType")
 
 	if idErr != nil || userErr != nil || (action != "role" && action != "block" && action != "delete" && actionType != "userAction" && actionType != "postAction" && actionType != "categoryAction") {
-		fmt.Println(r.URL.Query().Get("id"), r.URL.Query().Get("user_id"), r.URL.Query().Get("action"), r.URL.Query().Get("ActionType"))
+		//fmt.Println(r.URL.Query().Get("id"), r.URL.Query().Get("user_id"), r.URL.Query().Get("action"), r.URL.Query().Get("ActionType"))
 		handleError(w, r, customerrors.ErrBadRequest)
 		return
 	}
@@ -73,9 +72,9 @@ func (h *UseHandler) GetConfirmUserAction(w http.ResponseWriter, r *http.Request
 			Error      string
 		}{id, userId, action, actionType, ""})
 }
-func confirmFormError(w http.ResponseWriter, id, userId int, action, actionType, errormgs string) {
+func confirmFormError(w http.ResponseWriter, id, userId int, action, actionType, errorMsg string) {
 
-	w.Header().Set("HX-Retarget", "#cfm_diologe")
+	w.Header().Set("HX-Retarget", "#cfm_dialogue")
 	w.Header().Set("HX-Reswap", "innerHTML")
 	utils.RenderPartial(w, http.StatusOK, "confirm_secret",
 		struct {
@@ -84,7 +83,7 @@ func confirmFormError(w http.ResponseWriter, id, userId int, action, actionType,
 			Action     string
 			ActionType string
 			Error      string
-		}{id, userId, action, actionType, errormgs})
+		}{id, userId, action, actionType, errorMsg})
 }
 
 func (h *UseHandler) PostAdminUserAction(w http.ResponseWriter, r *http.Request) {
@@ -95,22 +94,23 @@ func (h *UseHandler) PostAdminUserAction(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	cfm_secter := r.FormValue("cfm_secter")
+	cfm_sector := r.FormValue("cfm_sector")
 	userId, _ := strconv.Atoi(r.FormValue("user_id"))
 	action := r.FormValue("action")
 	actionType := r.FormValue("ActionType")
+
 	if userId == user.ID {
 		handleError(w, r, customerrors.ErrForbidden)
 		return
 	}
-	if _, cfmErr := confirmaAdminsecret(cfm_secter); cfmErr != nil {
-		confirmFormError(w, 0, userId, action, actionType, "Incorrect confermation secret")
+	if _, cfmErr := confirmaAdminSecret(cfm_sector); cfmErr != nil {
+		confirmFormError(w, 0, userId, action, actionType, "Incorrect confirmation secret")
 		return
 	}
 
 	updateErr := h.service.UpdateUserRoleService(cx, action, userId)
-
 	usersData, err := h.service.GetAllUsersService(cx)
+
 	pageData := models.PageData[MainPage]{
 		User: user,
 		PageContent: MainPage{
@@ -126,8 +126,9 @@ func (h *UseHandler) PostAdminUserAction(w http.ResponseWriter, r *http.Request)
 		handleError(w, r, updateErr)
 		return
 	}
+
 	utils.RenderPartial(w, http.StatusOK, "user_table", pageData)
-	w.Write([]byte(`<div id="cfm_diologe" hx-swap-oob="true"></div>`))
+	w.Write([]byte(`<div id="cfm_dialogue" hx-swap-oob="true"></div>`))
 }
 
 func (h *UseHandler) GetAdminPostTable(w http.ResponseWriter, r *http.Request) {
@@ -175,24 +176,25 @@ func (h *UseHandler) PostAdminPostrAction(w http.ResponseWriter, r *http.Request
 		handleError(w, r, customerrors.ErrForbidden)
 		return
 	}
-	cfm_secter := r.FormValue("cfm_secter")
+
+	cfm_sector := r.FormValue("cfm_sector")
 	postId, _ := strconv.Atoi(r.FormValue("id"))
 	userId, _ := strconv.Atoi(r.FormValue("user_id"))
 	action := r.FormValue("action")
 	actionType := r.FormValue("ActionType")
-	// check here
 
-	if _, cfmErr := confirmaAdminsecret(cfm_secter); cfmErr != nil {
-		confirmFormError(w, postId, userId, action, actionType, "Incorrect confermation secret")
+	if _, cfmErr := confirmaAdminSecret(cfm_sector); cfmErr != nil {
+		confirmFormError(w, postId, userId, action, actionType, "Incorrect confirmation secret")
 		return
 	}
 	role := ""
 	if ok {
 		role = user.Role
 	}
-	deleteErr := h.postRep.DeletePost(cx, postId, userId, role)
 
+	deleteErr := h.postRep.DeletePost(cx, postId, userId, role)
 	posts, err := h.postRep.GetPost(cx, models.PostFilter{}, -1)
+
 	pageData := models.PageData[MainPage]{
 		User: user,
 		PageContent: MainPage{
@@ -209,8 +211,9 @@ func (h *UseHandler) PostAdminPostrAction(w http.ResponseWriter, r *http.Request
 		return
 
 	}
+
 	utils.RenderPartial(w, http.StatusOK, "post_table", pageData)
-	w.Write([]byte(`<div id="cfm_diologe" hx-swap-oob="true"></div>`))
+	w.Write([]byte(`<div id="cfm_dialogue" hx-swap-oob="true"></div>`))
 }
 
 func (h *UseHandler) GetCategoryTable(w http.ResponseWriter, r *http.Request) {
@@ -220,7 +223,9 @@ func (h *UseHandler) GetCategoryTable(w http.ResponseWriter, r *http.Request) {
 		handleError(w, r, customerrors.ErrForbidden)
 		return
 	}
+
 	category, err := h.categoryRep.GetAllCategories(cx)
+
 	pageData := models.PageData[MainPage]{
 		User: user,
 		PageContent: MainPage{

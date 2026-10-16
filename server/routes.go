@@ -12,8 +12,9 @@ func registerRoutes(mux *http.ServeMux, d routeDependencies) {
 		http.StripPrefix("/static/",
 			http.FileServer(http.Dir("static"))))
 
-	// route check if the routes below are not called and default to this one and if not calls 404 page
-	// wraps the whole with call with the safeguarded other while the user session will not we recognize and will log you out
+	// Wraps the route with guest/session handling and renders a 404 page
+	// for any path other than "/". If the session is invalid, the user
+	// may be redirected or logged out, depending on handleGuest's behavior.
 	handleGuest(mux, "GET /", d, func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/" {
 			user, _ := r.Context().Value("user_session").(*models.UserInfo)
@@ -34,7 +35,6 @@ func registerRoutes(mux *http.ServeMux, d routeDependencies) {
 	handleAdmin(mux, "GET /admin/confirmation", d, d.userHandler.GetConfirmUserAction)
 	handleAdmin(mux, "GET /admin/users", d, d.userHandler.GetAdminUserTable)
 	handleAdmin(mux, "GET /admin/posts", d, d.userHandler.GetAdminPostTable)
-	//handleAdmin(mux, "GET /admin/comments", d, d.userHandler.GetAdminCommentTable)
 	handleAdmin(mux, "GET /admin/categories", d, d.userHandler.GetCategoryTable)
 
 	handleAdmin(mux, "POST /admin/users/action", d, d.userHandler.PostAdminUserAction)

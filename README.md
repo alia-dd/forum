@@ -1,10 +1,46 @@
+![Go](https://img.shields.io/badge/Go-1.26.1-00ADD8?logo=go&logoColor=white)
+![SQLite](https://img.shields.io/badge/SQLite-3.53.4-003B57?logo=sqlite&logoColor=white)
+![HTML5](https://img.shields.io/badge/HTML-E34F26?logo=html5&logoColor=white)
+![CSS3](https://img.shields.io/badge/CSS-1572B6?logo=css3&logoColor=white)
+![License](https://img.shields.io/github/license/alia-dd/forum)
 # Literary Lions forum<br>
 
 ## Overview<br>
 
 A server-rendered web forum for discussing literature, implemented in Go with databases done in SQLite.  
 Registered users can post, comment, reply and react, as well as search the forum.  
-Guests can browse and read the posts and comments.  
+Guests can browse and read the posts and comments.
+
+## Project structure tree<br>
+```text
+forum/
+├── main.go               # Entrypoint: parse flags (-i seed, -d delete), start server
+├── Dockerfile            # Multi-stage build (cgo + FTS5), runs ./forum -i
+├── compose.yaml          # Docker Compose: port 8080, persistent data/uploads volumes
+├── Makefile              # run shortcut
+├── go.mod / go.sum
+│
+├── server/               # HTTP server wiring (dependencies, routes, middleware chains)
+├── middleware/           # Recoverer, AllowGuest, Restrict, Admin
+│
+├── handlers/             # HTTP handlers (one per domain) + view structs
+│                         #   post/comment/user/reaction/category/admin/auth/search
+│                         #   pagination.go (generic paginate helper), pagestructs.go
+├── service/              # Business logic (auth, hashing, roles, reactions)
+├── repository/           # Data access (SQL) — one file per table group
+│                         #   incl. search_repository.go (FTS5 posts/comments, LIKE users)
+├── models/               # Domain types, view models, validation
+│
+├── database/             # db.go (open SQLite), schema.sql (tables+FTS, go:embed), seed.go
+├── utils/                # templates, argon2id hashing, UUIDv7 session ids
+├── errors/               # Typed app errors + SQL error mapping
+│
+├── templates/            # html/template views
+│   └── partials/         #   nav, comment_card, pagination, reaction, tables, …
+└── static/               # Served assets
+    ├── css/              #   stylesheets
+    └── assets/images/    #   default avatars + uploaded profile pictures
+```
 
 ## Setup and Usage <br>
 ### Setup
@@ -33,7 +69,7 @@ Admin panel allows you to adjust user roles, delete posts and create/edit catego
 Otherwise the usage of the site is what one would expect of a web forum; you can post and comment, edit your profile or postings, like and dislike things, reply to other users, delete your account and search for users, posts or comments.  
 
 ## Additional features<br>
-### Proposed bonuses:<br>
+### Proposed bonuses<br>
 All listed ones should be implemented, some notable ones listed here:  
 
 Passwords are hashed using Argon2id (golang.org/x/crypto), one of the most recommended password-hashing algorithms for its security.  
@@ -42,7 +78,7 @@ Search functionality implemented with selectable scope and sort, FTS5 for better
 
 Profile pages that showcase a user-written bio as well as list their posts/comments to other people. The profile-owner can change their settings there, such as password, profile picture and bio, as well as view their own liked posts.  
 
-### Extra bonuses:<br>
+### Extra bonuses<br>
 Admin panel and functionality for user moderation + user roles.  
 
 User-uploaded avatars for profiles.  
@@ -55,95 +91,5 @@ Editing content you have posted, deleting your account.
 
 Soft-deletion that preserves nested comments when their parent gets deleted.  
 
-## Project structure tree:<br>
-```text
-forum/
-├── main.go               # Entrypoint: parse flags (-i seed, -d delete), start server
-├── Dockerfile            # Multi-stage build (cgo + FTS5), runs ./forum -i
-├── compose.yaml          # Docker Compose: build, port 8080, data/uploads volumes
-├── Makefile              # run / reset / build / test shortcuts
-├── go.mod / go.sum
-│
-├── server/               # HTTP server wiring (dependencies, routes, middleware chains)
-├── middleware/           # Recoverer, AllowGuest, Restrict, Admin
-│
-├── handlers/             # HTTP handlers (one per domain) + view structs
-│                         #   post/comment/user/reaction/category/admin/auth/search
-│                         #   pagination.go (generic paginate helper), pagestructs.go
-├── service/              # Business logic (auth, hashing, roles, reactions)
-├── repository/           # Data access (SQL) — one file per table group
-│                         #   incl. search_repository.go (FTS5 posts/comments, LIKE users)
-├── models/               # Domain types, view models, validation
-│
-├── database/             # db.go (open SQLite), schema.sql (tables+FTS, go:embed), seed.go
-├── utils/                # templates, argon2id hashing, UUIDv7 session ids
-├── errors/               # Typed app errors + SQL error mapping
-│
-├── templates/            # html/template views
-│   └── partials/         #   nav, comment_card, pagination, reaction, tables, …
-└── static/               # Served assets
-    ├── css/              #   stylesheets
-    └── assets/images/    #   default avatars + uploaded profile pictures
-```
-alt
-```text
-forum/
-├── main.go                  # Entrypoint: parse flags (-i seed, -d delete), hand off to server
-├── Dockerfile               # Multi-stage build (cgo + FTS5), runs ./forum -i
-├── compose.yaml             # Docker Compose: build, port 8080, data/uploads volumes
-├── Makefile                 # run / reset / build / test shortcuts
-├── go.mod / go.sum
-│
-├── server/                  # HTTP server wiring
-│   ├── server.go            #   builds dependencies, starts http.Server
-│   └── routes.go            #   route table + middleware chains
-│
-├── middleware/              # Recoverer, AllowGuest, Restrict, Admin
-│   └── middleware.go
-│
-├── handlers/                # HTTP handlers (one file per domain) + view structs
-│   ├── post_handler.go · comment_handler.go · user_handler.go
-│   ├── reaction_handler.go · category_handler.go · admin_handler.go
-│   ├── auth_handler.go · search_handler.go
-│   ├── pagination.go        #   generic paginate() helper + out-of-range redirect
-│   ├── pagestructs.go       #   structs passed to templates
-│   └── helpers.go · errors.go
-│
-├── service/                 # Business logic
-│   ├── users_service.go     #   auth, password hashing, roles, sessions
-│   └── reaction_service.go
-│
-├── repository/              # Data access (SQL), one file per table group
-│   ├── post_repository.go · comment_repository.go · user_repository.go
-│   ├── session_repository.go · reaction_repository.go
-│   ├── category_repository.go
-│   └── search_repository.go #   FTS5 (posts/comments) + LIKE (users)
-│
-├── models/                  # Domain types, view models, validation
-│   ├── post.go · comment.go · user.go · category.go · reaction.go · session.go
-│   ├── pageData.go · pagination.go · search.go · time.go
-│
-├── database/                # Connection, schema, seed
-│   ├── db.go                #   open SQLite (WAL, foreign_keys), init schema
-│   ├── schema.sql           #   tables + FTS5 virtual tables + triggers (go:embed)
-│   └── seed.go              #   demo users/posts/comments/reactions
-│
-├── utils/                   # Cross-cutting helpers
-│   ├── utils.go             #   template parsing + render
-│   ├── password_encrypt.go  #   argon2id hash/verify
-│   └── uuid.go              #   UUIDv7 session ids
-│
-├── errors/                  # Typed app errors + SQL error mapping
-│   └── errors.go
-│
-├── templates/               # html/template views
-│   ├── base.html · home.html · post.html · profile.html · search.html · …
-│   └── partials/            #   nav, comment_card, pagination, reaction, tables, …
-│
-└── static/                  # Served assets
-    ├── css/                 #   stylesheets
-    └── assets/images/       #   default avatars + uploaded profile pictures
-```
-
-## Entity-Relationship Diagram:<br>
+## Entity-Relationship Diagram<br>
 ![description](static/assets/ERD.svg)

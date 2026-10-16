@@ -50,7 +50,7 @@ func (h *UseHandler) SignInUser(w http.ResponseWriter, r *http.Request) {
 		Path:     "/",
 		HttpOnly: true,
 		// this secures the cookie data but since we are using http
-		// it will block the cookie it self so not usefull currenly
+		// it will block the cookie itself so not useful currently
 		// Secure:   true,
 		SameSite: http.SameSiteLaxMode,
 	})

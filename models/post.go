@@ -9,6 +9,7 @@ type Post struct {
 	UserID    int
 	Title     string
 	Content   string
+	Image     string
 	CreatedAt time.Time
 	UpdatedAt *time.Time
 }
@@ -32,6 +33,7 @@ type PostInput struct {
 	UserID         int
 	Title          string
 	Content        string
+	Image          string
 	MainCategoryID int
 	CategoryIDs    []int
 }
@@ -40,6 +42,7 @@ type PostUpdate struct {
 	ID             int
 	Title          string
 	Content        string
+	Image          string
 	MainCategoryID int
 	CategoryIDs    []int
 }

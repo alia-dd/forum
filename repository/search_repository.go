@@ -54,6 +54,7 @@ func (r *SearchRepository) SearchUsers(ctx context.Context, search string, limit
 		}
 		result = append(result, ur)
 	}
+
 	return result, rows.Err()
 }
 
@@ -97,6 +98,7 @@ func (r *SearchRepository) SearchPosts(ctx context.Context, term string, sort st
 		}
 		result = append(result, pr)
 	}
+
 	return result, rows.Err()
 }
 
@@ -140,6 +142,7 @@ func (r *SearchRepository) SearchComments(ctx context.Context, term string, sort
 		}
 		result = append(result, c)
 	}
+
 	return result, rows.Err()
 }
 
@@ -180,6 +183,7 @@ func (r *SearchRepository) SearchAdminUsers(ctx context.Context, search string, 
 		}
 		result = append(result, ur)
 	}
+
 	return result, rows.Err()
 }
 
@@ -229,5 +233,6 @@ func (r *SearchRepository) SearchAdminPosts(ctx context.Context, term string, li
 		}
 		result = append(result, pv)
 	}
+
 	return result, rows.Err()
 }

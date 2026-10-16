@@ -12,7 +12,6 @@ import (
 
 func handleError(w http.ResponseWriter, r *http.Request, err error) {
 	var (
-		//code    string
 		message string
 		status  int
 	)
@@ -89,7 +88,7 @@ func handleError(w http.ResponseWriter, r *http.Request, err error) {
 	if r.Header.Get("HX-Request") == "true" {
 		w.Header().Set("HX-Retarget", "#page-error")
 		w.Header().Set("HX-Reswap", "innerHTML")
-		utils.RenderPartial(w, status, "partail_error", struct{ Error string }{message})
+		utils.RenderPartial(w, status, "partial_error", struct{ Error string }{message})
 		return
 	}
 
@@ -102,5 +101,6 @@ func handleError(w http.ResponseWriter, r *http.Request, err error) {
 		},
 	}
 
+	fmt.Print(err)
 	utils.RenderTemplate(w, status, "error", pageData)
 }

@@ -21,9 +21,11 @@ func (rec *ReactionService) SetPostReact(cx context.Context, react models.Reacti
 	if fetchErr != nil {
 		return fetchErr
 	}
+
 	if val == nil {
 		return rec.repo.CreatePostReaction(cx, react)
 	}
+
 	if *val == react.Value {
 		return rec.repo.DeletePostReaction(cx, react)
 	} else {
@@ -36,9 +38,11 @@ func (rec *ReactionService) SetCommentReact(cx context.Context, react models.Rea
 	if fetchErr != nil {
 		return fetchErr
 	}
+
 	if val == nil {
 		return rec.repo.CreateCommentReaction(cx, react)
 	}
+
 	if *val == react.Value {
 		return rec.repo.DeleteCommentReaction(cx, react)
 	} else {

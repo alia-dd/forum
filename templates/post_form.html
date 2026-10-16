@@ -7,7 +7,7 @@
     <h1 class="page-title">{{if $id}}Edit post{{else}}New post{{end}}</h1>
   </div>
 
-  <form class="post-form-container" method="POST" action="{{if $id}}/post/{{$id}}/edit{{else}}/post/new{{end}}">
+  <form class="post-form-container" method="POST" action="{{if $id}}/post/{{$id}}/edit{{else}}/post/new{{end}}" enctype="multipart/form-data">
       <h2 class="post-title">Title</h2>
       <textarea class="create-comment" name="title" value="{{.PageContent.Form.Title}}" required></textarea>
       {{with .PageContent.Form.Errors.Title}}
@@ -17,6 +17,10 @@
       <h2 class="post-title">Content</h2>
       <textarea class="create-comment" name="content" required>{{.PageContent.Form.Content}}</textarea>
       {{with .PageContent.Form.Errors.Content}}<span>{{.}}</span>{{end}}
+
+      <h2 class="post-title">Image</h2>
+      <div class="create-comment"><input type="file" accept="image/png, image/jpeg" value="imagepath" name="imagepath" /></div>
+      {{with .PageContent.Form.Errors.Image}}<span>{{.}}</span>{{end}}
 
       <h2 class="post-title">Main category</h2>
       <select class="options-box" name="main_category" required>

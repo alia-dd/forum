@@ -2,7 +2,6 @@ package handlers
 
 import "gitea.kood.tech/jyrkikarhunen/forum/models"
 
-//todo: add user info
 type MainPage struct {
 	Section          string
 	SearchPath       string
