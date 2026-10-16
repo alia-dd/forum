@@ -10,6 +10,7 @@ import (
 
 func HomePage(w http.ResponseWriter, r *http.Request) {
 	user, ok := r.Context().Value("user_session").(*models.UserInfo)
+
 	pageData := models.PageData[MainPage]{
 		User:        user,
 		IsOwner:     ok,

@@ -51,7 +51,7 @@ func (r *commentRepositoryImpl) CreateComment(ctx context.Context, comment model
 
 func (r *commentRepositoryImpl) GetCommentByID(ctx context.Context, comID int, curUserID *int) (*models.CommentView, error) {
 	query := `
-        SELECT c.id, c.parent_post_id, c.parent_comment_id, c.user_id, c.content, c.created_at, u.username,
+        SELECT c.id, c.parent_post_id, c.parent_comment_id, c.user_id, c.content, c.created_at, u.username, ifnull(u.imagepath, ''),
         (SELECT COUNT(*) FROM comment_like WHERE comment_like.comment_id = c.id AND comment_like.value = 1)  AS like_count,
 		(SELECT COUNT(*) FROM comment_like WHERE comment_like.comment_id = c.id AND comment_like.value = -1) AS dislike_count,			
 		IFNULL((SELECT value FROM comment_like WHERE comment_id = c.id AND user_id = ? ),0) AS user_reaction
@@ -69,6 +69,7 @@ func (r *commentRepositoryImpl) GetCommentByID(ctx context.Context, comID int, c
 		&comment.Content,
 		&comment.CreatedAt,
 		&comment.AuthorName,
+		&comment.AuthorImage,
 		&comment.LikeCount,
 		&comment.DislikeCount,
 		&comment.UserReaction,
@@ -107,6 +108,7 @@ func (r *commentRepositoryImpl) GetCommentsByPost(ctx context.Context, postID in
 			c.updated_at,
 			c.deleted_at,
 			u.username,
+			ifnull(u.imagepath, ''),
 			(
 				SELECT COUNT(*)
 				FROM comment_like cl
@@ -171,6 +173,7 @@ func (r *commentRepositoryImpl) GetCommentsByPost(ctx context.Context, postID in
 			&cv.Comment.UpdatedAt,
 			&deletedAt,
 			&cv.AuthorName,
+			&cv.AuthorImage,
 			&cv.LikeCount,
 			&cv.DislikeCount,
 			&cv.ReplyCount,
@@ -256,7 +259,7 @@ func (r *commentRepositoryImpl) DeleteComment(ctx context.Context, id, authorID 
 	arg := []any{id}
 
 	var res sql.Result
-	if !hasReplies || userRole == "admin" {
+	if !hasReplies {
 		query := `DELETE FROM comment WHERE id = ?`
 		if userRole != "admin" {
 			query += ` AND user_id = ?`
@@ -264,11 +267,12 @@ func (r *commentRepositoryImpl) DeleteComment(ctx context.Context, id, authorID 
 		}
 		res, err = r.db.ExecContext(ctx, query, arg...)
 	} else {
-		res, err = r.db.ExecContext(ctx, `
-			UPDATE comment
-			SET content = '', deleted_at = CURRENT_TIMESTAMP
-			WHERE id = ? AND user_id = ?
-			`, id, authorID)
+		query := `UPDATE comment SET content = '', deleted_at = CURRENT_TIMESTAMP WHERE id = ?`
+		if userRole != "admin" {
+			query += ` AND user_id = ?`
+			arg = append(arg, authorID)
+		}
+		res, err = r.db.ExecContext(ctx, query, arg...)
 	}
 	if err != nil {
 		return customerrors.MapSQLError(err)
@@ -298,6 +302,7 @@ func (r *commentRepositoryImpl) GetRepliesByCommentID(ctx context.Context, paren
             c.updated_at,
             c.deleted_at,
             u.username,
+			ifnull(u.imagepath, ''),
             (
                 SELECT COUNT(*)
                 FROM comment_like cl
@@ -361,6 +366,7 @@ func (r *commentRepositoryImpl) GetRepliesByCommentID(ctx context.Context, paren
 			&cv.Comment.UpdatedAt,
 			&deletedAt,
 			&cv.AuthorName,
+			&cv.AuthorImage,
 			&cv.LikeCount,
 			&cv.DislikeCount,
 			&cv.ReplyCount,
@@ -394,7 +400,7 @@ func (r *commentRepositoryImpl) GetRepliesByCommentID(ctx context.Context, paren
 }
 
 func (r *commentRepositoryImpl) GetCommentsByUser(ctx context.Context, userID, limit, offset int) ([]*models.CommentView, error) {
-	query := `SELECT c.id, c.content, c.parent_post_id, u.username,c.created_at
+	query := `SELECT c.id, c.content, c.parent_post_id, u.username, ifnull(u.imagepath, ''), c.created_at
 		FROM comment c
 		JOIN user u ON u.id = c.user_id
 		WHERE c.user_id = ? AND c.deleted_at IS NULL
@@ -414,7 +420,7 @@ func (r *commentRepositoryImpl) GetCommentsByUser(ctx context.Context, userID, l
 	comments := []*models.CommentView{}
 	for rows.Next() {
 		var c models.CommentView
-		if err := rows.Scan(&c.ID, &c.Content, &c.ParentPostID, &c.AuthorName, &c.CreatedAt); err != nil {
+		if err := rows.Scan(&c.ID, &c.Content, &c.ParentPostID, &c.AuthorName, &c.AuthorImage, &c.CreatedAt); err != nil {
 			return nil, customerrors.MapSQLError(err)
 		}
 		comments = append(comments, &c)

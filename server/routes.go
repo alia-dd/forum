@@ -50,6 +50,8 @@ func registerRoutes(mux *http.ServeMux, d routeDependencies) {
 	handleRestricted(mux, "GET /user/profile/password", d, d.userHandler.GetChangePassword)
 	handleRestricted(mux, "POST /user/profile/password", d, d.userHandler.PostChangePassword)
 
+	handleRestricted(mux, "POST /user/profile/delete", d, d.userHandler.DeleteUserAcccount)
+
 	// Auth
 	handle(mux, "GET /user/register", d.userHandler.GetRegisterUser)
 	handle(mux, "POST /user/register", d.userHandler.PostRegisterUser)

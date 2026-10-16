@@ -12,11 +12,25 @@
         {{if .IsOwner}}
             <p class="profile-email">{{$user.Email}}</p>
             <div class="profile-action">
-                <a class="btn" href="/user/profile/edit">Edit Profile</a>
+                
+                <a class="btn" href="/user/profile/edit">Edit Profile {{$user.Username}}</a>
                 <a class="btn btn-chg" href="/user/profile/password">Change password</a>
+                <button class="btn" command="show-modal" commandfor="confirm-delete">Delete account</button>
             </div>
         {{end}}
     </aside>
+
+    <dialog id="confirm-delete" class="ConfermationForm">
+        <form action="/user/profile/delete" method="POST">
+            <h3 class="cfm_title">Delete Account</h3>
+            <p class="cfm_txt">Enter you password to permenently delete you account.</p>
+            <input  class="cfm_inp" type="text" pattern="^{{$user.Username}}$" placeholder="username..." autofocus required>
+            <div class="cfm_btn_div">
+                <button class="cfm_btn" type="submit" aria-label="Delete user">Delete account</button>
+                <button class="cfm_btn" commandfor="confirm-delete"  onclick="this.closest('dialog').close()" >Close</button>
+            </div>
+        </form>
+    </dialog>
 
     <section class="profile-content" style="display: flex; flex-direction: column;">
         {{template "profile_nav" .}}
@@ -26,17 +40,24 @@
             {{$posts := .PageContent.Posts}}
                 {{range $posts}}
                     {{if not .Deleted}}
-                        <article>
-                            <h2><a href="/post/{{.ID}}">{{.Title}}</a></h2>
+                         <div class="post-container">
+                            <h2 class="post-title"><a href="/post/{{.ID}}">{{.Title}}</a></h2>
                             {{if .Deleted}}
-                            <p>by Anonymous — likes {{.LikeCount}}, dislikes {{.DislikeCount}}, comments {{.CommentCount}}</p>
+                            <p class="text">by Anonymous · created {{.CreatedAgo}} — likes {{.LikeCount}}, dislikes {{.DislikeCount}}, comments {{.CommentCount}}</p>
                             {{else}}
-                            <p>by<a href="/user/profile/{{.AuthorName}}" class="username"> {{.AuthorName}}</a> 
-                                {{ template "react" .}}
-                            </p>
+                                <p class="text" >by
+                                    <a href="/user/profile/{{.AuthorName}}" class="username ">
+                                        <span class="profile-li">
+                                        <img {{if .AuthorImage}} src="/static/assets/images/{{.AuthorImage}}" {{else}} src="/static/assets/images/avatar1.jpg" {{end}} alt="Avatar" class="admin-table-avatar">
+                                        {{.AuthorName}}
+                                        </span>   
+                                    </a> 
+                                    · created {{.CreatedAgo}}{{with .UpdatedAgo}} · edited {{.}}{{end}}
+                                    {{ template "react" .}}
+                                </p>
                             {{end}}
-                            <p>{{range .Categories}}[{{.Name}}] {{end}}</p>
-                        </article>
+                            <p class="text">{{range .Categories}}[{{.Name}}] {{end}}</p>
+                        </div>
                     {{end}}
                 {{else}}<p>No posts yet.</p>{{end}}
             {{end}}
@@ -45,17 +66,24 @@
             {{$LikesPosts := .PageContent.LikedPosts}}
                 {{range $LikesPosts}}
                     {{if not .Deleted}}
-                        <article>
-                            <h2><a href="/post/{{.ID}}">{{.Title}}</a></h2>
+                         <div class="post-container">
+                            <h2 class="post-title"><a href="/post/{{.ID}}">{{.Title}}</a></h2>
                             {{if .Deleted}}
-                            <p>by Anonymous — likes {{.LikeCount}}, dislikes {{.DislikeCount}}, comments {{.CommentCount}}</p>
+                            <p class="text">by Anonymous · created {{.CreatedAgo}} — likes {{.LikeCount}}, dislikes {{.DislikeCount}}, comments {{.CommentCount}}</p>
                             {{else}}
-                            <p>by<a href="/user/profile/{{.AuthorName}}" class="username"> {{.AuthorName}}</a> 
-                                {{ template "react" .}}
-                            </p>
+                                <p class="text" >by
+                                    <a href="/user/profile/{{.AuthorName}}" class="username ">
+                                        <span class="profile-li">
+                                        <img {{if .AuthorImage}} src="/static/assets/images/{{.AuthorImage}}" {{else}} src="/static/assets/images/avatar1.jpg" {{end}} alt="Avatar" class="admin-table-avatar">
+                                        {{.AuthorName}}
+                                        </span>   
+                                    </a> 
+                                    · created {{.CreatedAgo}}{{with .UpdatedAgo}} · edited {{.}}{{end}}
+                                    {{ template "react" .}}
+                                </p>
                             {{end}}
-                            <p>{{range .Categories}}[{{.Name}}] {{end}}</p>
-                        </article>
+                            <p class="text">{{range .Categories}}[{{.Name}}] {{end}}</p>
+                        </div>
                     {{end}}
                 {{else}}<p>No Liked posts yet.</p>{{end}}
             {{end}}
@@ -63,14 +91,23 @@
             {{if (eq .PageContent.Tab "comments")}}
             {{$comments := .PageContent.Comments}}
                 {{range $comments}}
-                <a href="/post/{{.ParentPostID}}#comment-{{.ID}}">
-                     {{template "comment_card" .}} 
-                </a>
-                {{else}} 
+                <div class="comment-container" style="margin: 0; padding:0 ;">
+                    {{template "comment_card" .}} 
+                </div>
+                {{else}}
                     {{if eq .PageContent.Tab "comments"}}<p>No comments yet.</p>{{end}}
                 {{end}}
             {{end}}
+
+            {{if .PageContent.Comments}}
+              {{template "pagination" .PageContent.Pagination}}
+            {{else if .PageContent.Posts}}
+              {{template "pagination" .PageContent.Pagination}}
+            {{else if .PageContent.LikedPosts}}
+              {{template "pagination" .PageContent.Pagination}}
+            {{end}}
+          </section>
         </section>
-    </section>
-</div>
+      </div>
+ <script>document.currentScript.closest('dialog').showModal()</script>
 {{end}}

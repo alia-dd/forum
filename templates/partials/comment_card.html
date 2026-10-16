@@ -18,7 +18,11 @@
     {{else}}
         <div class="comment-header">
             <p class="text">
-                <a href="/user/profile/{{.AuthorName}}" class="username"> {{.AuthorName}}</a> - 
+                <a href="/user/profile/{{.AuthorName}}" class="username">
+                    <span class="profile-li">
+                        <img {{if .AuthorImage}} src="/static/assets/images/{{.AuthorImage}}" {{else}} src="/static/assets/images/avatar1.jpg" {{end}} alt="Avatar" class="admin-table-avatar">                   
+                        {{.AuthorName}}</a> - 
+                    </span>   
                 {{if .UpdatedAt}}
                     <small>{{.CreatedAgo}}</small> —
                     <span>(edited)</span> —
@@ -27,6 +31,7 @@
                     <small>{{.CreatedAgo}}</small>
                 {{end}}
             </p>
+            
 
             {{if or .IsOwner (eq .UserRole "admin")}}
                 <div buttons-container>
@@ -45,8 +50,12 @@
             {{end}}
         </div>
 
-        <div class="content">{{.Content}}</div>
-        
+        <div class="content">
+            <a href="/post/{{.ParentPostID}}#comment-{{.ID}}" style="display: contents;">
+                {{.Content}}
+            </a>
+        </div>
+
         <div class="comment-meta">
             {{template "react" .}}
 
