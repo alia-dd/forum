@@ -201,6 +201,7 @@ func (h *PostHandler) CreatePost(w http.ResponseWriter, r *http.Request) {
 		UserID:         user.ID,
 		Title:          form.Title,
 		Content:        form.Content,
+		Image:          form.Image,
 		MainCategoryID: form.MainCategoryID,
 		CategoryIDs:    form.CategoryIDs,
 	}
@@ -254,7 +255,7 @@ func (h *PostHandler) EditPostForm(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	form := PostForm{Title: post.Post.Title, Content: post.Post.Content}
+	form := PostForm{Title: post.Post.Title, Content: post.Post.Content, Image: post.Post.Image}
 	for _, c := range postCats[id] {
 		if c.IsMain {
 			form.MainCategoryID = c.ID
@@ -305,6 +306,7 @@ func (h *PostHandler) UpdatePost(w http.ResponseWriter, r *http.Request) {
 				Form: PostForm{
 					Title:   form.Title,
 					Content: form.Content,
+					Image:   form.Image,
 				},
 				Categories: cats,
 			},
@@ -317,6 +319,7 @@ func (h *PostHandler) UpdatePost(w http.ResponseWriter, r *http.Request) {
 		ID:             id,
 		Title:          form.Title,
 		Content:        form.Content,
+		Image:          form.Image,
 		MainCategoryID: form.MainCategoryID,
 		CategoryIDs:    form.CategoryIDs,
 	}

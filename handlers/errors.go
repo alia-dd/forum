@@ -101,5 +101,6 @@ func handleError(w http.ResponseWriter, r *http.Request, err error) {
 		},
 	}
 
+	fmt.Print(err)
 	utils.RenderTemplate(w, status, "error", pageData)
 }
