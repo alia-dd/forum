@@ -3,6 +3,7 @@ package handlers
 import (
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
 
 	customerrors "gitea.kood.tech/jyrkikarhunen/forum/errors"
@@ -103,6 +104,6 @@ func handleError(w http.ResponseWriter, r *http.Request, err error) {
 			ErrorMs: message,
 		},
 	}
-
+	log.Println(err)
 	utils.RenderTemplate(w, status, "error", pageData)
 }

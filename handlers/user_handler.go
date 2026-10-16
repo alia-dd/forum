@@ -163,6 +163,7 @@ func (h *UseHandler) showProfile(w http.ResponseWriter, r *http.Request, usernam
 			return h.commentRep.GetCommentsByUser(cx, profileData.ID, limit, offset)
 		})
 		if fetchCommErr != nil {
+			fmt.Println("comment err", fetchCommErr)
 			handleError(w, r, fetchCommErr)
 			return
 		}

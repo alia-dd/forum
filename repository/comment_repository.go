@@ -405,7 +405,7 @@ func (r *commentRepositoryImpl) GetRepliesByCommentID(ctx context.Context, paren
 }
 
 func (r *commentRepositoryImpl) GetCommentsByUser(ctx context.Context, userID, limit, offset int) ([]*models.CommentView, error) {
-	query := `SELECT c.id, c.content, c.parent_post_id, u.username, ifnull(u.imagepath, ''),u.deleted_at IS NOT NULL, ,c.created_at
+	query := `SELECT c.id, c.content, c.parent_post_id, u.username, ifnull(u.imagepath, ''), u.deleted_at IS NOT NULL, c.created_at
 		FROM comment c
 		JOIN user u ON u.id = c.user_id
 		WHERE c.user_id = ? AND c.deleted_at IS NULL
