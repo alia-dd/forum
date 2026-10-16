@@ -7,6 +7,7 @@ type MainPage struct {
 	SearchPath       string
 	Query            string
 	SelectedCategory int
+	Filter           string
 	Posts            []*models.PostView
 	Categories       []models.Category
 	Users            []models.AdminUserInfo
