@@ -3,7 +3,6 @@ package repository
 import (
 	"context"
 	"database/sql"
-	"fmt"
 
 	customerrors "gitea.kood.tech/jyrkikarhunen/forum/errors"
 	"gitea.kood.tech/jyrkikarhunen/forum/models"
@@ -220,7 +219,6 @@ func (r *commentRepositoryImpl) UpdateCommentContent(ctx context.Context, commen
 
 	res, err := r.db.ExecContext(ctx, query, arg...)
 	if err != nil {
-		fmt.Println(err, query, arg)
 		return customerrors.MapSQLError(err)
 	}
 

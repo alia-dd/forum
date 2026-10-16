@@ -324,12 +324,10 @@ func (h *UseHandler) checkDeletetionType(cx context.Context, user *models.UserIn
 	p, _ := h.postRep.GetPost(cx, models.PostFilter{AuthorID: &user.ID, Limit: 1, Offset: 0}, -1)
 	c, _ := h.commentRep.GetCommentsByUser(cx, user.ID, 1, 0)
 	if len(p) == 0 && len(c) == 0 {
-		fmt.Println("here permanent")
 		if deleteErr := h.service.DeleteUser(cx, user.ID); deleteErr != nil {
 			return deleteErr
 		}
 	} else {
-		fmt.Println("here partial")
 		if updateErr := h.service.UpdateUserService(cx, models.UserUpdate{
 			ID:       user.ID,
 			Username: nil,

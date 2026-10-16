@@ -2,7 +2,6 @@ package server
 
 import (
 	"database/sql"
-	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -31,7 +30,7 @@ func runServer(mux *http.ServeMux) {
 		WriteTimeout: 15 * time.Second,
 		IdleTimeout:  120 * time.Second,
 	}
-	fmt.Println("Server starting on http://localhost:8080")
+	log.Println("Server starting on http://localhost:8080")
 
 	log.Fatal(server.ListenAndServe())
 }

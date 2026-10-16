@@ -1,7 +1,6 @@
 package models
 
 import (
-	"fmt"
 	"net/mail"
 	"regexp"
 	"strings"
@@ -95,7 +94,6 @@ func (u *UserUpdate) Isvalid() error {
 		return customerrors.ErrInvalidName
 	}
 	if u.Email != nil && !IsValidEmail(*u.Email) {
-		fmt.Println(u.Email)
 		return customerrors.ErrInvalidEmail
 	}
 	if u.Bio != nil && len(*u.Bio) > 500 {
@@ -109,7 +107,6 @@ func IsValidName(name string) bool {
 	if r.MatchString(name) && len(name) >= 3 && len(name) <= 20 {
 		return true
 	}
-	fmt.Println("not a march")
 	return false
 }
 

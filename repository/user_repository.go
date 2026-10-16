@@ -3,7 +3,6 @@ package repository
 import (
 	"context"
 	"database/sql"
-	"fmt"
 	"strconv"
 	"strings"
 
@@ -96,7 +95,6 @@ func (r *UserRepository) FetchUserDataByUserName(cx context.Context, username st
 	var user models.PublicUserInfo
 	fetchErr := r.db.QueryRowContext(cx, fetchUserInfoByUsernameQuery, username).Scan(&user.ID, &user.Username, &user.Name, &user.Bio, &user.Image, &user.DeletedAt)
 	if fetchErr != nil {
-		fmt.Println("user er", fetchErr)
 		return user, customerrors.MapSQLError(fetchErr)
 	}
 
@@ -110,11 +108,9 @@ func (r *UserRepository) UpdateUserData(cx context.Context, user models.UserUpda
 	var args []any
 
 	if deleteAccount {
-		fmt.Println("here delete")
 		idString := strconv.Itoa(user.ID)
 		extraQuery = append(extraQuery, "deleted_at = CURRENT_TIMESTAMP", "username = ?", "name = ?", "email = ?", "imagepath = ?", "bio = ?", "password_hash = ?")
 		args = append(args, idString, "", idString, "", "", "")
-		fmt.Println(">", args)
 	}
 
 	if user.Username != nil {
@@ -143,16 +139,13 @@ func (r *UserRepository) UpdateUserData(cx context.Context, user models.UserUpda
 	}
 
 	if len(extraQuery) == 0 {
-		fmt.Println(">> why", 0)
 		return nil
 	}
 	// fmt.Println(query)
 	query = UpdateUserByIdQuery + strings.Join(extraQuery, ", ") + " WHERE id = ?"
 	args = append(args, user.ID)
-	fmt.Println(query, "\n", args)
 	_, err := r.db.ExecContext(cx, query, args...)
 	if err != nil {
-		fmt.Println(">>", err)
 		return customerrors.MapSQLError(err)
 	}
 
@@ -233,7 +226,6 @@ func (r *UserRepository) FetchUsers(cx context.Context) ([]models.AdminUserInfo,
 
 	rows, fetchErr := r.db.QueryContext(cx, fetchAllUsersQuery)
 	if fetchErr != nil {
-		fmt.Println("fetch", fetchErr)
 		return users, customerrors.MapSQLError(fetchErr)
 	}
 
@@ -245,7 +237,6 @@ func (r *UserRepository) FetchUsers(cx context.Context) ([]models.AdminUserInfo,
 		)
 
 		if err != nil {
-			fmt.Println("scan", fetchErr)
 			return nil, customerrors.MapSQLError(err)
 		}
 		users = append(users, user)

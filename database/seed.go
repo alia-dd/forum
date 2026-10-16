@@ -3,6 +3,7 @@ package database
 import (
 	"database/sql"
 	"fmt"
+	"log"
 
 	customerrors "gitea.kood.tech/jyrkikarhunen/forum/errors"
 	"gitea.kood.tech/jyrkikarhunen/forum/utils"
@@ -221,6 +222,6 @@ func SeedData(db *sql.DB) error {
 		return fmt.Errorf("seed: commit: %w", err)
 	}
 
-	fmt.Println("seed works")
+	log.Println("Seeded successfully.")
 	return nil
 }
