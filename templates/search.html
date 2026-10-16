@@ -22,7 +22,7 @@
         <div class="search-result-container">
           <a href="/post/{{.ID}}" class="post-title">{{.Title}}</a>
           <p class="text">by 
-            <a href="/user/profile/{{.AuthorName}}" class="tint">{{.AuthorName}}</a>
+            <a href="/user/profile/{{.AuthorName}}" class="tint pads">{{.AuthorName}}</a>
           </p>
         </div>
         {{end}}
@@ -36,7 +36,7 @@
         <div class="search-result-container">
           <a href="/post/{{.ParentPostID}}" class="post-title">{{.Content}}</a>
           <p class="text">by 
-            <a href="/user/profile/{{.AuthorName}}" class="tint">{{.AuthorName}}</a>
+            <a href="/user/profile/{{.AuthorName}}" class="tint pads">{{.AuthorName}}</a>
           </p>
         </div>
         {{end}}
@@ -45,6 +45,8 @@
 
     {{if and (not .Error) (not .PageContent.Users) (not .PageContent.Posts) (not .PageContent.Comments)}}
       <p class="post-title">No results for "{{.PageContent.Query}}"</p>
+    {{else if ne .PageContent.Scope "all"}}
+      {{template "pagination" .PageContent.Pagination}}
     {{end}}
 
   </div>
