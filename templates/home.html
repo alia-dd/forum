@@ -31,14 +31,17 @@
 
     <h2 class="options-title">Category</h2>
     <label>
-      <select name="category" class="options-box">
+      <select name="category" class="options-box"
+        onchange="if (this.value !== '{{ $selCat }}') this.form.submit()">
         <option value="" class="options" {{if eq $selCat 0}}selected{{end}}>All categories</option>
         {{range .PageContent.Categories}}
         <option value="{{.ID}}" {{if eq .ID $selCat}}selected{{end}}>{{.Name}}</option>
         {{end}}
       </select>
     </label>
-    <button type="submit" class="button">Filter</button>
+    <noscript>
+      <button type="submit" class="button">Filter</button>
+    </noscript>
 
   </form>
 
