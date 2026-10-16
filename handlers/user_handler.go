@@ -37,7 +37,7 @@ func (h *UseHandler) PostRegisterUser(w http.ResponseWriter, r *http.Request) {
 
 	// change the handleErr to return to htmx page instead of new page
 	if parseErr := r.ParseForm(); parseErr != nil {
-		handleError(w, r, customerrors.ErrInternalError)
+		HandleError(w, r, customerrors.ErrInternalError)
 		return
 	}
 
@@ -130,7 +130,7 @@ func (h *UseHandler) showProfile(w http.ResponseWriter, r *http.Request, usernam
 	profileData, fetchErr := h.service.GetUserService(cx, username)
 
 	if fetchErr != nil {
-		handleError(w, r, fetchErr)
+		HandleError(w, r, fetchErr)
 		return
 	}
 	userID := -1
@@ -145,7 +145,7 @@ func (h *UseHandler) showProfile(w http.ResponseWriter, r *http.Request, usernam
 			return h.postRep.GetPost(cx, models.PostFilter{AuthorID: &profileData.ID, Limit: limit, Offset: offset}, userID)
 		})
 		if fetchPostErr != nil {
-			handleError(w, r, fetchPostErr)
+			HandleError(w, r, fetchPostErr)
 			return
 		}
 
@@ -162,7 +162,7 @@ func (h *UseHandler) showProfile(w http.ResponseWriter, r *http.Request, usernam
 			return h.commentRep.GetCommentsByUser(cx, profileData.ID, limit, offset)
 		})
 		if fetchCommErr != nil {
-			handleError(w, r, fetchCommErr)
+			HandleError(w, r, fetchCommErr)
 			return
 		}
 
@@ -179,7 +179,7 @@ func (h *UseHandler) showProfile(w http.ResponseWriter, r *http.Request, usernam
 			return h.postRep.GetPost(cx, models.PostFilter{LikedByID: &profileData.ID, Limit: limit, Offset: offset}, userID)
 		})
 		if fetchPostLikedErr != nil {
-			handleError(w, r, fetchPostLikedErr)
+			HandleError(w, r, fetchPostLikedErr)
 			return
 		}
 
@@ -226,7 +226,7 @@ func (h *UseHandler) UpdateUserProfile(w http.ResponseWriter, r *http.Request) {
 	r.ParseMultipartForm(10 << 20)
 
 	if parseErr := r.ParseForm(); parseErr != nil {
-		handleError(w, r, customerrors.ErrInternalError)
+		HandleError(w, r, customerrors.ErrInternalError)
 		return
 	}
 
@@ -317,7 +317,7 @@ func (h *UseHandler) DeleteUserAcccount(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 	if deleteErr := h.service.DeleteUser(cx, user.ID); deleteErr != nil {
-		handleError(w, r, deleteErr)
+		HandleError(w, r, deleteErr)
 		return
 	}
 	cookie, cookieErr := r.Cookie("session_token")
@@ -353,7 +353,7 @@ func (h *UseHandler) PostChangePassword(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 	if parseErr := r.ParseForm(); parseErr != nil {
-		handleError(w, r, customerrors.ErrInternalError)
+		HandleError(w, r, customerrors.ErrInternalError)
 		return
 	}
 

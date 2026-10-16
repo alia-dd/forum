@@ -10,7 +10,7 @@ import (
 	"gitea.kood.tech/jyrkikarhunen/forum/utils"
 )
 
-func handleError(w http.ResponseWriter, r *http.Request, err error) {
+func HandleError(w http.ResponseWriter, r *http.Request, err error) {
 	var (
 		message string
 		status  int

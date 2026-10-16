@@ -14,7 +14,7 @@ func (h *UseHandler) GetAdminUserTable(w http.ResponseWriter, r *http.Request) {
 	cx := r.Context()
 	user, ok := r.Context().Value("user_session").(*models.UserInfo)
 	if !ok || user.Role != "admin" {
-		handleError(w, r, customerrors.ErrForbidden)
+		HandleError(w, r, customerrors.ErrForbidden)
 		return
 	}
 
@@ -24,7 +24,7 @@ func (h *UseHandler) GetAdminUserTable(w http.ResponseWriter, r *http.Request) {
 		return h.searchRep.SearchAdminUsers(cx, q, limit, offset)
 	})
 	if err != nil {
-		handleError(w, r, err)
+		HandleError(w, r, err)
 		return
 	}
 
@@ -49,7 +49,7 @@ func (h *UseHandler) GetAdminUserTable(w http.ResponseWriter, r *http.Request) {
 func (h *UseHandler) GetConfirmUserAction(w http.ResponseWriter, r *http.Request) {
 	user, ok := r.Context().Value("user_session").(*models.UserInfo)
 	if !ok || user.Role != "admin" {
-		handleError(w, r, customerrors.ErrForbidden)
+		HandleError(w, r, customerrors.ErrForbidden)
 		return
 	}
 
@@ -60,7 +60,7 @@ func (h *UseHandler) GetConfirmUserAction(w http.ResponseWriter, r *http.Request
 
 	if idErr != nil || userErr != nil || (action != "role" && action != "block" && action != "delete" && actionType != "userAction" && actionType != "postAction" && actionType != "categoryAction") {
 		//fmt.Println(r.URL.Query().Get("id"), r.URL.Query().Get("user_id"), r.URL.Query().Get("action"), r.URL.Query().Get("ActionType"))
-		handleError(w, r, customerrors.ErrBadRequest)
+		HandleError(w, r, customerrors.ErrBadRequest)
 		return
 	}
 	utils.RenderPartial(w, http.StatusOK, "confirm_secret",
@@ -90,7 +90,7 @@ func (h *UseHandler) PostAdminUserAction(w http.ResponseWriter, r *http.Request)
 	cx := r.Context()
 	user, ok := r.Context().Value("user_session").(*models.UserInfo)
 	if !ok || user.Role != "admin" {
-		handleError(w, r, customerrors.ErrForbidden)
+		HandleError(w, r, customerrors.ErrForbidden)
 		return
 	}
 
@@ -100,7 +100,7 @@ func (h *UseHandler) PostAdminUserAction(w http.ResponseWriter, r *http.Request)
 	actionType := r.FormValue("ActionType")
 
 	if userId == user.ID {
-		handleError(w, r, customerrors.ErrForbidden)
+		HandleError(w, r, customerrors.ErrForbidden)
 		return
 	}
 	if _, cfmErr := confirmaAdminSecret(cfm_sector); cfmErr != nil {
@@ -118,12 +118,12 @@ func (h *UseHandler) PostAdminUserAction(w http.ResponseWriter, r *http.Request)
 		},
 	}
 	if err != nil {
-		handleError(w, r, err)
+		HandleError(w, r, err)
 		return
 
 	}
 	if updateErr != nil {
-		handleError(w, r, updateErr)
+		HandleError(w, r, updateErr)
 		return
 	}
 
@@ -135,7 +135,7 @@ func (h *UseHandler) GetAdminPostTable(w http.ResponseWriter, r *http.Request) {
 	cx := r.Context()
 	user, ok := r.Context().Value("user_session").(*models.UserInfo)
 	if !ok {
-		handleError(w, r, customerrors.ErrForbidden)
+		HandleError(w, r, customerrors.ErrForbidden)
 		return
 	}
 	q := r.URL.Query().Get("q")
@@ -147,7 +147,7 @@ func (h *UseHandler) GetAdminPostTable(w http.ResponseWriter, r *http.Request) {
 		return h.postRep.GetPost(cx, models.PostFilter{Limit: limit, Offset: offset}, -1)
 	})
 	if err != nil {
-		handleError(w, r, err)
+		HandleError(w, r, err)
 		return
 	}
 
@@ -173,7 +173,7 @@ func (h *UseHandler) PostAdminPostrAction(w http.ResponseWriter, r *http.Request
 	cx := r.Context()
 	user, ok := r.Context().Value("user_session").(*models.UserInfo)
 	if !ok || user.Role != "admin" {
-		handleError(w, r, customerrors.ErrForbidden)
+		HandleError(w, r, customerrors.ErrForbidden)
 		return
 	}
 
@@ -202,12 +202,12 @@ func (h *UseHandler) PostAdminPostrAction(w http.ResponseWriter, r *http.Request
 		},
 	}
 	if err != nil {
-		handleError(w, r, err)
+		HandleError(w, r, err)
 		return
 
 	}
 	if deleteErr != nil {
-		handleError(w, r, deleteErr)
+		HandleError(w, r, deleteErr)
 		return
 
 	}
@@ -220,7 +220,7 @@ func (h *UseHandler) GetCategoryTable(w http.ResponseWriter, r *http.Request) {
 	cx := r.Context()
 	user, ok := r.Context().Value("user_session").(*models.UserInfo)
 	if !ok {
-		handleError(w, r, customerrors.ErrForbidden)
+		HandleError(w, r, customerrors.ErrForbidden)
 		return
 	}
 
@@ -234,7 +234,7 @@ func (h *UseHandler) GetCategoryTable(w http.ResponseWriter, r *http.Request) {
 		},
 	}
 	if err != nil {
-		handleError(w, r, err)
+		HandleError(w, r, err)
 		return
 	}
 

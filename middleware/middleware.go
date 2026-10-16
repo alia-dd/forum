@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	customerrors "gitea.kood.tech/jyrkikarhunen/forum/errors"
+	"gitea.kood.tech/jyrkikarhunen/forum/handlers"
 	"gitea.kood.tech/jyrkikarhunen/forum/repository"
 	"gitea.kood.tech/jyrkikarhunen/forum/utils"
 )
@@ -13,7 +14,7 @@ func Recoverer(handler http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		defer func() {
 			if err := recover(); err != nil {
-				http.Error(w, customerrors.ErrInternalError.Error(), http.StatusInternalServerError)
+				handlers.HandleError(w, r, customerrors.ErrInternalError)
 			}
 		}()
 		handler(w, r)

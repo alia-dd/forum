@@ -61,19 +61,19 @@ func (h *SearchHandler) Search(w http.ResponseWriter, r *http.Request) {
 	if scope == "all" {
 		results.Users, err = h.searchRep.SearchUsers(ctx, q, searchAllCap, 0)
 		if err != nil {
-			handleError(w, r, err)
+			HandleError(w, r, err)
 			return
 		}
 
 		results.Posts, err = h.searchRep.SearchPosts(ctx, ftsQuery, sort, searchAllCap, 0)
 		if err != nil {
-			handleError(w, r, err)
+			HandleError(w, r, err)
 			return
 		}
 
 		results.Comments, err = h.searchRep.SearchComments(ctx, ftsQuery, sort, searchAllCap, 0)
 		if err != nil {
-			handleError(w, r, err)
+			HandleError(w, r, err)
 			return
 		}
 	}
@@ -84,7 +84,7 @@ func (h *SearchHandler) Search(w http.ResponseWriter, r *http.Request) {
 			return h.searchRep.SearchUsers(ctx, q, limit, offset)
 		})
 		if err != nil {
-			handleError(w, r, err)
+			HandleError(w, r, err)
 			return
 		}
 
@@ -98,7 +98,7 @@ func (h *SearchHandler) Search(w http.ResponseWriter, r *http.Request) {
 			return h.searchRep.SearchPosts(ctx, ftsQuery, sort, limit, offset)
 		})
 		if err != nil {
-			handleError(w, r, err)
+			HandleError(w, r, err)
 			return
 		}
 
@@ -112,7 +112,7 @@ func (h *SearchHandler) Search(w http.ResponseWriter, r *http.Request) {
 			return h.searchRep.SearchComments(ctx, ftsQuery, sort, limit, offset)
 		})
 		if err != nil {
-			handleError(w, r, err)
+			HandleError(w, r, err)
 			return
 		}
 

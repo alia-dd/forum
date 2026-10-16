@@ -42,7 +42,7 @@ func (h *CategoryHandler) CreateCategory(w http.ResponseWriter, r *http.Request)
 	}
 
 	if err := r.ParseForm(); err != nil {
-		handleError(w, r, customerrors.ErrBadRequest)
+		HandleError(w, r, customerrors.ErrBadRequest)
 		return
 	}
 
@@ -66,7 +66,7 @@ func (h *CategoryHandler) CreateCategory(w http.ResponseWriter, r *http.Request)
 			})
 			return
 		}
-		handleError(w, r, err)
+		HandleError(w, r, err)
 		return
 	}
 
@@ -82,13 +82,13 @@ func (h *CategoryHandler) EditCategoryForm(w http.ResponseWriter, r *http.Reques
 
 	id, err := strconv.Atoi(r.PathValue("id"))
 	if err != nil {
-		handleError(w, r, customerrors.ErrBadRequest)
+		HandleError(w, r, customerrors.ErrBadRequest)
 		return
 	}
 
 	cat, err := h.catRep.GetCategoryByID(r.Context(), id)
 	if err != nil {
-		handleError(w, r, err)
+		HandleError(w, r, err)
 		return
 	}
 
@@ -116,12 +116,12 @@ func (h *CategoryHandler) UpdateCategory(w http.ResponseWriter, r *http.Request)
 
 	id, err := strconv.Atoi(r.PathValue("id"))
 	if err != nil {
-		handleError(w, r, customerrors.ErrBadRequest)
+		HandleError(w, r, customerrors.ErrBadRequest)
 		return
 	}
 
 	if err := r.ParseForm(); err != nil {
-		handleError(w, r, customerrors.ErrBadRequest)
+		HandleError(w, r, customerrors.ErrBadRequest)
 		return
 	}
 
@@ -145,7 +145,7 @@ func (h *CategoryHandler) UpdateCategory(w http.ResponseWriter, r *http.Request)
 			})
 			return
 		}
-		handleError(w, r, err)
+		HandleError(w, r, err)
 		return
 	}
 
@@ -155,7 +155,7 @@ func (h *CategoryHandler) UpdateCategory(w http.ResponseWriter, r *http.Request)
 func (h *CategoryHandler) DeleteCategory(w http.ResponseWriter, r *http.Request) {
 	user, ok := r.Context().Value("user_session").(*models.UserInfo)
 	if !ok || user.Role != "admin" {
-		handleError(w, r, customerrors.ErrForbidden)
+		HandleError(w, r, customerrors.ErrForbidden)
 		return
 	}
 
@@ -165,7 +165,7 @@ func (h *CategoryHandler) DeleteCategory(w http.ResponseWriter, r *http.Request)
 	actionType := r.FormValue("ActionType")
 
 	if err != nil {
-		handleError(w, r, customerrors.ErrBadRequest)
+		HandleError(w, r, customerrors.ErrBadRequest)
 		return
 	}
 	if cfm_sector != "12345" {
@@ -174,7 +174,7 @@ func (h *CategoryHandler) DeleteCategory(w http.ResponseWriter, r *http.Request)
 	}
 	err = h.catRep.DeleteCategory(r.Context(), id)
 	if err != nil {
-		handleError(w, r, err)
+		HandleError(w, r, err)
 		return
 	}
 
@@ -187,7 +187,7 @@ func (h *CategoryHandler) DeleteCategory(w http.ResponseWriter, r *http.Request)
 		},
 	}
 	if fetchErr != nil {
-		handleError(w, r, fetchErr)
+		HandleError(w, r, fetchErr)
 		return
 
 	}

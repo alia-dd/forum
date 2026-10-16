@@ -126,13 +126,13 @@ func (h *PostHandler) parsePostForm(w http.ResponseWriter, r *http.Request) (Pos
 	r.ParseMultipartForm(10 << 20)
 
 	if err := r.ParseForm(); err != nil {
-		handleError(w, r, customerrors.ErrBadRequest)
+		HandleError(w, r, customerrors.ErrBadRequest)
 		return PostForm{}, false
 	}
 
 	mainCat, err := strconv.Atoi(r.FormValue("main_category"))
 	if err != nil {
-		handleError(w, r, customerrors.ErrBadRequest)
+		HandleError(w, r, customerrors.ErrBadRequest)
 		return PostForm{}, false
 	}
 
@@ -140,7 +140,7 @@ func (h *PostHandler) parsePostForm(w http.ResponseWriter, r *http.Request) (Pos
 	for _, cat := range r.Form["category"] {
 		id, err := strconv.Atoi(cat)
 		if err != nil {
-			handleError(w, r, customerrors.ErrBadRequest)
+			HandleError(w, r, customerrors.ErrBadRequest)
 			return PostForm{}, false
 		}
 		if id != mainCat { // avoid duplicating maincategory into categorylist

@@ -30,7 +30,7 @@ func (h *PostHandler) GetPosts(w http.ResponseWriter, r *http.Request) {
 
 	filter, err := h.parsePostFilter(r.Context(), r)
 	if err != nil {
-		handleError(w, r, customerrors.ErrBadRequest)
+		HandleError(w, r, customerrors.ErrBadRequest)
 		return
 	}
 
@@ -44,7 +44,7 @@ func (h *PostHandler) GetPosts(w http.ResponseWriter, r *http.Request) {
 		return h.postRep.GetPost(r.Context(), filter, userID)
 	})
 	if err != nil {
-		handleError(w, r, err)
+		HandleError(w, r, err)
 		return
 	}
 
@@ -59,7 +59,7 @@ func (h *PostHandler) GetPosts(w http.ResponseWriter, r *http.Request) {
 
 	cats, err := h.catRep.GetCatByPostIDs(r.Context(), ids)
 	if err != nil {
-		handleError(w, r, err)
+		HandleError(w, r, err)
 		return
 	}
 
@@ -69,7 +69,7 @@ func (h *PostHandler) GetPosts(w http.ResponseWriter, r *http.Request) {
 
 	allCats, err := h.catRep.GetAllCategories(r.Context())
 	if err != nil {
-		handleError(w, r, err)
+		HandleError(w, r, err)
 		return
 	}
 
@@ -107,26 +107,26 @@ func (h *PostHandler) GetPostByID(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(r.PathValue("id"))
 
 	if err != nil {
-		handleError(w, r, customerrors.ErrBadRequest)
+		HandleError(w, r, customerrors.ErrBadRequest)
 		return
 	}
 
 	post, err := h.postRep.GetPostByID(r.Context(), id, userID)
 	if err != nil {
-		handleError(w, r, err)
+		HandleError(w, r, err)
 		return
 	}
 
 	cats, err := h.catRep.GetCatByPostIDs(r.Context(), []int{id})
 	if err != nil {
-		handleError(w, r, err)
+		HandleError(w, r, err)
 		return
 	}
 	post.Categories = cats[id]
 
 	comments, err := h.comRep.GetCommentsByPost(r.Context(), id, &userID)
 	if err != nil {
-		handleError(w, r, err)
+		HandleError(w, r, err)
 		return
 	}
 	role := ""
@@ -158,7 +158,7 @@ func (h *PostHandler) NewPostForm(w http.ResponseWriter, r *http.Request) {
 
 	cats, err := h.catRep.GetAllCategories(r.Context())
 	if err != nil {
-		handleError(w, r, err)
+		HandleError(w, r, err)
 		return
 	}
 
@@ -194,7 +194,7 @@ func (h *PostHandler) CreatePost(w http.ResponseWriter, r *http.Request) {
 	if !form.Validate() {
 		cats, err := h.catRep.GetAllCategories(r.Context())
 		if err != nil {
-			handleError(w, r, err)
+			HandleError(w, r, err)
 			return
 		}
 		pageData := models.PageData[PostFormPage]{
@@ -218,7 +218,7 @@ func (h *PostHandler) CreatePost(w http.ResponseWriter, r *http.Request) {
 	}
 	id, err := h.postRep.CreatePost(r.Context(), postInput)
 	if err != nil {
-		handleError(w, r, err)
+		HandleError(w, r, err)
 		return
 	}
 
@@ -234,35 +234,35 @@ func (h *PostHandler) EditPostForm(w http.ResponseWriter, r *http.Request) {
 
 	id, err := strconv.Atoi(r.PathValue("id"))
 	if err != nil {
-		handleError(w, r, customerrors.ErrBadRequest)
+		HandleError(w, r, customerrors.ErrBadRequest)
 		return
 	}
 
 	post, err := h.postRep.GetPostByID(r.Context(), id, user.ID)
 	if err != nil {
-		handleError(w, r, err)
+		HandleError(w, r, err)
 		return
 	}
 
 	if post.Deleted {
-		handleError(w, r, customerrors.ErrNotFound)
+		HandleError(w, r, customerrors.ErrNotFound)
 		return
 	}
 
 	if user.ID != post.Post.UserID && user.Role != "admin" {
-		handleError(w, r, customerrors.ErrForbidden)
+		HandleError(w, r, customerrors.ErrForbidden)
 		return
 	}
 
 	cats, err := h.catRep.GetAllCategories(r.Context())
 	if err != nil {
-		handleError(w, r, err)
+		HandleError(w, r, err)
 		return
 	}
 
 	postCats, err := h.catRep.GetCatByPostIDs(r.Context(), []int{id})
 	if err != nil {
-		handleError(w, r, err)
+		HandleError(w, r, err)
 		return
 	}
 
@@ -295,7 +295,7 @@ func (h *PostHandler) UpdatePost(w http.ResponseWriter, r *http.Request) {
 
 	id, err := strconv.Atoi(r.PathValue("id"))
 	if err != nil {
-		handleError(w, r, customerrors.ErrBadRequest)
+		HandleError(w, r, customerrors.ErrBadRequest)
 		return
 	}
 
@@ -307,7 +307,7 @@ func (h *PostHandler) UpdatePost(w http.ResponseWriter, r *http.Request) {
 	if !form.Validate() {
 		cats, err := h.catRep.GetAllCategories(r.Context())
 		if err != nil {
-			handleError(w, r, err)
+			HandleError(w, r, err)
 			return
 		}
 		pageData := models.PageData[PostFormPage]{
@@ -340,7 +340,7 @@ func (h *PostHandler) UpdatePost(w http.ResponseWriter, r *http.Request) {
 	}
 	err = h.postRep.UpdatePost(r.Context(), postUpdate, user.ID, role)
 	if err != nil {
-		handleError(w, r, err)
+		HandleError(w, r, err)
 		return
 	}
 
@@ -357,7 +357,7 @@ func (h *PostHandler) DeletePost(w http.ResponseWriter, r *http.Request) {
 
 	id, err := strconv.Atoi(r.PathValue("id"))
 	if err != nil {
-		handleError(w, r, customerrors.ErrBadRequest)
+		HandleError(w, r, customerrors.ErrBadRequest)
 		return
 	}
 	role := ""
@@ -367,7 +367,7 @@ func (h *PostHandler) DeletePost(w http.ResponseWriter, r *http.Request) {
 
 	err = h.postRep.DeletePost(r.Context(), id, user.ID, role)
 	if err != nil {
-		handleError(w, r, err)
+		HandleError(w, r, err)
 		return
 	}
 
