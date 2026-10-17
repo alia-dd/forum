@@ -19,7 +19,7 @@ type CommentRepository interface {
 	GetCommentsByUser(ctx context.Context, userID, limit, offset int) ([]*models.CommentView, error)
 	UpdateCommentContent(ctx context.Context, commentID, userID int, userRole, content string) error
 	CountByPost(ctx context.Context, postID int) (int, error)
-	DeleteComment(ctx context.Context, id, authorID int, userRole string) error
+	DeleteComment(ctx context.Context, id, authorID int, userRole string, cascade bool) error
 	GetRepliesByCommentID(ctx context.Context, parentCommentID int, userID *int) ([]*models.CommentView, error)
 }
 
@@ -244,7 +244,7 @@ func (r *commentRepositoryImpl) CountByPost(ctx context.Context, postID int) (in
 	return count, nil
 }
 
-func (r *commentRepositoryImpl) DeleteComment(ctx context.Context, id, authorID int, userRole string) error {
+func (r *commentRepositoryImpl) DeleteComment(ctx context.Context, id, authorID int, userRole string, cascade bool) error {
 	var hasReplies bool
 	var err error
 	err = r.db.QueryRowContext(ctx, `
@@ -259,7 +259,7 @@ func (r *commentRepositoryImpl) DeleteComment(ctx context.Context, id, authorID 
 	arg := []any{id}
 
 	var res sql.Result
-	if !hasReplies {
+	if !hasReplies || cascade {
 		query := `DELETE FROM comment WHERE id = ?`
 		if userRole != "admin" {
 			query += ` AND user_id = ?`

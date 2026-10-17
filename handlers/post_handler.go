@@ -364,8 +364,8 @@ func (h *PostHandler) DeletePost(w http.ResponseWriter, r *http.Request) {
 	if ok {
 		role = user.Role
 	}
-
-	err = h.postRep.DeletePost(r.Context(), id, user.ID, role)
+	// cascade is set to false only admin can delete post and all of it's comments
+	err = h.postRep.DeletePost(r.Context(), id, user.ID, role, false)
 	if err != nil {
 		HandleError(w, r, err)
 		return
