@@ -17,6 +17,12 @@
         
         <h3 class="cfm_title">Confirm {{.Action}}</h3>
         <p class="cfm_txt">Enter your confirmation password to continue.</p>
+        {{if and (eq .Action "delete") (ne .ActionType "categoryAction")}}
+            <label class="cfm_toggle">
+                <input type="checkbox" name="cascade" value="true" role="switch">
+                <span class="cascade-delete">Permanently delete the data and anything related to it.</span>
+            </label>
+        {{end}}
         <input  class="cfm_inp" type="password" name="cfm_sector" autocomplete="new-password" autofocus required>
         {{if .Error}}<p class="error">{{.Error}}</p>{{end}}
         <div class="cfm_btn_div">
