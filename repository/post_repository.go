@@ -18,7 +18,7 @@ type PostRepository interface {
 	GetPost(ctx context.Context, filter models.PostFilter, user_id int) ([]*models.PostView, error)
 	GetPostByID(ctx context.Context, id int, user_id int) (*models.PostView, error)
 	UpdatePost(ctx context.Context, update models.PostUpdate, authorID int, userRole string) error
-  DeletePost(ctx context.Context, id, authorID int, userRole string, cascade bool) (string, error)
+	DeletePost(ctx context.Context, id, authorID int, userRole string, cascade bool) (string, error)
 }
 
 func NewPostRepository(db *sql.DB) PostRepository {
@@ -289,13 +289,13 @@ func (r *postRepositoryImpl) DeletePost(ctx context.Context, id, authorID int, u
 		}
 		res, err = r.db.ExecContext(ctx, query, arg...)
 	} else {
-    query := `UPDATE post SET content = '', imagepath = '', deleted_at = CURRENT_TIMESTAMP WHERE id = ?`
-    if userRole != "admin" {
-      query += ` AND user_id = ?`
-      arg = append(arg, authorID)
-    }
-    res, err = r.db.ExecContext(ctx, query, arg...)
-  }
+		query := `UPDATE post SET content = '', imagepath = '', deleted_at = CURRENT_TIMESTAMP WHERE id = ?`
+		if userRole != "admin" {
+			query += ` AND user_id = ?`
+			arg = append(arg, authorID)
+		}
+		res, err = r.db.ExecContext(ctx, query, arg...)
+	}
 
 	if err != nil {
 		return "", customerrors.MapSQLError(err)
