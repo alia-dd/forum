@@ -18,7 +18,7 @@ type PostRepository interface {
 	GetPost(ctx context.Context, filter models.PostFilter, user_id int) ([]*models.PostView, error)
 	GetPostByID(ctx context.Context, id int, user_id int) (*models.PostView, error)
 	UpdatePost(ctx context.Context, update models.PostUpdate, authorID int, userRole string) error
-	DeletePost(ctx context.Context, id, authorID int, userRole string) error
+	DeletePost(ctx context.Context, id, authorID int, userRole string, cascade bool) error
 }
 
 func NewPostRepository(db *sql.DB) PostRepository {
@@ -262,7 +262,7 @@ func (r *postRepositoryImpl) UpdatePost(ctx context.Context, update models.PostU
 	return tx.Commit()
 }
 
-func (r *postRepositoryImpl) DeletePost(ctx context.Context, id, authorID int, userRole string) error {
+func (r *postRepositoryImpl) DeletePost(ctx context.Context, id, authorID int, userRole string, cascade bool) error {
 	var hasComments bool
 	var err error
 
@@ -278,7 +278,7 @@ func (r *postRepositoryImpl) DeletePost(ctx context.Context, id, authorID int, u
 	arg := []any{id}
 
 	var res sql.Result
-	if !hasComments || userRole == "admin" {
+	if !hasComments || cascade {
 		query := `DELETE FROM post WHERE id = ?`
 		if userRole != "admin" {
 			query += ` AND user_id = ?`
@@ -286,12 +286,14 @@ func (r *postRepositoryImpl) DeletePost(ctx context.Context, id, authorID int, u
 		}
 		res, err = r.db.ExecContext(ctx, query, arg...)
 	} else {
-		res, err = r.db.ExecContext(ctx, `
-			UPDATE post
-			SET content = '', deleted_at = CURRENT_TIMESTAMP
-			WHERE id = ? AND user_id = ?
-			`, id, authorID)
+		query := `UPDATE post SET content = '', deleted_at = CURRENT_TIMESTAMP WHERE id = ?`
+		if userRole != "admin" {
+			query += ` AND user_id = ?`
+			arg = append(arg, authorID)
+		}
+		res, err = r.db.ExecContext(ctx, query, id, authorID)
 	}
+
 	if err != nil {
 		return customerrors.MapSQLError(err)
 	}

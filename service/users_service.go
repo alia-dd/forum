@@ -46,6 +46,7 @@ func (s *UserService) GetAllUsersService(cx context.Context) ([]models.AdminUser
 
 // patch user
 func (s *UserService) UpdateUserService(cx context.Context, u models.UserUpdate, deleteAccount bool) error {
+
 	if !deleteAccount {
 		if validationsErr := u.Isvalid(); validationsErr != nil {
 			return validationsErr
@@ -160,8 +161,8 @@ func (s *UserService) AuthenticateUserService(cx context.Context, u models.UserL
 }
 
 // delete user with provided user id
-func (s *UserService) DeleteUser(cx context.Context, userId int) error {
-	return s.repo.DeleteUser(cx, userId)
+func (s *UserService) DeleteUser(cx context.Context, deleteId int) error {
+	return s.repo.DeleteUser(cx, deleteId)
 }
 
 // deleting the session will force the user to the login page

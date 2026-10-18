@@ -95,24 +95,26 @@ func (h *UseHandler) PostAdminUserAction(w http.ResponseWriter, r *http.Request)
 	}
 
 	cfm_sector := r.FormValue("cfm_sector")
-	userId, _ := strconv.Atoi(r.FormValue("user_id"))
+	deleteId, _ := strconv.Atoi(r.FormValue("user_id"))
 	action := r.FormValue("action")
 	actionType := r.FormValue("ActionType")
+	cascade := r.FormValue("cascade") == "true"
 
-	if userId == user.ID {
+	if deleteId == user.ID {
 		HandleError(w, r, customerrors.ErrForbidden)
 		return
 	}
 	if _, cfmErr := confirmaAdminSecret(cfm_sector); cfmErr != nil {
-		confirmFormError(w, 0, userId, action, actionType, "Incorrect confirmation secret")
+		confirmFormError(w, 0, deleteId, action, actionType, "Incorrect confirmation secret")
 		return
 	}
 	var updateErr error
 	if action == "delete" {
-		updateErr = h.checkDeletetionType(cx, user)
+
+		updateErr = h.checkDeletetionType(cx, user, deleteId, cascade)
 
 	} else {
-		updateErr = h.service.UpdateUserRoleService(cx, action, userId)
+		updateErr = h.service.UpdateUserRoleService(cx, action, deleteId)
 
 	}
 
@@ -189,6 +191,7 @@ func (h *UseHandler) PostAdminPostrAction(w http.ResponseWriter, r *http.Request
 	userId, _ := strconv.Atoi(r.FormValue("user_id"))
 	action := r.FormValue("action")
 	actionType := r.FormValue("ActionType")
+	cascade := r.FormValue("cascade") == "true"
 
 	if _, cfmErr := confirmaAdminSecret(cfm_sector); cfmErr != nil {
 		confirmFormError(w, postId, userId, action, actionType, "Incorrect confirmation secret")
@@ -199,7 +202,7 @@ func (h *UseHandler) PostAdminPostrAction(w http.ResponseWriter, r *http.Request
 		role = user.Role
 	}
 
-	deleteErr := h.postRep.DeletePost(cx, postId, userId, role)
+	deleteErr := h.postRep.DeletePost(cx, postId, userId, role, cascade)
 	posts, err := h.postRep.GetPost(cx, models.PostFilter{}, -1)
 
 	pageData := models.PageData[MainPage]{
