@@ -202,8 +202,15 @@ func (h *UseHandler) PostAdminPostrAction(w http.ResponseWriter, r *http.Request
 		role = user.Role
 	}
 
-	deleteErr := h.postRep.DeletePost(cx, postId, userId, role, cascade)
+	image, deleteErr := h.postRep.DeletePost(cx, postId, userId, role, cascade)
 	posts, err := h.postRep.GetPost(cx, models.PostFilter{}, -1)
+
+	if deleteErr != nil {
+		HandleError(w, r, deleteErr)
+		return
+	}
+
+	removeUploadedFile(image)
 
 	pageData := models.PageData[MainPage]{
 		User: user,
@@ -214,12 +221,6 @@ func (h *UseHandler) PostAdminPostrAction(w http.ResponseWriter, r *http.Request
 	if err != nil {
 		HandleError(w, r, err)
 		return
-
-	}
-	if deleteErr != nil {
-		HandleError(w, r, deleteErr)
-		return
-
 	}
 
 	utils.RenderPartial(w, http.StatusOK, "post_table", pageData)

@@ -9,7 +9,7 @@
 
   <form class="post-form-container" method="POST" action="{{if $id}}/post/{{$id}}/edit{{else}}/post/new{{end}}" enctype="multipart/form-data">
       <h2 class="post-title">Title</h2>
-      <textarea class="create-comment" name="title" value="{{.PageContent.Form.Title}}" required></textarea>
+      <textarea class="create-comment" name="title" required>{{.PageContent.Form.Title}}</textarea>
       {{with .PageContent.Form.Errors.Title}}
       <span>{{.}}</span>
       {{end}}
@@ -21,6 +21,9 @@
       <h2 class="post-title">Image</h2>
       <div class="create-comment"><input type="file" accept="image/png, image/jpeg" value="imagepath" name="imagepath" /></div>
       {{with .PageContent.Form.Errors.Image}}<span>{{.}}</span>{{end}}
+      {{if and $id .PageContent.Form.Image}}
+        <label><input type="checkbox" name="remove_image" value="1"> Remove current image</label>
+      {{end}}
 
       <h2 class="post-title">Main category</h2>
       <select class="options-box" name="main_category" required>

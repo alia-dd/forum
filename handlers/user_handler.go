@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"fmt"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -312,8 +311,7 @@ func (h *UseHandler) UpdateUserProfile(w http.ResponseWriter, r *http.Request) {
 }
 
 // delete user using the corrent cookie userid
-func (h *UseHandler) DeleteUserAcccount(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("here")
+func (h *UseHandler) DeleteUserAccount(w http.ResponseWriter, r *http.Request) {
 	cx := r.Context()
 	user, ok := r.Context().Value("user_session").(*models.UserInfo)
 

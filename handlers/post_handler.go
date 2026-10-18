@@ -192,6 +192,10 @@ func (h *PostHandler) CreatePost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if !form.Validate() {
+		if form.Image != "" && form.Image != "fail" {
+			removeUploadedFile(form.Image)
+		}
+
 		cats, err := h.catRep.GetAllCategories(r.Context())
 		if err != nil {
 			HandleError(w, r, err)
@@ -305,6 +309,10 @@ func (h *PostHandler) UpdatePost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if !form.Validate() {
+		if form.Image != "" && form.Image != "fail" {
+			removeUploadedFile(form.Image)
+		}
+
 		cats, err := h.catRep.GetAllCategories(r.Context())
 		if err != nil {
 			HandleError(w, r, err)
@@ -317,13 +325,35 @@ func (h *PostHandler) UpdatePost(w http.ResponseWriter, r *http.Request) {
 				Form: PostForm{
 					Title:   form.Title,
 					Content: form.Content,
-					Image:   form.Image,
+					Image:   "",
 				},
 				Categories: cats,
 			},
 		}
 		utils.RenderTemplate(w, http.StatusOK, "post_form", pageData)
 		return
+	}
+
+	post, err := h.postRep.GetPostByID(r.Context(), id, -1)
+	if err != nil {
+		HandleError(w, r, err)
+		return
+	}
+	oldImage := post.Image
+
+	var deleteFile string
+
+	// explicitly deleted or replaced by new image or left alone
+	switch {
+	case form.Image != "":
+		if oldImage != "" {
+			deleteFile = oldImage
+		}
+	case r.FormValue("remove_image") == "1":
+		form.Image = ""
+		deleteFile = oldImage
+	default:
+		form.Image = oldImage
 	}
 
 	postUpdate := models.PostUpdate{
@@ -344,12 +374,16 @@ func (h *PostHandler) UpdatePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	removeUploadedFile(deleteFile)
+
 	http.Redirect(w, r, fmt.Sprintf("/post/%d", id), http.StatusSeeOther)
 
 }
 
 func (h *PostHandler) DeletePost(w http.ResponseWriter, r *http.Request) {
-	user, ok := r.Context().Value("user_session").(*models.UserInfo)
+	ctx := r.Context()
+
+	user, ok := ctx.Value("user_session").(*models.UserInfo)
 	if !ok {
 		utils.RedirectTologin(w, r)
 		return
@@ -360,15 +394,21 @@ func (h *PostHandler) DeletePost(w http.ResponseWriter, r *http.Request) {
 		HandleError(w, r, customerrors.ErrBadRequest)
 		return
 	}
+
 	role := ""
 	if ok {
 		role = user.Role
 	}
-	// cascade is set to false only admin can delete post and all of it's comments
-	err = h.postRep.DeletePost(r.Context(), id, user.ID, role, false)
+  
+  // cascade is set to false only admin can delete post and all of it's comments
+	image, err := h.postRep.DeletePost(ctx, id, user.ID, role, false)
 	if err != nil {
 		HandleError(w, r, err)
 		return
+	}
+
+	if image != "" {
+		removeUploadedFile(image)
 	}
 
 	http.Redirect(w, r, "/", http.StatusSeeOther)
