@@ -322,15 +322,18 @@ func confirmaAdminSecret(cfm_sector string) (bool, error) {
 	return utils.VerifyPassword(hash, cfm_sector)
 }
 
-func (h *UseHandler) checkDeletetionType(cx context.Context, user *models.UserInfo) error {
+func (h *UseHandler) checkDeletetionType(cx context.Context, user *models.UserInfo, deleteId int, cascase bool) error {
 	// fetch post and comment if they return error not found (meaning no post/comment)
 	// then we can do hard delete
 	// if there is post/comment found then we do soft deleteion we update the user and remove
 	// the userdata except the id
+	if user.Role == "admin" { // if the current user is admin it will use the provided deleteId else session user_id
+		user.ID = deleteId
+	}
 	p, _ := h.postRep.GetPost(cx, models.PostFilter{AuthorID: &user.ID, Limit: 1, Offset: 0}, -1)
 	c, _ := h.commentRep.GetCommentsByUser(cx, user.ID, 1, 0)
-	if len(p) == 0 && len(c) == 0 {
-		if deleteErr := h.service.DeleteUser(cx, user.ID); deleteErr != nil {
+	if (len(p) == 0 && len(c) == 0) || cascase {
+		if deleteErr := h.service.DeleteUser(cx, deleteId); deleteErr != nil {
 			return deleteErr
 		}
 	} else {

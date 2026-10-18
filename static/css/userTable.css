@@ -81,6 +81,17 @@ th.admin_Del {
     color: var(--ink-muted);
     font-size: 0.85rem;
 }
+.cfm_toggle{
+   display: flex;
+    align-items: center;
+    gap: .5rem;
+    padding-bottom: 5px;
+    cursor: pointer;
+}
+.cascade-delete{
+    color: var(--burgundy);
+    font-size: 0.85rem;
+}
 
 .toggle {
     position: relative;
@@ -154,20 +165,6 @@ th.admin_Del {
 
 .btn--icon + .btn--icon {
     margin-left: 0.4rem;
-}
-
-.admin-table-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 1rem;
-}
-
-.create-cat{
-    width: 100%;
-    display: flex;
-    justify-content: right;
-    margin-bottom: 1rem;
 }
 
 /* admin confermation table */
@@ -252,4 +249,18 @@ th.admin_Del {
 
     cursor: pointer;
     transition: background 0.2s ease;
+}
+
+.admin-table-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+}
+
+.create-cat{
+    width: 100%;
+    display: flex;
+    justify-content: right;
+    margin-bottom: 1rem;
 }

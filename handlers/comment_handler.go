@@ -177,7 +177,8 @@ func (h *CommentHandler) DeleteComment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.comRep.DeleteComment(r.Context(), commentID, user.ID, user.Role)
+	// cascade is set to false only admin can delete comment and all of it's repliec
+	err = h.comRep.DeleteComment(r.Context(), commentID, user.ID, user.Role, false)
 	if err != nil {
 		HandleError(w, r, err)
 		return

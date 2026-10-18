@@ -321,10 +321,12 @@ func (h *UseHandler) DeleteUserAcccount(w http.ResponseWriter, r *http.Request) 
 		utils.RedirectTologin(w, r)
 		return
 	}
-	if deleteErr := h.service.DeleteUser(cx, user.ID); deleteErr != nil {
-		HandleError(w, r, deleteErr)
+
+	if checkErr := h.checkDeletetionType(cx, user, user.ID, false); checkErr != nil {
+		HandleError(w, r, checkErr)
 		return
 	}
+
 	cookie, cookieErr := r.Cookie("session_token")
 	if cookieErr == nil {
 		h.service.LogoutService(cx, cookie.Value)
