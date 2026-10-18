@@ -18,7 +18,7 @@ type PostRepository interface {
 	GetPost(ctx context.Context, filter models.PostFilter, user_id int) ([]*models.PostView, error)
 	GetPostByID(ctx context.Context, id int, user_id int) (*models.PostView, error)
 	UpdatePost(ctx context.Context, update models.PostUpdate, authorID int, userRole string) error
-	DeletePost(ctx context.Context, id, authorID int, userRole string) error
+	DeletePost(ctx context.Context, id, authorID int, userRole string) (string, error)
 }
 
 func NewPostRepository(db *sql.DB) PostRepository {
@@ -262,17 +262,20 @@ func (r *postRepositoryImpl) UpdatePost(ctx context.Context, update models.PostU
 	return tx.Commit()
 }
 
-func (r *postRepositoryImpl) DeletePost(ctx context.Context, id, authorID int, userRole string) error {
+// returns imagepath on success, so the image can be deleted as well
+func (r *postRepositoryImpl) DeletePost(ctx context.Context, id, authorID int, userRole string) (string, error) {
 	var hasComments bool
+	var image string
 	var err error
 
 	err = r.db.QueryRowContext(ctx, `
-		SELECT EXISTS(
-			SELECT 1 FROM comment
-			WHERE parent_post_id = ?)
-		`, id).Scan(&hasComments)
+		SELECT p.imagepath,
+			EXISTS(SELECT 1 FROM comment WHERE parent_post_id = p.id)
+		FROM post p
+		WHERE p.id = ?
+		`, id).Scan(&image, &hasComments)
 	if err != nil {
-		return customerrors.MapSQLError(err)
+		return "", customerrors.MapSQLError(err)
 	}
 
 	arg := []any{id}
@@ -288,21 +291,21 @@ func (r *postRepositoryImpl) DeletePost(ctx context.Context, id, authorID int, u
 	} else {
 		res, err = r.db.ExecContext(ctx, `
 			UPDATE post
-			SET content = '', deleted_at = CURRENT_TIMESTAMP
+			SET content = '', imagepath = '', deleted_at = CURRENT_TIMESTAMP
 			WHERE id = ? AND user_id = ?
 			`, id, authorID)
 	}
 	if err != nil {
-		return customerrors.MapSQLError(err)
+		return "", customerrors.MapSQLError(err)
 	}
 
 	rowCount, err := res.RowsAffected()
 	if err != nil {
-		return customerrors.MapSQLError(err)
+		return "", customerrors.MapSQLError(err)
 	}
 
 	if rowCount == 0 {
-		return customerrors.ErrNotFound
+		return "", customerrors.ErrNotFound
 	}
-	return nil
+	return image, nil
 }

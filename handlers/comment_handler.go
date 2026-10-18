@@ -200,9 +200,11 @@ func (h *CommentHandler) DeleteComment(w http.ResponseWriter, r *http.Request) {
 
 func (h *CommentHandler) GetCommentReplies(w http.ResponseWriter, r *http.Request) {
 	var userID *int
+	role := ""
 	user, ok := r.Context().Value("user_session").(*models.UserInfo)
 	if ok {
 		userID = &user.ID
+		role = user.Role
 	}
 
 	commentID, err := parseID(r, "commentID")
@@ -215,6 +217,10 @@ func (h *CommentHandler) GetCommentReplies(w http.ResponseWriter, r *http.Reques
 	if err != nil {
 		HandleError(w, r, err)
 		return
+	}
+
+	for _, reply := range replies {
+		reply.UserRole = role
 	}
 
 	utils.RenderPartial(w, http.StatusOK, "comment_replies", replies)

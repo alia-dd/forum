@@ -19,6 +19,8 @@ import (
 	"gitea.kood.tech/jyrkikarhunen/forum/utils"
 )
 
+const uploadDirectory = "static/assets/images"
+
 // postform
 type PostForm struct {
 	//userdata
@@ -197,8 +199,6 @@ func SaveUploadedFile(file multipart.File) (string, error) {
 		return "", validationErr
 	}
 
-	uploadDirectory := "static/assets/images"
-
 	if err := os.MkdirAll(uploadDirectory, 0755); err != nil {
 		return "", customerrors.ErrInternalError
 	}
@@ -216,6 +216,12 @@ func SaveUploadedFile(file multipart.File) (string, error) {
 	}
 
 	return saveName, nil
+}
+
+func removeUploadedFile(name string) {
+	if name != "" {
+		os.Remove(filepath.Join(uploadDirectory, name))
+	}
 }
 
 func validateMIMEType(file multipart.File, allowedTypes []string) (string, error) {
@@ -256,9 +262,9 @@ func (f *CommentForm) Validate() bool {
 	content := strings.TrimSpace(f.Content)
 
 	if content == "" {
-		f.Errors["Name"] = "Content is required"
+		f.Errors["Content"] = "Content is required"
 	} else if utf8.RuneCountInString(content) > 10000 {
-		f.Errors["Name"] = "Content is too long"
+		f.Errors["Content"] = "Content is too long"
 	}
 	return len(f.Errors) == 0
 }
