@@ -14,11 +14,11 @@
             </div>
             <div class="row">
                 <label class="label" for="username">username:</label>
-                <input minlength="3" class="input" type="text" id="username" name="username" value="{{.User.Username}}" >
+                <input minlength="3" maxlength="20" class="input" type="text" id="username" name="username" value="{{.User.Username}}" >
             </div>
             <div class="row">
                 <label class="label" for="name">name:</label>
-                <input minlength="3" class="input" type="text" id="name" name="fullname" value="{{.User.Name}}">
+                <input minlength="3" maxlength="75" class="input" type="text" id="name" name="fullname" value="{{.User.Name}}">
             </div>
             <div class="row">
                 <label class="label" for="email">email:</label>
