@@ -80,7 +80,7 @@ func (u *UserRegister) Isvalid() error {
 	if !IsValidName(u.Username) {
 		return customerrors.ErrInvalidName
 	}
-	if len(u.Username) < 3 || len(u.Username) > 20 {
+	if len(u.Username) < 3 || len(u.Username) > 50 {
 		return customerrors.ErrUsernameWrongLength
 	}
 	if !IsValidEmail(u.Email) {
@@ -99,7 +99,7 @@ func (u *UserUpdate) Isvalid() error {
 	if u.Username != nil && !IsValidName(*u.Username) {
 		return customerrors.ErrInvalidName
 	}
-	if u.Username != nil && (len(*u.Username) < 3 || len(*u.Username) > 20) {
+	if u.Username != nil && (len(*u.Username) < 3 || len(*u.Username) > 50) {
 		return customerrors.ErrUsernameWrongLength
 	}
 	if u.Email != nil && !IsValidEmail(*u.Email) {
