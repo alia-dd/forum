@@ -81,6 +81,12 @@ func HandleError(w http.ResponseWriter, r *http.Request, err error) {
 	case errors.Is(err, customerrors.ErrInvalidEmail):
 		message = customerrors.ErrInvalidEmail.Error()
 		status = http.StatusBadRequest
+	case errors.Is(err, customerrors.ErrDuplicateUsername):
+		message = customerrors.ErrDuplicateUsername.Error()
+		status = http.StatusBadRequest
+	case errors.Is(err, customerrors.ErrPasswordMismatch):
+		message = customerrors.ErrPasswordMismatch.Error()
+		status = http.StatusBadRequest
 	default:
 		//code = "INTERNAL_ERROR"
 		message = "An unexpected error occurred while processing the request"
