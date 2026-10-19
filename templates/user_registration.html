@@ -15,8 +15,8 @@
     <!-- maxlen 20 for now unless backend logic gets fixed -->
     <div class="inputContainer">
       <label for="username">Username</label>
-      <div><input minlength="3" maxlength="20" type="text" id="username" name="username" value="{{.PageContent.Username}}" placeholder="Enter your username" pattern="^[A-Za-z0-9]+(?:-[A-Za-z0-9]+)*$" title="Username may only contain alphanumeric characters or single hyphens, and cannot begin or end with a hyphen." required/></div>
-      <small class="hint">Username may only contain alphanumeric characters or single hyphens, cannot begin or end with a hyphen and has to be atleast 3 characters long. </small>
+      <div><input minlength="3" type="text" id="username" name="username" value="{{.PageContent.Username}}" placeholder="Enter your username" pattern="^[A-Za-z0-9]+(?:-[A-Za-z0-9]+)*$" title="Username may only contain alphanumeric characters or single hyphens, and cannot begin or end with a hyphen." required/></div>
+      <small class="hint">Username must be at least 3 characters long and may only contain alphanumeric characters or single hyphens, and cannot begin or end with a hyphen.</small>
     </div>
 
     <div class="inputContainer">

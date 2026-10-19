@@ -26,6 +26,22 @@ func (s *UserService) CreateUserService(cx context.Context, u models.UserRegiste
 		return validationsErr
 	}
 
+	notAvailableUsername, availableUsernameErr := s.repo.CheckIfAvailable(cx, u.Username)
+	if availableUsernameErr != nil {
+		return availableUsernameErr
+	}
+
+	if notAvailableUsername {
+		return customerrors.ErrDuplicateUsername
+	}
+	notAvailableEmail, availableEmailErr := s.repo.CheckIfAvailable(cx, u.Email)
+	if availableEmailErr != nil {
+		return availableEmailErr
+	}
+	if notAvailableEmail {
+		return customerrors.ErrDuplicateEmail
+	}
+
 	hashedPass, hashErr := utils.GenerateHashPassword(u.Password)
 	if hashErr != nil {
 		return customerrors.ErrInternalError
@@ -57,7 +73,7 @@ func (s *UserService) UpdateUserService(cx context.Context, u models.UserUpdate,
 				return availableErr
 			}
 			if notAvailable {
-				return customerrors.ErrDuplicateEntry
+				return customerrors.ErrDuplicateUsername
 			}
 		}
 
@@ -67,7 +83,7 @@ func (s *UserService) UpdateUserService(cx context.Context, u models.UserUpdate,
 				return availableErr
 			}
 			if notAvailable {
-				return customerrors.ErrDuplicateEntry
+				return customerrors.ErrDuplicateEmail
 			}
 		}
 	}
