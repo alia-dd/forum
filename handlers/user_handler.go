@@ -385,12 +385,18 @@ func (h *UseHandler) PostChangePassword(w http.ResponseWriter, r *http.Request) 
 	newPass := strings.TrimSpace(r.FormValue("newPassword"))
 	confirmPass := strings.TrimSpace(r.FormValue("confirmPassword"))
 
+	errMsg := ""
 	if newPass != confirmPass {
-		// replace mainpage with a dedicated profile struct later
+		errMsg = customerrors.ErrPasswordMismatch.Error()
+	}
+	if len(currentPass) < 8 || len(currentPass) > 101 {
+		errMsg = customerrors.ErrIncorrectPassword.Error()
+	}
+	if errMsg != "" {
 		pageData := models.PageData[MainPage]{
 			User:    user,
 			IsOwner: true,
-			Error:   "password does not match confirmation password.",
+			Error:   errMsg,
 		}
 		utils.RenderTemplate(w, http.StatusBadRequest, "password_change", pageData)
 		return
