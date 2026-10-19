@@ -32,7 +32,7 @@ var (
 	ErrDuplicateUsername    = errors.New("The username you have provided is already associated with an account.")
 	ErrPasswordMismatch     = errors.New("Password does not match confirmation password.")
 	ErrUsernameWrongLength  = errors.New("Invalid username: it must be 3 to 50 characters long.")
-	ErrPasswordLength       = errors.New("Password myst be between 8 and 100 characters.")
+	ErrPasswordLength       = errors.New("Password must be between 8 and 100 characters.")
 )
 
 func MapSQLError(err error) error {
