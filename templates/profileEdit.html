@@ -4,7 +4,7 @@
 
     <!-- <span class="title">Edit Profile Data</span> -->
     <div id="edit">
-        {{if .Error}}<div class="error">{{.Error}}</div>{{end}}
+        <!-- {{if .Error}}<div class="error">{{.Error}}</div>{{end}} -->
         <!-- /user/profile/{id}/edit -->
         <form method="POST" action="/user/profile/edit" enctype="multipart/form-data">
         
@@ -14,19 +14,19 @@
             </div>
             <div class="row">
                 <label class="label" for="username">username:</label>
-                <input class="input" type="text" id="username" name="username" value="{{.User.Username}}" >
+                <input minlength="3" class="input" type="text" id="username" name="username" value="{{.User.Username}}" >
             </div>
             <div class="row">
                 <label class="label" for="name">name:</label>
-                <input class="input" type="text" id="name" name="fullname" value="{{.User.Name}}">
+                <input minlength="3" class="input" type="text" id="name" name="fullname" value="{{.User.Name}}">
             </div>
             <div class="row">
                 <label class="label" for="email">email:</label>
-                <input class="input" type="email" id="email" name="email" value="{{.User.Email}}">
+                <input maxlength="320" class="input" type="email" id="email" name="email" value="{{.User.Email}}">
             </div>
              <div class="row">
                 <label class="label" for="bio">Bio:</label>
-                <textarea  class="input" type="text" id="bio" name="bio" rows="4" cols="50" >{{.User.Bio}}</textarea>
+                <textarea maxlength="1000" class="input" type="text" id="bio" name="bio" rows="4" cols="50" >{{.User.Bio}}</textarea>
             </div>
            <button class="btn" type="submit"> Update </button> 
            <a class="btn" href="/user/profile"> Cancel </a>
