@@ -81,6 +81,18 @@ func HandleError(w http.ResponseWriter, r *http.Request, err error) {
 	case errors.Is(err, customerrors.ErrInvalidEmail):
 		message = customerrors.ErrInvalidEmail.Error()
 		status = http.StatusBadRequest
+	case errors.Is(err, customerrors.ErrCommentEmpty):
+		message = customerrors.ErrCommentEmpty.Error()
+		status = http.StatusBadRequest
+	case errors.Is(err, customerrors.ErrCommentTooLong):
+		message = customerrors.ErrCommentTooLong.Error()
+		status = http.StatusBadRequest
+	case errors.Is(err, customerrors.ErrImageTooLarge):
+		message = customerrors.ErrImageTooLarge.Error()
+		status = http.StatusBadRequest
+	case errors.Is(err, customerrors.ErrInvalidImageType):
+		message = customerrors.ErrInvalidImageType.Error()
+		status = http.StatusBadRequest
 	default:
 		//code = "INTERNAL_ERROR"
 		message = "An unexpected error occurred while processing the request"

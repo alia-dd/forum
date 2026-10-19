@@ -3,7 +3,6 @@ package handlers
 import (
 	"net/http"
 	"strconv"
-	"strings"
 
 	customerrors "gitea.kood.tech/jyrkikarhunen/forum/errors"
 	"gitea.kood.tech/jyrkikarhunen/forum/models"
@@ -37,9 +36,9 @@ func (h *CommentHandler) CreateComment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	content := strings.TrimSpace(r.FormValue("userComment"))
-	if content == "" {
-		HandleError(w, r, customerrors.ErrBadRequest)
+	content, err := validateCommentContent(r.FormValue("userComment"))
+	if err != nil {
+		HandleError(w, r, err)
 		return
 	}
 
@@ -118,9 +117,13 @@ func (h *CommentHandler) UpdateComment(w http.ResponseWriter, r *http.Request) {
 	}
 
 	commentID, _ := parseID(r, "commentID")
-	newContent := r.FormValue("content")
+	newContent, err := validateCommentContent(r.FormValue("content"))
+	if err != nil {
+		HandleError(w, r, err)
+		return
+	}
 
-	err := h.comRep.UpdateCommentContent(r.Context(), commentID, user.ID, user.Role, newContent)
+	err = h.comRep.UpdateCommentContent(r.Context(), commentID, user.ID, user.Role, newContent)
 	if err != nil {
 		HandleError(w, r, err)
 		return
@@ -267,7 +270,11 @@ func (h *CommentHandler) CreateReply(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	content := r.FormValue("content")
+	content, err := validateCommentContent(r.FormValue("content"))
+	if err != nil {
+		HandleError(w, r, err)
+		return
+	}
 
 	input := models.CommentInput{
 		UserID:          user.ID,

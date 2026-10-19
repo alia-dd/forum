@@ -46,7 +46,7 @@
 
   {{if $user}}
   <form class="create-comment-container" method="POST" hx-post="/post/{{$post.ID}}/comment/create" hx-target="#comments-list" hx-swap="beforeend" hx-on::after-request="this.reset()">
-    <textarea class="create-comment" name="userComment" placeholder="Write a comment" required></textarea>
+    <textarea class="create-comment" name="userComment" placeholder="Write a comment" maxlength="2000" required></textarea>
     <button type="submit" class="button">Create</button>
   </form>
   {{else}}

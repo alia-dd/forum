@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"mime/multipart"
@@ -30,6 +31,7 @@ type PostForm struct {
 	MainCategoryID int
 	CategoryIDs    []int
 	Errors         map[string]string // [field]message
+	ImageErr       error
 }
 
 // maxlen of title and content
@@ -40,20 +42,20 @@ func (f *PostForm) Validate() bool {
 	content := strings.TrimSpace(f.Content)
 
 	if title == "" {
-		f.Errors["Title"] = "Title is required"
+		f.Errors["Title"] = "Title cannot be empty."
 	} else if utf8.RuneCountInString(title) > 200 {
-		f.Errors["Title"] = "Title is too long"
+		f.Errors["Title"] = "Title is too long. Has to be less than 200 characters."
 	}
 	if content == "" {
-		f.Errors["Content"] = "Content is required"
+		f.Errors["Content"] = "Content cannot be empty."
 	} else if utf8.RuneCountInString(content) > 10000 {
-		f.Errors["Content"] = "Content is too long"
+		f.Errors["Content"] = "Content is too long. Has to be less than 10,000 characters."
 	}
-	if f.Image == "fail" {
-		f.Errors["Image"] = "Not a valid image"
+	if f.ImageErr != nil {
+		f.Errors["Image"] = f.ImageErr.Error()
 	}
 	if f.MainCategoryID == 0 {
-		f.Errors["MainCategoryID"] = "Main category is required"
+		f.Errors["MainCategoryID"] = "Main category has to be selected."
 	}
 	return len(f.Errors) == 0
 }
@@ -123,9 +125,17 @@ func (h *PostHandler) getAuthorID(ctx context.Context, author string) (int, erro
 }
 
 func (h *PostHandler) parsePostForm(w http.ResponseWriter, r *http.Request) (PostForm, bool) {
-
-	r.Body = http.MaxBytesReader(w, r.Body, 10<<20)
-	r.ParseMultipartForm(10 << 20)
+	r.Body = http.MaxBytesReader(w, r.Body, 15<<20)
+	err := r.ParseMultipartForm(10 << 20)
+	if err != nil {
+		var tooBig *http.MaxBytesError
+		if errors.As(err, &tooBig) {
+			HandleError(w, r, customerrors.ErrImageTooLarge)
+			return PostForm{}, false
+		}
+		HandleError(w, r, customerrors.ErrBadRequest)
+		return PostForm{}, false
+	}
 
 	if err := r.ParseForm(); err != nil {
 		HandleError(w, r, customerrors.ErrBadRequest)
@@ -151,14 +161,20 @@ func (h *PostHandler) parsePostForm(w http.ResponseWriter, r *http.Request) (Pos
 	}
 
 	var fileName string
+	var imageErr error
 
 	file, header, fileErr := r.FormFile("imagepath")
 	if fileErr == nil && header.Size > 0 {
 		defer file.Close()
-		saveName, saveErr := SaveUploadedFile(file)
-		if saveErr != nil {
-			fileName = "fail"
-		} else {
+		saveName, saveErr := SaveUploadedFile(file, header)
+		switch {
+		case errors.Is(saveErr, customerrors.ErrImageTooLarge):
+			imageErr = customerrors.ErrImageTooLarge
+		case errors.Is(saveErr, customerrors.ErrInvalidImageType):
+			imageErr = customerrors.ErrInvalidImageType
+		case saveErr != nil:
+			imageErr = customerrors.ErrInternalError
+		default:
 			fileName = saveName
 		}
 	}
@@ -167,6 +183,7 @@ func (h *PostHandler) parsePostForm(w http.ResponseWriter, r *http.Request) (Pos
 		Title:          strings.TrimSpace(r.FormValue("title")),
 		Content:        strings.TrimSpace(r.FormValue("content")),
 		Image:          fileName,
+		ImageErr:       imageErr,
 		MainCategoryID: mainCat,
 		CategoryIDs:    categoryIDs,
 	}, true
@@ -185,14 +202,17 @@ func (f *CategoryForm) Validate() bool {
 	name := strings.TrimSpace(f.Name)
 
 	if name == "" {
-		f.Errors["Name"] = "Category name is required"
+		f.Errors["Name"] = "Category name cannot be empty."
 	} else if utf8.RuneCountInString(name) > 40 {
-		f.Errors["Name"] = "Category name is too long"
+		f.Errors["Name"] = "Category name is too long. Has to be less than 40 characters."
 	}
 	return len(f.Errors) == 0
 }
 
-func SaveUploadedFile(file multipart.File) (string, error) {
+func SaveUploadedFile(file multipart.File, header *multipart.FileHeader) (string, error) {
+	if header.Size > 10<<20 {
+		return "", customerrors.ErrImageTooLarge
+	}
 	allowedTypes := []string{"image/jpeg", "image/png"}
 	ext, validationErr := validateMIMEType(file, allowedTypes)
 	if validationErr != nil {
@@ -246,27 +266,22 @@ func validateMIMEType(file multipart.File, allowedTypes []string) (string, error
 		return ext, nil
 	}
 
-	return "", customerrors.ErrBadRequest
+	return "", customerrors.ErrInvalidImageType
 }
 
 // commentform
-type CommentForm struct {
-	//userdata
-	Content string
-	Errors  map[string]string
-}
 
-func (f *CommentForm) Validate() bool {
-	f.Errors = map[string]string{}
-
-	content := strings.TrimSpace(f.Content)
+func validateCommentContent(s string) (string, error) {
+	content := strings.TrimSpace(s)
 
 	if content == "" {
-		f.Errors["Content"] = "Content is required"
-	} else if utf8.RuneCountInString(content) > 10000 {
-		f.Errors["Content"] = "Content is too long"
+		return "", customerrors.ErrCommentEmpty
 	}
-	return len(f.Errors) == 0
+	if utf8.RuneCountInString(content) > 2000 {
+		return "", customerrors.ErrCommentTooLong
+	}
+
+	return content, nil
 }
 
 // search

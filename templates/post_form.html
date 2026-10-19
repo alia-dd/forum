@@ -9,13 +9,13 @@
 
   <form class="post-form-container" method="POST" action="{{if $id}}/post/{{$id}}/edit{{else}}/post/new{{end}}" enctype="multipart/form-data">
       <h2 class="post-title">Title</h2>
-      <textarea class="create-comment" name="title" required>{{.PageContent.Form.Title}}</textarea>
+      <textarea class="create-comment" name="title" maxlength="200" required>{{.PageContent.Form.Title}}</textarea>
       {{with .PageContent.Form.Errors.Title}}
       <span>{{.}}</span>
       {{end}}
 
       <h2 class="post-title">Content</h2>
-      <textarea class="create-comment" name="content" required>{{.PageContent.Form.Content}}</textarea>
+      <textarea class="create-comment" name="content" maxlength="10000" required>{{.PageContent.Form.Content}}</textarea>
       {{with .PageContent.Form.Errors.Content}}<span>{{.}}</span>{{end}}
 
       <h2 class="post-title">Image</h2>

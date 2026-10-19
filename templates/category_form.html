@@ -9,8 +9,11 @@
       <div>
         <input type="text" id="name" name="name"
                value="{{.PageContent.Form.Name}}"
-               placeholder="Enter category name" required>
+               placeholder="Enter category name"
+               maxlength="40"
+               required>
       </div>
+      {{with .PageContent.Form.Errors.Name}}<span>{{.}}</span>{{end}}
     </div>
 
     <button class="btnSubmit"  type="submit">{{if $id}}Save{{else}}Create{{end}}</button>
