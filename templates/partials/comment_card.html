@@ -124,7 +124,7 @@
             <small>editing...</small>
         </p>
         
-        <textarea name="content" required rows="3" class="create-comment">{{.Content}}</textarea>
+        <textarea name="content" required rows="3" class="create-comment" maxlength="3000">{{.Content}}</textarea>
         
         <div class="comment-meta">
             <button type="submit" class="button">Save</button>
@@ -146,7 +146,7 @@
       hx-swap="beforeend"
       class="reply-form"
       hx-on::after-request="this.remove()">
-    <textarea name="content" placeholder="Write a reply..." required rows="2" class="create-comment"></textarea>
+    <textarea name="content" placeholder="Write a reply..." required rows="2" class="create-comment" maxlength="3000"></textarea>
 
     <div class="comment-meta">
         <button type="submit" class="button">Post Reply</button>

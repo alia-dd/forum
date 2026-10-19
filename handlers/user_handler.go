@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"errors"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -32,8 +33,17 @@ func (h *UseHandler) GetRegisterUser(w http.ResponseWriter, r *http.Request) {
 func (h *UseHandler) PostRegisterUser(w http.ResponseWriter, r *http.Request) {
 	cx := r.Context()
 
-	r.Body = http.MaxBytesReader(w, r.Body, 10<<20)
-	r.ParseMultipartForm(10 << 20)
+	r.Body = http.MaxBytesReader(w, r.Body, 15<<20)
+	err := r.ParseMultipartForm(10 << 20)
+	if err != nil {
+		var tooBig *http.MaxBytesError
+		if errors.As(err, &tooBig) {
+			HandleError(w, r, customerrors.ErrImageTooLarge)
+			return
+		}
+		HandleError(w, r, customerrors.ErrBadRequest)
+		return
+	}
 
 	// change the handleErr to return to htmx page instead of new page
 	if parseErr := r.ParseForm(); parseErr != nil {
@@ -52,7 +62,7 @@ func (h *UseHandler) PostRegisterUser(w http.ResponseWriter, r *http.Request) {
 	file, header, fileErr := r.FormFile("imagepath")
 	if fileErr == nil && header.Size > 0 {
 		defer file.Close()
-		saveName, saveErr := SaveUploadedFile(file)
+		saveName, saveErr := SaveUploadedFile(file, header)
 		if saveErr != nil {
 			pageData := models.PageData[models.UserRegister]{
 				User:    nil,
@@ -64,7 +74,7 @@ func (h *UseHandler) PostRegisterUser(w http.ResponseWriter, r *http.Request) {
 					Password:        password,
 					ConfirmPassword: confirmPassword,
 				},
-				Error: customerrors.ErrBadRequest.Error(),
+				Error: saveErr.Error(),
 			}
 			utils.RenderTemplate(w, http.StatusBadRequest, "user_registration", pageData)
 			return
@@ -226,8 +236,17 @@ func (h *UseHandler) UpdateUserProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	r.Body = http.MaxBytesReader(w, r.Body, 10<<20)
-	r.ParseMultipartForm(10 << 20)
+	r.Body = http.MaxBytesReader(w, r.Body, 15<<20)
+	err := r.ParseMultipartForm(10 << 20)
+	if err != nil {
+		var tooBig *http.MaxBytesError
+		if errors.As(err, &tooBig) {
+			HandleError(w, r, customerrors.ErrImageTooLarge)
+			return
+		}
+		HandleError(w, r, customerrors.ErrBadRequest)
+		return
+	}
 
 	if parseErr := r.ParseForm(); parseErr != nil {
 		HandleError(w, r, customerrors.ErrInternalError)
@@ -246,7 +265,7 @@ func (h *UseHandler) UpdateUserProfile(w http.ResponseWriter, r *http.Request) {
 	if fileErr == nil && header.Size > 0 {
 		defer file.Close()
 		oldFileName = user.Image
-		saveName, saveErr := SaveUploadedFile(file)
+		saveName, saveErr := SaveUploadedFile(file, header)
 		if saveErr != nil {
 			// replace mainpage with a dedicated profile struct later
 			pageData := models.PageData[MainPage]{
@@ -259,7 +278,7 @@ func (h *UseHandler) UpdateUserProfile(w http.ResponseWriter, r *http.Request) {
 				},
 				IsOwner:     ok,
 				PageContent: MainPage{},
-				Error:       customerrors.ErrBadRequest.Error(),
+				Error:       saveErr.Error(),
 			}
 			utils.RenderTemplate(w, http.StatusBadRequest, "profileEdit", pageData)
 			return
