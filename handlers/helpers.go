@@ -277,7 +277,7 @@ func validateCommentContent(s string) (string, error) {
 	if content == "" {
 		return "", customerrors.ErrCommentEmpty
 	}
-	if utf8.RuneCountInString(content) > 2000 {
+	if utf8.RuneCountInString(content) > 3000 {
 		return "", customerrors.ErrCommentTooLong
 	}
 

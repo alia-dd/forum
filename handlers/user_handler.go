@@ -386,12 +386,12 @@ func (h *UseHandler) PostChangePassword(w http.ResponseWriter, r *http.Request) 
 	confirmPass := strings.TrimSpace(r.FormValue("confirmPassword"))
 
 	errMsg := ""
-	if newPass != confirmPass {
+	if len(newPass) < 8 || len(newPass) > 101 {
+		errMsg = customerrors.ErrPasswordLength.Error()
+	} else if newPass != confirmPass {
 		errMsg = customerrors.ErrPasswordMismatch.Error()
 	}
-	if len(currentPass) < 8 || len(currentPass) > 101 {
-		errMsg = customerrors.ErrIncorrectPassword.Error()
-	}
+
 	if errMsg != "" {
 		pageData := models.PageData[MainPage]{
 			User:    user,

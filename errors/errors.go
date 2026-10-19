@@ -26,12 +26,13 @@ var (
 	ErrImageTooLarge        = errors.New("Image must be less than 10 MB.")
 	ErrCommentEmpty         = errors.New("Comment cannot be empty.")
 	ErrCommentTooLong       = errors.New("Comment has to be less than 3,000 characters long.")
-	ErrIncorrectPassword    = errors.New("Invalid password: it must be 8 to 100 characters long.")
+	ErrIncorrectPassword    = errors.New("Incorrect password.")
 	ErrInvalidLogin         = errors.New("Invalid username or password.")
 	ErrBlockedUser          = errors.New("Your account has been blocked.")
 	ErrDuplicateUsername    = errors.New("The username you have provided is already associated with an account.")
 	ErrPasswordMismatch     = errors.New("Password does not match confirmation password.")
 	ErrUsernameWrongLength  = errors.New("Invalid username: it must be 3 to 50 characters long.")
+	ErrPasswordLength       = errors.New("Password myst be between 8 and 100 characters.")
 )
 
 func MapSQLError(err error) error {

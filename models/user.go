@@ -87,7 +87,7 @@ func (u *UserRegister) Isvalid() error {
 		return customerrors.ErrInvalidEmail
 	}
 	if u.Password == "" || u.ConfirmPassword == "" || len(u.Password) < 8 || len(u.Password) > 101 {
-		return customerrors.ErrIncorrectPassword
+		return customerrors.ErrPasswordLength
 	}
 	if u.Password != u.ConfirmPassword {
 		return customerrors.ErrPasswordMismatch
