@@ -10,7 +10,7 @@
         <input type="text" id="name" name="name"
                value="{{.PageContent.Form.Name}}"
                placeholder="Enter category name"
-               maxlength="100"
+               maxlength="40"
                required>
       </div>
       {{with .PageContent.Form.Errors.Name}}<span style="color: red; text-decoration: underline;">{{.}}</span>{{end}}
