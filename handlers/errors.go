@@ -103,6 +103,11 @@ func HandleError(w http.ResponseWriter, r *http.Request, err error) {
 		status = http.StatusBadRequest
 	case errors.Is(err, customerrors.ErrInvalidImageType):
 		message = customerrors.ErrInvalidImageType.Error()
+	case errors.Is(err, customerrors.ErrDuplicateUsername):
+		message = customerrors.ErrDuplicateUsername.Error()
+		status = http.StatusBadRequest
+	case errors.Is(err, customerrors.ErrPasswordMismatch):
+		message = customerrors.ErrPasswordMismatch.Error()
 		status = http.StatusBadRequest
 	default:
 		//code = "INTERNAL_ERROR"

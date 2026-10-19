@@ -31,11 +31,11 @@
     <div class="inputContainer">
       <label for="password">Password</label>
       <div><input type="password" autocomplete="new-password" id="password" name="password" value="" placeholder="Enter your password"  pattern="(.{15,})|((?=.*[a-z])(?=.*[0-9]).{8,})" title="At least 15 characters, OR at least 8 characters including a number and a lowercase letter."  required/></div>
-    <small class="hint">Password should be at least 15 characters OR at least 8 characters including a number and a lowercase letter.</small>
+    <small class="hint">Password should be at least 15 characters OR at least 8 characters including a number and a lowercase letter and it's maximum length is 101 characters or below</small>
     </div>
     <div class="inputContainer">
       <label for="confirm_password">Confirm Password</label>
-      <div><input  type="password" id="confirm_password" name="confirm_password" value=""  placeholder="Confirm your password" required/></div>
+      <div><input type="password" id="confirm_password" name="confirm_password" value=""  placeholder="Confirm your password" required/></div>
     </div>
     <button class="btnSubmit" type="submit">Register</button>
   </form>

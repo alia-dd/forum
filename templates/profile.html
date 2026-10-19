@@ -7,7 +7,12 @@
         <h1 class="profile-name">{{$user.Name}}</h1>
         <p class="profile-username">@{{$user.Username}}</p>
 
-        {{if $user.Bio}}<p class="profile-bio">{{$user.Bio}}</p>{{end}}
+        {{if $user.Bio}}
+        <p class="profile-bio"
+        style="display: block;
+        overflow-wrap: break-word;
+        word-break: break-word;">{{$user.Bio}}</p>
+        {{end}}
 
         {{if .IsOwner}}
             <p class="profile-email">{{$user.Email}}</p>
@@ -23,7 +28,7 @@
     <dialog id="confirm-delete" class="ConfermationForm">
         <form action="/user/profile/delete" method="POST">
             <h3 class="cfm_title">Delete Account</h3>
-            <p class="cfm_txt">Enter you password to permenently delete you account.</p>
+            <p class="cfm_txt">Enter you password to permanently delete you account.</p>
             <input  class="cfm_inp" type="text" pattern="^{{$user.Username}}$" placeholder="username..." autofocus required>
             <div class="cfm_btn_div">
                 <button class="cfm_btn" type="submit" aria-label="Delete user">Delete account</button>
