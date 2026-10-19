@@ -15,6 +15,7 @@ func NewUuid() (string, error) {
 
 	b := make([]byte, 16)
 	// generates 16 random bytes
+
 	if _, randomizeErr := rand.Read(b); randomizeErr != nil {
 		return "", customerrors.ErrInternalError
 	}
