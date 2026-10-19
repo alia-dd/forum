@@ -9,12 +9,14 @@
 
   <form class="post-form-container" method="POST" action="{{if $id}}/post/{{$id}}/edit{{else}}/post/new{{end}}" enctype="multipart/form-data">
       <h2 class="post-title">Title</h2>
+      <hint style="font-size: 12px;">Title has to contain atleast 1 character and cant exceed over 200 characters</hint>
       {{with .PageContent.Form.Errors.Title}}<span style="color: red; text-decoration: underline;">{{.}}</span>{{end}}
       <textarea class="create-comment" name="title" maxlength="200" required>{{.PageContent.Form.Title}}</textarea>
 
       <h2 class="post-title">Content</h2>
-      <textarea class="create-comment" name="content" maxlength="10000" required>{{.PageContent.Form.Content}}</textarea>
+      <hint style="font-size: 12px;">Content has to contain atleast 1 character and cant exceed over 10000 characters</hint>
       {{with .PageContent.Form.Errors.Content}}<span style="color: red; text-decoration: underline;">{{.}}</span>{{end}}
+      <textarea class="create-comment" name="content" maxlength="10000" required>{{.PageContent.Form.Content}}</textarea>
 
       <h2 class="post-title">Image</h2>
       {{with .PageContent.Form.Errors.Image}}<span style="color: red; text-decoration: underline;;">{{.}}</span>{{end}}
