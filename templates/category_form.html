@@ -13,7 +13,7 @@
                maxlength="40"
                required>
       </div>
-      {{with .PageContent.Form.Errors.Name}}<span>{{.}}</span>{{end}}
+      {{with .PageContent.Form.Errors.Name}}<span style="color: red; text-decoration: underline;">{{.}}</span>{{end}}
     </div>
 
     <button class="btnSubmit"  type="submit">{{if $id}}Save{{else}}Create{{end}}</button>
