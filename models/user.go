@@ -80,6 +80,9 @@ func (u *UserRegister) Isvalid() error {
 	if !IsValidName(u.Username) {
 		return customerrors.ErrInvalidName
 	}
+	if len(u.Username) < 3 || len(u.Username) > 20 {
+		return customerrors.ErrUsernameWrongLength
+	}
 	if !IsValidEmail(u.Email) {
 		return customerrors.ErrInvalidEmail
 	}
@@ -96,18 +99,21 @@ func (u *UserUpdate) Isvalid() error {
 	if u.Username != nil && !IsValidName(*u.Username) {
 		return customerrors.ErrInvalidName
 	}
+	if u.Username != nil && (len(*u.Username) < 3 || len(*u.Username) > 20) {
+		return customerrors.ErrUsernameWrongLength
+	}
 	if u.Email != nil && !IsValidEmail(*u.Email) {
 		return customerrors.ErrInvalidEmail
 	}
 	if u.Bio != nil && len(*u.Bio) > 500 {
-		return customerrors.ErrInvalidData
+		return customerrors.ErrInvalidBio
 	}
 	return nil
 }
 
 func IsValidName(name string) bool {
 	r, _ := regexp.Compile("^[A-Za-z0-9]+(?:-[A-Za-z0-9]+)*$")
-	if r.MatchString(name) && len(name) >= 3 && len(name) <= 20 {
+	if r.MatchString(name) {
 		return true
 	}
 	return false

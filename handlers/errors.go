@@ -81,6 +81,17 @@ func HandleError(w http.ResponseWriter, r *http.Request, err error) {
 	case errors.Is(err, customerrors.ErrInvalidEmail):
 		message = customerrors.ErrInvalidEmail.Error()
 		status = http.StatusBadRequest
+	case errors.Is(err, customerrors.ErrDuplicateUsername):
+		message = customerrors.ErrDuplicateUsername.Error()
+		status = http.StatusBadRequest
+	case errors.Is(err, customerrors.ErrPasswordMismatch):
+		message = customerrors.ErrPasswordMismatch.Error()
+		status = http.StatusBadRequest
+	case errors.Is(err, customerrors.ErrUsernameWrongLength):
+		message = customerrors.ErrUsernameWrongLength.Error()
+		status = http.StatusBadRequest
+	case errors.Is(err, customerrors.ErrInvalidBio):
+		message = customerrors.ErrInvalidBio.Error()
 	case errors.Is(err, customerrors.ErrCommentEmpty):
 		message = customerrors.ErrCommentEmpty.Error()
 		status = http.StatusBadRequest

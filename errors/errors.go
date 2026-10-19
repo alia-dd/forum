@@ -21,6 +21,7 @@ var (
 	ErrBadRequest           = errors.New("Bad request")
 	ErrForbidden            = errors.New("Forbidden")
 	ErrInUse                = errors.New("Resource still in use")
+	ErrInvalidBio           = errors.New("Bio must be 500 characters or less.")
 	ErrInvalidImageType     = errors.New("Image must be a JPEG or PNG.")
 	ErrImageTooLarge        = errors.New("Image must be less than 10 MB.")
 	ErrCommentEmpty         = errors.New("Comment cannot be empty.")
