@@ -389,9 +389,13 @@ func (h *UseHandler) PostChangePassword(w http.ResponseWriter, r *http.Request) 
 	if newPass != confirmPass {
 		errMsg = customerrors.ErrPasswordMismatch.Error()
 	}
-	if len(currentPass) < 8 || len(currentPass) > 101 {
-		errMsg = customerrors.ErrIncorrectPassword.Error()
+	if len(newPass) < 8 || len(newPass) > 101 {
+		errMsg = customerrors.ErrInvalidNewPassword.Error()
 	}
+	if len(currentPass) < 8 || len(currentPass) > 101 {
+		errMsg = customerrors.ErrInvalidNewPassword.Error()
+	}
+
 	if errMsg != "" {
 		pageData := models.PageData[MainPage]{
 			User:    user,
