@@ -28,6 +28,10 @@ var (
 	ErrPasswordMismatch     = errors.New("password does not match confirmation password.")
 	ErrUsernameWrongLength  = errors.New("Username must be between 3 and 20 characters long and.")
 	ErrInvalidBio           = errors.New("Bio must be 500 characters or less.")
+	ErrInvalidImageType     = errors.New("Image must be a JPEG or PNG.")
+	ErrImageTooLarge        = errors.New("Image must be less than 10 MB.")
+	ErrCommentEmpty         = errors.New("Comment cannot be empty.")
+	ErrCommentTooLong       = errors.New("Comment has to be less than 2,000 characters long.")
 )
 
 func MapSQLError(err error) error {

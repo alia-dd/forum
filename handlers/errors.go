@@ -92,6 +92,17 @@ func HandleError(w http.ResponseWriter, r *http.Request, err error) {
 		status = http.StatusBadRequest
 	case errors.Is(err, customerrors.ErrInvalidBio):
 		message = customerrors.ErrInvalidBio.Error()
+	case errors.Is(err, customerrors.ErrCommentEmpty):
+		message = customerrors.ErrCommentEmpty.Error()
+		status = http.StatusBadRequest
+	case errors.Is(err, customerrors.ErrCommentTooLong):
+		message = customerrors.ErrCommentTooLong.Error()
+		status = http.StatusBadRequest
+	case errors.Is(err, customerrors.ErrImageTooLarge):
+		message = customerrors.ErrImageTooLarge.Error()
+		status = http.StatusBadRequest
+	case errors.Is(err, customerrors.ErrInvalidImageType):
+		message = customerrors.ErrInvalidImageType.Error()
 		status = http.StatusBadRequest
 	default:
 		//code = "INTERNAL_ERROR"

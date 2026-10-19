@@ -39,7 +39,7 @@ func (h *UseHandler) SignInUser(w http.ResponseWriter, r *http.Request) {
 			},
 			Error: siginErr.Error(),
 		}
-		utils.RenderTemplate(w, http.StatusOK, "login_user", pageData)
+		utils.RenderTemplate(w, http.StatusUnauthorized, "login_user", pageData)
 		return
 	}
 

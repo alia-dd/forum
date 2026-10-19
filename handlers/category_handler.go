@@ -51,7 +51,7 @@ func (h *CategoryHandler) CreateCategory(w http.ResponseWriter, r *http.Request)
 	}
 
 	if !form.Validate() {
-		utils.RenderTemplate(w, http.StatusOK, "category_form", models.PageData[CategoryFormPage]{
+		utils.RenderTemplate(w, http.StatusBadRequest, "category_form", models.PageData[CategoryFormPage]{
 			User: user, PageContent: CategoryFormPage{Form: form},
 		})
 		return
@@ -61,7 +61,7 @@ func (h *CategoryHandler) CreateCategory(w http.ResponseWriter, r *http.Request)
 	if err != nil {
 		if errors.Is(err, customerrors.ErrDuplicateEntry) {
 			form.Errors["Name"] = "That category already exists"
-			utils.RenderTemplate(w, http.StatusOK, "category_form", models.PageData[CategoryFormPage]{
+			utils.RenderTemplate(w, http.StatusConflict, "category_form", models.PageData[CategoryFormPage]{
 				User: user, PageContent: CategoryFormPage{Form: form},
 			})
 			return
@@ -130,7 +130,7 @@ func (h *CategoryHandler) UpdateCategory(w http.ResponseWriter, r *http.Request)
 	}
 
 	if !form.Validate() {
-		utils.RenderTemplate(w, http.StatusOK, "category_form", models.PageData[CategoryFormPage]{
+		utils.RenderTemplate(w, http.StatusBadRequest, "category_form", models.PageData[CategoryFormPage]{
 			User: user, PageContent: CategoryFormPage{CategoryID: id, Form: form},
 		})
 		return
@@ -140,7 +140,7 @@ func (h *CategoryHandler) UpdateCategory(w http.ResponseWriter, r *http.Request)
 	if err != nil {
 		if errors.Is(err, customerrors.ErrDuplicateEntry) {
 			form.Errors["Name"] = "That category already exists"
-			utils.RenderTemplate(w, http.StatusOK, "category_form", models.PageData[CategoryFormPage]{
+			utils.RenderTemplate(w, http.StatusConflict, "category_form", models.PageData[CategoryFormPage]{
 				User: user, PageContent: CategoryFormPage{CategoryID: id, Form: form},
 			})
 			return

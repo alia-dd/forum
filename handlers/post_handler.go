@@ -208,7 +208,7 @@ func (h *PostHandler) CreatePost(w http.ResponseWriter, r *http.Request) {
 				Categories: cats,
 			},
 		}
-		utils.RenderTemplate(w, http.StatusOK, "post_form", pageData)
+		utils.RenderTemplate(w, http.StatusBadRequest, "post_form", pageData)
 		return
 	}
 
@@ -321,16 +321,12 @@ func (h *PostHandler) UpdatePost(w http.ResponseWriter, r *http.Request) {
 		pageData := models.PageData[PostFormPage]{
 			User: user,
 			PageContent: PostFormPage{
-				PostID: id,
-				Form: PostForm{
-					Title:   form.Title,
-					Content: form.Content,
-					Image:   "",
-				},
+				PostID:     id,
+				Form:       form,
 				Categories: cats,
 			},
 		}
-		utils.RenderTemplate(w, http.StatusOK, "post_form", pageData)
+		utils.RenderTemplate(w, http.StatusBadRequest, "post_form", pageData)
 		return
 	}
 
@@ -399,8 +395,8 @@ func (h *PostHandler) DeletePost(w http.ResponseWriter, r *http.Request) {
 	if ok {
 		role = user.Role
 	}
-  
-  // cascade is set to false only admin can delete post and all of it's comments
+
+	// cascade is set to false only admin can delete post and all of it's comments
 	image, err := h.postRep.DeletePost(ctx, id, user.ID, role, false)
 	if err != nil {
 		HandleError(w, r, err)
